@@ -1,13 +1,13 @@
 #!/bin/bash
-echo "--------------------------------------------"
-echo "Customized Pacman Core Software"
-echo "--------------------------------------------"
-echo ""
+echo "Start setup of customized core software..."
 echo "Synchronising packages..."
 echo "Synchronizing programing languages..."
 sudo pacman --needed -S jdk11-openjdk python php
 echo "Synchronizing administration tools..."
 sudo pacman --needed -S htop tree git base-devel yay make gcc cmake
+echo "Synchronizing security tools..."
+sudo pacman --needed -S ecryptfs-utils encfs
+echo "Setup SSH key"
 ssh_key_path="$HOME/.ssh/id_rsa"
 if [ ! -f "$ssh_key_path" ]; then
 	echo "SSH key $ssh_key_path doesn't exists!"

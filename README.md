@@ -4,7 +4,7 @@
 This repository contains scripts to set up an working client system, maintain it and to save the data on an USB stick.
 It's adapted to the needs of Kevin Veen-Birkenbach aka. Frantz.
 ## Requirements
-This script is optimized for a [Manjaro Linux](https://manjaro.org) with [GNOME desktop](https://www.gnome.org/?). 
+This script is optimized for a [Manjaro Linux](https://manjaro.org) with [GNOME desktop](https://www.gnome.org/?).
 Specific system requirements are described in the [.travis file](./.travis).
 
 ## Functions
@@ -23,15 +23,21 @@ To export configuration files to the system you have to execute:
 ```bash
 bash ./scripts/export-data-to-system.sh
 ```
-### Decrypt Data
+### Unlock Data
 To decrypt the data you have to execute:
 ```bash
-bash ./scripts/decrypt-data.sh
+bash ./scripts/unlock.sh
 ```
-### Encrypt Data
+### Lock Data
 To encrypt the data you have to execute:
 ```bash
-bash ./scripts/encrypt-data.sh
+bash ./scripts/lock.sh
+```
+
+### Change Data Password
+To change the encryption password you have to type in:
+```bash
+encfsctl passwd .encrypted
 ```
 ## License
 The ["GNU GENERAL PUBLIC LICENSE Version 3"](./LICENSE.txt) applies to this project.
