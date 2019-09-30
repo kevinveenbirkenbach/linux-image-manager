@@ -8,6 +8,17 @@ echo "Synchronizing programing languages..."
 sudo pacman --needed -S jdk11-openjdk python php
 echo "Synchronizing administration tools..."
 sudo pacman --needed -S htop tree git base-devel yay make gcc cmake
+ssh_key_path="$HOME/.ssh/id_rsa"
+if [ ! -f "$ssh_key_path" ]; then
+	echo "SSH key $ssh_key_path doesn't exists!"
+	if [ ! -f "./data$ssh_key_path" ]; then
+		echo "Importing ssh key from data..."
+		bash ./scripts/export-data-to-system.sh
+	else
+		echo "Generating ssh key"
+		ssh-keygen -t rsa -b 4096 -C "$USER@$HOSTNAME"
+	fi
+fi
 echo "Synchronizing gui tools..."
 sudo pacman --needed -S gnome-shell-extensions
 echo "Install NASA picture of the day GNOME extension..."
