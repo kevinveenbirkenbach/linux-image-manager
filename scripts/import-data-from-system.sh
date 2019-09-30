@@ -2,7 +2,7 @@
 # Imports data from the system
 # @author Kevin Veen-Birkenbach [aka. Frantz]
 # @param $1 If the first parameter is "reverse" the data will be exported to the system
-DATA_FOLDER="$(dirname "$(readlink -f "${0}")")/../data";
+DATA_FOLDER=$(readlink -f "$(dirname "$(readlink -f "${0}")")/../data");
 declare -a BACKUP_LIST=("$HOME/.ssh/" "$HOME/.gitconfig");
 for system_item_path in "${BACKUP_LIST[@]}";
 do
