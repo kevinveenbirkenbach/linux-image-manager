@@ -8,7 +8,7 @@ if [ -z $(mount | grep $DATA_FOLDER) ]
     echo "The data folder $DATA_FOLDER is locked. You need to unlock it!"
     bash "$(dirname "$(readlink -f "${0}")")/unlock.sh" || exit 1;
 fi
-declare -a BACKUP_LIST=("$HOME/.ssh/" "$HOME/.gitconfig");
+declare -a BACKUP_LIST=("$HOME/.ssh/" "$HOME/.gitconfig" "$HOME/.mozilla/firefox/" "$HOME/.atom/config.cson");
 for system_item_path in "${BACKUP_LIST[@]}";
 do
     data_item_path="$DATA_FOLDER$system_item_path"
