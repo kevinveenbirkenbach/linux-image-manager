@@ -22,7 +22,7 @@ fi
 echo "Synchronizing gui tools..."
 sudo pacman --needed -S gnome-shell-extensions
 echo "Install NASA picture of the day GNOME extension..."
-git clone https://github.com/Elinvention/gnome-shell-extension-nasa-apod.git $HOME/.local/share/gnome-shell/extensions/nasa_apod@elinvention.ovh
+git clone https://github.com/Elinvention/gnome-shell-extension-nasa-apod.git "$HOME/.local/share/gnome-shell/extensions/nasa_apod@elinvention.ovh"
 gnome-shell-extension-tool -e nasa_apod@elinvention.ovh
 echo "Synchronizing web tools..."
 sudo pacman --needed -S chromium firefox firefox-ublock-origin firefox-extension-https-everywhere firefox-dark-reader firefox-noscript
@@ -31,6 +31,8 @@ sudo pacman --needed -S gimp
 echo "Synchronizing communication tools..."
 yay pacman --needed -S slack-desktop skypeforlinux-stable-bin
 echo "Synchronizing development tools..."
+echo "Synchronizing code quality tools..."
+sudo pacman --needed -S shellcheck
 echo "Synchronizing visualization tools..."
 sudo pacman --needed -S dia
 echo "Synchronizing IDE's..."
@@ -62,7 +64,7 @@ sudo pacman --needed -S docker
 echo "Synchronizing orchestration tools..."
 sudo pacman --needed -S ansible
 echo "Add current user($USER) to user group docker..."
-sudo usermod -a -G docker $USER
+sudo usermod -a -G docker "$USER"
 echo "Enable docker service..."
 sudo systemctl enable docker --now
 echo "Synchronizing games..."

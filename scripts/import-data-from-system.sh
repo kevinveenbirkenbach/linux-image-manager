@@ -3,7 +3,7 @@
 # @author Kevin Veen-Birkenbach [aka. Frantz]
 # @param $1 If the first parameter is "reverse" the data will be exported to the system
 DATA_FOLDER=$(readlink -f "$(dirname "$(readlink -f "${0}")")/../data");
-if [ -z $(mount | grep $DATA_FOLDER) ]
+if [ -z "$(mount | grep $DATA_FOLDER)" ]
   then
     echo "The data folder $DATA_FOLDER is locked. You need to unlock it!"
     bash "$(dirname "$(readlink -f "${0}")")/unlock.sh" || exit 1;
@@ -26,9 +26,9 @@ do
       then
         echo "The destination file allready exists!";
         echo "Difference:"
-        diff $destination $source
+        diff "$destination" "$source"
     fi
-    destination_dir=$(dirname $destination)
+    destination_dir=$(dirname "$destination")
     mkdir -p "$destination_dir"
     if [ -f "$source" ]
       then

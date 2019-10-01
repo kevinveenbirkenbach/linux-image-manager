@@ -1,5 +1,5 @@
 # Core System
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](./LICENSE.txt)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](./LICENSE.txt) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/6e66409513d7451b949afbf0373ba71f)](https://www.codacy.com/manual/KevinFrantz/core-system?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=KevinFrantz/core-system&amp;utm_campaign=Badge_Grade)
 
 This repository contains scripts to set up an working client system, maintain it and to save the data on an USB stick.
 It's adapted to the needs of Kevin Veen-Birkenbach aka. Frantz.
