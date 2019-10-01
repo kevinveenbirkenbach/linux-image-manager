@@ -4,19 +4,18 @@
 # @author Kevin Veen-Birkenbach [aka. Frantz]
 # @param $1 If the first parameter is "reverse" the data will be exported to the system
 #
-# Deactivate SC1090
-# shellcheck source=/dev/null
+# shellcheck source=/dev/null # Deactivate SC1090
+# shellcheck disable=SC2143  # Comparing with -z allowed
 source "$(dirname "$(readlink -f "${0}")")/base.sh"
-DATA_FOLDER=$ENCRYPTED
-if [ -z "$(mount | grep $DATA_FOLDER)" ]
+if [ -z "$(mount | grep "$DECRYPTED_PATH")" ]
   then
-    echo "The data folder $DATA_FOLDER is locked. You need to unlock it!"
-    bash "$(dirname "$(readlink -f "${0}")")/unlock.sh" || exit 1;
+    echo "The decrypted folder $DECRYPTED_PATH is locked. You need to unlock it!"
+    bash "$SCRIPT_PATH/unlock.sh" || exit 1;
 fi
 declare -a BACKUP_LIST=("$HOME/.ssh/" "$HOME/.gitconfig" "$HOME/.mozilla/firefox/" "$HOME/.atom/config.cson");
 for system_item_path in "${BACKUP_LIST[@]}";
 do
-    data_item_path="$DATA_FOLDER$system_item_path"
+    data_item_path="$DATA_PATH$system_item_path"
     if [ "$1" = "reverse" ]
       then
         destination="$system_item_path"

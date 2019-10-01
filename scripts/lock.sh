@@ -3,8 +3,7 @@
 # Locks the data
 # @author Kevin Veen-Birkenbach [aka. Frantz]
 #
-# Deactivate SC1090
-# shellcheck source=/dev/null
+# shellcheck source=/dev/null # Deactivate SC1090
 source "$(dirname "$(readlink -f "${0}")")/base.sh"
-echo "Locking directory $DECRYPTED..."
-fusermount -u "$DECRYPTED" && echo "Data is now encrypted." && echo "Removing directory $DECRYPTED..." && rmdir "$DECRYPTED"
+echo "Locking directory $DECRYPTED_PATH..."
+fusermount -u "$DECRYPTED_PATH" && echo "Data is now encrypted." && echo "Removing directory $DECRYPTED_PATH..." && rmdir "$DECRYPTED_PATH"

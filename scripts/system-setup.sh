@@ -2,6 +2,9 @@
 #
 # Installs the core system
 # @author Kevin Veen-Birkenbach [aka. Frantz]
+#
+# shellcheck source=/dev/null # Deactivate SC1090
+source "$(dirname "$(readlink -f "${0}")")/base.sh"
 echo "Start setup of customized core software..."
 echo "Synchronising packages..."
 echo "Synchronizing programing languages..."
