@@ -31,7 +31,7 @@ echo "Install NASA picture of the day GNOME extension..."
 git clone https://github.com/Elinvention/gnome-shell-extension-nasa-apod.git "$HOME/.local/share/gnome-shell/extensions/nasa_apod@elinvention.ovh"
 gnome-shell-extension-tool -e nasa_apod@elinvention.ovh
 echo "Synchronizing web tools..."
-sudo pacman --needed -S chromium firefox firefox-ublock-origin firefox-extension-https-everywhere firefox-dark-reader firefox-noscript
+sudo pacman --needed -S chromium firefox firefox-ublock-origin firefox-extension-https-everywhere firefox-dark-reader
 echo "Synchronizing office tools..."
 sudo pacman --needed -S ttf-liberation libreoffice-fresh \
 	libreoffice-fresh-de libreoffice-fresh-eo libreoffice-fresh-es libreoffice-fresh-nl \
