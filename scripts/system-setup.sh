@@ -40,7 +40,7 @@ sudo pacman --needed -S ttf-liberation libreoffice-fresh \
 echo "Synchronizing grafic tools..."
 sudo pacman --needed -S gimp
 echo "Synchronizing communication tools..."
-yay pacman --needed -S slack-desktop skypeforlinux-stable-bin
+yay -S slack-desktop skypeforlinux-stable-bin
 echo "Synchronizing development tools..."
 echo "Synchronizing code quality tools..."
 sudo pacman --needed -S shellcheck
