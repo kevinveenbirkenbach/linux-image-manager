@@ -60,13 +60,14 @@ apm install -c \
 	docblockr\
 npm i -g bash-language-server #Needed by atom-package ide-bash
 echo "Synchronizing containerization tools..."
+echo "Installing docker..."
 sudo pacman --needed -S docker
-echo "Synchronizing orchestration tools..."
-sudo pacman --needed -S ansible
 echo "Add current user($USER) to user group docker..."
 sudo usermod -a -G docker "$USER"
 echo "Enable docker service..."
 sudo systemctl enable docker --now
+echo "Synchronizing orchestration tools..."
+sudo pacman --needed -S ansible
 echo "Synchronizing games..."
 sudo pacman --needed -S 0ad warzone2100
 yay -S emulationstation
