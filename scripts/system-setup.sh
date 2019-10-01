@@ -1,4 +1,5 @@
 #!/bin/bash
+#
 # Installs the core system
 # @author Kevin Veen-Birkenbach [aka. Frantz]
 echo "Start setup of customized core software..."
@@ -29,6 +30,11 @@ gnome-shell-extension-tool -e nasa_apod@elinvention.ovh
 echo "Synchronizing web tools..."
 sudo pacman --needed -S chromium firefox firefox-ublock-origin firefox-extension-https-everywhere firefox-dark-reader firefox-noscript
 echo "Synchronizing office tools..."
+sudo pacman --needed -S ttf-liberation libreoffice-fresh \
+	libreoffice-fresh-de libreoffice-fresh-eo libreoffice-fresh-es libreoffice-fresh-nl \
+	hunspell \
+	hunspell-de hunspell-es_es hunspell-en_US hunspell-nl
+echo "Synchronizing grafic tools..."
 sudo pacman --needed -S gimp
 echo "Synchronizing communication tools..."
 yay pacman --needed -S slack-desktop skypeforlinux-stable-bin

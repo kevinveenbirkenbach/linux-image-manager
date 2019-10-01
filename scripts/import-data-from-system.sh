@@ -1,7 +1,11 @@
 #!/bin/bash
+#
 # Imports data from the system
 # @author Kevin Veen-Birkenbach [aka. Frantz]
 # @param $1 If the first parameter is "reverse" the data will be exported to the system
+#
+# Deactivate SC1090
+# shellcheck source=/dev/null
 source "$(dirname "$(readlink -f "${0}")")/base.sh"
 DATA_FOLDER=$ENCRYPTED
 if [ -z "$(mount | grep $DATA_FOLDER)" ]
