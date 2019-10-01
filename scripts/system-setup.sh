@@ -1,4 +1,6 @@
 #!/bin/bash
+# Installs the core system
+# @author Kevin Veen-Birkenbach [aka. Frantz]
 echo "Start setup of customized core software..."
 echo "Synchronising packages..."
 echo "Synchronizing programing languages..."
@@ -57,7 +59,7 @@ apm install -c \
 	highlight-selected\
 	autocomplete-paths\
 	todo-show\
-	docblockr\
+	docblockr
 npm i -g bash-language-server #Needed by atom-package ide-bash
 echo "Synchronizing containerization tools..."
 echo "Installing docker..."

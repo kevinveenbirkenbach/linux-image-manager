@@ -1,8 +1,7 @@
 #!/bin/bash
 # Unlocks the data
 # @author Kevin Veen-Birkenbach [aka. Frantz]
-ENCRYPTED=$(readlink -f "$(dirname "$(readlink -f "${0}")")/../.encrypted");
-DECRYPTED=$(readlink -f "$(dirname "$(readlink -f "${0}")")/../data");
+source "$(dirname "$(readlink -f "${0}")")/base.sh"
 echo "Unlocking directory $DECRYPTED..."
 echo "Creating directory $DECRYPTED..."
 mkdir "$DECRYPTED"

@@ -2,7 +2,8 @@
 # Imports data from the system
 # @author Kevin Veen-Birkenbach [aka. Frantz]
 # @param $1 If the first parameter is "reverse" the data will be exported to the system
-DATA_FOLDER=$(readlink -f "$(dirname "$(readlink -f "${0}")")/../data");
+source "$(dirname "$(readlink -f "${0}")")/base.sh"
+DATA_FOLDER=$ENCRYPTED
 if [ -z "$(mount | grep $DATA_FOLDER)" ]
   then
     echo "The data folder $DATA_FOLDER is locked. You need to unlock it!"
