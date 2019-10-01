@@ -1,12 +1,2 @@
-sudo: required
-
-services:
-- docker
-
-arch:
-  script:
-  - "./scripts/system-setup.sh"
-
 script:
-- shellcheck ./administration/*.sh
-- "curl -s https://raw.githubusercontent.com/mikkeloscar/arch-travis/master/arch-travis.sh | bash"
+  - shellcheck ./administration/*.sh
