@@ -81,6 +81,10 @@ echo "Synchronizing orchestration tools..."
 sudo pacman --needed -S ansible
 echo "Synchronizing games..."
 sudo pacman --needed -S 0ad warzone2100
-yay -S emulationstation
+
+yay -S emulationstation #retroarch joyutils jstest-gtk-git
+yay -S libretro-snes9x-next-git libretro-quicknes-git libretro-fceumm-git libretro-prosystem-git libretro-gambatte-git libretro-mgba-git
+mkdir .emulationstation/themes
+git clone https://github.com/RetroPie/es-theme-carbon .emulationstation/themes/carbon
 echo "More game recomendations you will find here: https://wiki.archlinux.org/index.php/List_of_games..."
 echo "More software recomendations you will find here: https://wiki.archlinux.org/index.php/list_of_applications"
