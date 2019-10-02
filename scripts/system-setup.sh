@@ -12,7 +12,7 @@ sudo pacman --needed -S jdk11-openjdk python php
 echo "Synchronizing administration tools..."
 sudo pacman --needed -S htop tree git base-devel yay make gcc cmake
 echo "Synchronizing security tools..."
-sudo pacman --needed -S ecryptfs-utils encfs
+sudo pacman --needed -S ecryptfs-utils encfs keepassxc
 echo "Setup SSH key"
 ssh_key_path="$HOME/.ssh/id_rsa"
 if [ ! -f "$ssh_key_path" ]; then
