@@ -80,6 +80,8 @@ sudo systemctl enable docker --now
 echo "->Synchronizing orchestration tools..."
 sudo pacman --needed -S ansible
 echo "Installing entertainment software..."
+echo "->Sznchronizing audio software..."
+sudo pacman -S rhythmbox 
 echo "->Synchronizing games..."
 sudo pacman --needed -S 0ad warzone2100
 echo "->Synchronizing emulationstation..."

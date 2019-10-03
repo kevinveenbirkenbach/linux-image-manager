@@ -12,7 +12,14 @@ if [ -z "$(mount | grep "$DECRYPTED_PATH")" ]
     echo "The decrypted folder $DECRYPTED_PATH is locked. You need to unlock it!"
     bash "$SCRIPT_PATH/unlock.sh" || exit 1;
 fi
-declare -a BACKUP_LIST=("$HOME/.ssh/" "$HOME/.gitconfig" "$HOME/.atom/config.cson" "$HOME/Documents/certificates/" "$HOME/Documents/recovery_codes/" "$HOME/Documents/passwords/" "$HOME/.config/dconf/user");
+declare -a BACKUP_LIST=("$HOME/.ssh/" \
+  "$HOME/.gitconfig" \
+  "$HOME/.atom/config.cson" \
+  "$HOME/Documents/certificates/" \
+  "$HOME/Documents/recovery_codes/" \
+  "$HOME/Documents/passwords/" \
+  "$HOME/.config/dconf/user" \
+  "$HOME/.local/share/rhythmbox/rhythmdb.xml");
 for system_item_path in "${BACKUP_LIST[@]}";
 do
     data_item_path="$DATA_PATH$system_item_path"
