@@ -7,7 +7,7 @@
 source "$(dirname "$(readlink -f "${0}")")/base.sh"
 echo "Start setup of customized core software..."
 echo "Synchronising packages..."
-echo "Synchronizing programing languages..."
+echo "Synchronizing programing language interpreters..."
 sudo pacman --needed -S jdk11-openjdk python php
 echo "Synchronizing administration tools..."
 sudo pacman --needed -S htop tree git base-devel yay make gcc cmake
@@ -27,7 +27,7 @@ if [ ! -f "$ssh_key_path" ]; then
 fi
 echo "Synchronizing gui tools..."
 sudo pacman --needed -S gnome-shell-extensions
-echo "Install NASA picture of the day GNOME extension..."
+echo "->Install NASA picture of the day GNOME extension..."
 git clone https://github.com/Elinvention/gnome-shell-extension-nasa-apod.git "$HOME/.local/share/gnome-shell/extensions/nasa_apod@elinvention.ovh"
 gnome-shell-extension-tool -e nasa_apod@elinvention.ovh
 echo "Synchronizing web tools..."
@@ -42,13 +42,13 @@ sudo pacman --needed -S gimp
 echo "Synchronizing communication tools..."
 yay -S slack-desktop skypeforlinux-stable-bin
 echo "Synchronizing development tools..."
-echo "Synchronizing code quality tools..."
+echo "->Synchronizing code quality tools..."
 sudo pacman --needed -S shellcheck
-echo "Synchronizing visualization tools..."
+echo "->Synchronizing visualization tools..."
 sudo pacman --needed -S dia
-echo "Synchronizing IDE's..."
+echo "->Synchronizing IDE's..."
 sudo pacman --needed -S eclipse-java dia atom
-echo "Installing atom packages..."
+echo "-->Installing atom packages..."
 apm install -c \
 	atom-ide-ui\
 	ide-bash\
@@ -70,20 +70,22 @@ apm install -c \
 	todo-show\
 	docblockr
 npm i -g bash-language-server #Needed by atom-package ide-bash
-echo "Synchronizing containerization tools..."
-echo "Installing docker..."
+echo "->Synchronizing containerization tools..."
+echo "-->Installing docker..."
 sudo pacman --needed -S docker
-echo "Add current user($USER) to user group docker..."
+echo "-->Add current user($USER) to user group docker..."
 sudo usermod -a -G docker "$USER"
-echo "Enable docker service..."
+echo "-->Enable docker service..."
 sudo systemctl enable docker --now
-echo "Synchronizing orchestration tools..."
+echo "->Synchronizing orchestration tools..."
 sudo pacman --needed -S ansible
-echo "Synchronizing games..."
+echo "Installing entertainment software..."
+echo "->Synchronizing games..."
 sudo pacman --needed -S 0ad warzone2100
-
+echo "->Synchronizing emulationstation..."
 yay -S emulationstation #retroarch joyutils jstest-gtk-git
 yay -S libretro-snes9x-next-git libretro-quicknes-git libretro-fceumm-git libretro-prosystem-git libretro-gambatte-git libretro-mgba-git
+echo "-->Installing themes..."
 mkdir .emulationstation/themes
 git clone https://github.com/RetroPie/es-theme-carbon .emulationstation/themes/carbon
 echo "More game recomendations you will find here: https://wiki.archlinux.org/index.php/List_of_games..."
