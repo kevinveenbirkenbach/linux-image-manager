@@ -44,6 +44,8 @@ yay -S slack-desktop skypeforlinux-stable-bin
 echo "Synchronizing development tools..."
 echo "->Synchronizing code quality tools..."
 sudo pacman --needed -S shellcheck
+echo "-Synchronizing language servers..."
+yay -S ccls
 echo "->Synchronizing visualization tools..."
 sudo pacman --needed -S dia
 echo "->Synchronizing IDE's..."
@@ -81,7 +83,7 @@ echo "->Synchronizing orchestration tools..."
 sudo pacman --needed -S ansible
 echo "Installing entertainment software..."
 echo "->Sznchronizing audio software..."
-sudo pacman -S rhythmbox 
+sudo pacman -S rhythmbox
 echo "->Synchronizing games..."
 sudo pacman --needed -S 0ad warzone2100
 echo "->Synchronizing emulationstation..."
