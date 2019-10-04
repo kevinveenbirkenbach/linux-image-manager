@@ -9,6 +9,8 @@ echo "Start setup of customized core software..."
 echo "Synchronising packages..."
 echo "Synchronizing programing language interpreters..."
 sudo pacman --needed -S jdk11-openjdk python php
+echo "Synchronizing compression tools..."
+sudo pacman --needed -S p7zip
 echo "Synchronizing administration tools..."
 sudo pacman --needed -S htop tree git base-devel yay make gcc cmake
 echo "Synchronizing security tools..."
@@ -74,7 +76,7 @@ apm install -c \
 npm i -g bash-language-server #Needed by atom-package ide-bash
 echo "->Synchronizing containerization tools..."
 echo "-->Installing docker..."
-sudo pacman --needed -S docker
+sudo pacman --needed -S docker docker-compose
 echo "-->Add current user($USER) to user group docker..."
 sudo usermod -a -G docker "$USER"
 echo "-->Enable docker service..."
