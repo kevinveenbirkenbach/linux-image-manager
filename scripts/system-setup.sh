@@ -51,7 +51,10 @@ yay -S ccls
 echo "->Synchronizing visualization tools..."
 sudo pacman --needed -S dia
 echo "->Synchronizing IDE's..."
-sudo pacman --needed -S eclipse-java dia atom
+sudo pacman --needed -S eclipse-java atom arduino arduino-docs
+echo "-->Add user to arduino relevant groups..."
+usermod -a -G uucp $USER
+usermod -a -G lock $USER
 echo "-->Installing atom packages..."
 apm install -c \
 	atom-ide-ui\
