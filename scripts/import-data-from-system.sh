@@ -17,6 +17,7 @@ declare -a BACKUP_LIST=("$HOME/.ssh/" \
   "$HOME/.atom/config.cson" \
   "$HOME/Documents/certificates/" \
   "$HOME/Documents/recovery_codes/" \
+  "$HOME/Documents/identity/" \
   "$HOME/Documents/passwords/" \
   "$HOME/.config/dconf/user" \
   "$HOME/.local/share/rhythmbox/rhythmdb.xml" \
