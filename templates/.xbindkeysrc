@@ -51,3 +51,9 @@
 
 "gnome-terminal -e /bin/bash"
   control+alt+t
+
+"vlc"
+    control+alt+v
+
+"rhythmbox"
+    control+alt+r
