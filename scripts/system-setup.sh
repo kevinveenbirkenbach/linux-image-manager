@@ -30,7 +30,7 @@ if [ ! -f "$ssh_key_path" ]; then
 	fi
 fi
 echo "Synchronizing gui tools..."
-sudo pacman --needed -S gnome-shell-extensions xbindkeys
+sudo pacman --needed -S gnome-shell-extensions gnome-terminal xbindkeys
 echo "->Setting up key bindings..."
 xbindkeys --poll-rc
 echo "->Setting up dash favourites..."
