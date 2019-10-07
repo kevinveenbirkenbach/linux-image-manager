@@ -12,7 +12,7 @@ It's adapted to the needs of Kevin Veen-Birkenbach aka. Frantz. Feel free to mod
 <sub>*Core System* changes the wallpaper every day to the [Astronomy Picture of the Day](https://apod.nasa.gov/apod/). This wallpaper is from the 2019-10-07 and shows Jupiter with the shadow of his moon Io. </sub>
 
 ## Requirements
-This script is optimized for a [Manjaro Linux](https://manjaro.org) with a [GNOME desktop](https://www.gnome.org/?). It's recommended to encrypt to hard drive with [LUKS](https://en.wikipedia.org/wiki/Linux_Unified_Key_Setup) if the computer isn't shared.
+This script is optimized for a [Manjaro Linux](https://manjaro.org) with a [GNOME desktop](https://www.gnome.org/?). It's recommended to encrypt the hard drive with [LUKS](https://en.wikipedia.org/wiki/Linux_Unified_Key_Setup) if the computer isn't shared.
 
 ## System
 ### Key Bindings
