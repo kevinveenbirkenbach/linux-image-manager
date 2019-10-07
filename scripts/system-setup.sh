@@ -44,9 +44,16 @@ gsettings set org.gnome.shell favorite-apps "['org.gnome.Nautilus.desktop',
 'eclipse.desktop',
 'vlc.desktop',
 'rhythmbox.desktop']"
-echo "->Install NASA picture of the day GNOME extension..."
+echo "->Install GNOME extensions..."
+echo "-->Install <<NASA picture of the day>>..."
 git clone https://github.com/Elinvention/gnome-shell-extension-nasa-apod.git "$HOME/.local/share/gnome-shell/extensions/nasa_apod@elinvention.ovh"
 gnome-shell-extension-tool -e nasa_apod@elinvention.ovh
+echo "-->Install <<Open Weather>>..."
+git clone https://gitlab.com/jenslody/gnome-shell-extension-openweather "$HOME/.local/share/gnome-shell/extensions/openweather-extension@jenslody.de"
+gnome-shell-extension-tool -e openweather-extension@jenslody.de
+echo "-->Install <<Dash to Panel>>..."
+git clone https://github.com/home-sweet-gnome/dash-to-panel "$HOME/.local/share/gnome-shell/extensions/openweather-extension@dash-to-panel@jderose9.github.com"
+gnome-shell-extension-tool -e dash-to-panel@jderose9.github.com
 echo "Synchronizing web tools..."
 sudo pacman --needed -S chromium firefox firefox-ublock-origin firefox-extension-https-everywhere firefox-dark-reader
 echo "Synchronizing office tools..."
