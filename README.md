@@ -10,9 +10,20 @@ It's adapted to the needs of Kevin Veen-Birkenbach aka. Frantz. Feel free to mod
 ## Requirements
 This script is optimized for a [Manjaro Linux](https://manjaro.org) with [GNOME desktop](https://www.gnome.org/?).
 ## System
+### Key Bindings
+The following *Core System* specific key bindings exist:
+
+|Combination |Result           |
+|------------|-----------------|
+|Ctrl+Alt+A  |Opens Atom       |
+|Ctrl+Alt+E  |Opens Eclipse    |
+|Ctrl+Alt+F  |Opens Firefox    |
+|Ctrl+Alt+K  |Opens KeePassXC  |
+|Ctrl+Alt+T  |Opens a terminal |
+
 ### User Data
 Right now the software expects that the *Core System Owner* has on all systems the same username. By executing the *import script* it automatic backups the application configuration data, ssh keys and other important data which is saved in well defined configuration files and folders.
-#### Specific Folders
+#### Folders
 Next to this the following specific folders exist:
 ##### $HOME/Documents/certificates/
 Contains certificates to authenticate via [certificate based authentication](https://blog.couchbase.com/x-509-certificate-based-authentication/).

@@ -15,20 +15,23 @@ echo "Synchronizing administration tools..."
 sudo pacman --needed -S htop tree git base-devel yay make gcc cmake
 echo "Synchronizing security tools..."
 sudo pacman --needed -S ecryptfs-utils encfs keepassxc
-echo "Setup SSH key"
+echo "Setup SSH key..."
 ssh_key_path="$HOME/.ssh/id_rsa"
 if [ ! -f "$ssh_key_path" ]; then
-	echo "SSH key $ssh_key_path doesn't exists!"
+	echo "->SSH key $ssh_key_path doesn't exists!"
 	if [ ! -f "./data$ssh_key_path" ]; then
-		echo "Importing ssh key from data..."
+		echo "->Importing ssh key from data..."
 		bash ./scripts/export-data-to-system.sh
 	else
-		echo "Generating ssh key"
+		echo "->Generating ssh key..."
 		ssh-keygen -t rsa -b 4096 -C "$USER@$HOSTNAME"
 	fi
 fi
 echo "Synchronizing gui tools..."
-sudo pacman --needed -S gnome-shell-extensions
+sudo pacman --needed -S gnome-shell-extensions xbindkeys
+echo "->Setting up key bindings..."
+cp -fv "$TEMPLATE_PATH/.xbindkeysrc" $HOME
+xbindkeys --poll-rc
 echo "->Install NASA picture of the day GNOME extension..."
 git clone https://github.com/Elinvention/gnome-shell-extension-nasa-apod.git "$HOME/.local/share/gnome-shell/extensions/nasa_apod@elinvention.ovh"
 gnome-shell-extension-tool -e nasa_apod@elinvention.ovh
