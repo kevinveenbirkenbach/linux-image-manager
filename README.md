@@ -18,15 +18,16 @@ This script is optimized for a [Manjaro Linux](https://manjaro.org) with a [GNOM
 ### Key Bindings
 The following *Core System* specific key bindings exist:
 
-|Combination |Result           |
-|------------|-----------------|
-|Ctrl+Alt+A  |Opens Atom       |
-|Ctrl+Alt+E  |Opens Eclipse    |
-|Ctrl+Alt+F  |Opens Firefox    |
-|Ctrl+Alt+K  |Opens KeePassXC  |
-|Ctrl+Alt+R  |Opens Rhyhtmbox  |
-|Ctrl+Alt+T  |Opens a terminal |
-|Ctrl+Alt+V  |Opens VLC player |
+|Combination |Result                      |
+|------------|----------------------------|
+|Ctrl+Alt+A  |Opens Atom                  |
+|Ctrl+Alt+E  |Opens Eclipse               |
+|Ctrl+Alt+F  |Opens Firefox               |
+|Ctrl+Alt+K  |Opens KeePassXC             |
+|Ctrl+Alt+R  |Opens Rhyhtmbox             |
+|Ctrl+Alt+S  |Imports data to core system |
+|Ctrl+Alt+T  |Opens a terminal            |
+|Ctrl+Alt+V  |Opens VLC player            |
 
 ### User Data
 Right now the software expects that the *Core System Owner* has on all systems the same username. By executing the *import script* it automatic backups the application configuration data, ssh keys and other important data which is saved in well defined configuration files and folders.

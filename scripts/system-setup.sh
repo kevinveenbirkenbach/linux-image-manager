@@ -32,6 +32,9 @@ fi
 echo "Synchronizing gui tools..."
 sudo pacman --needed -S gnome-shell-extensions gnome-terminal xbindkeys
 echo "->Setting up key bindings..."
+echo "" >> "$HOME/.xbindkeysrc"
+echo "\"gnome-terminal -e '/bin/bash $SCRIPT_PATH/import-data-from-system.sh'\"" >> "$HOME/.xbindkeysrc"
+echo "  control+alt+s" >> "$HOME/.xbindkeysrc"
 xbindkeys --poll-rc
 echo "->Setting up dash favourites..."
 gsettings set org.gnome.shell favorite-apps "['org.gnome.Nautilus.desktop',
@@ -102,14 +105,14 @@ npm i -g bash-language-server #Needed by atom-package ide-bash
 echo "->Synchronizing containerization tools..."
 echo "-->Installing docker..."
 sudo pacman --needed -S docker docker-compose
-echo "-->Add current user($USER) to user group docker..."
+echo "-->Add current user<<$USER>> to user group docker..."
 sudo usermod -a -G docker "$USER"
 echo "-->Enable docker service..."
 sudo systemctl enable docker --now
 echo "->Synchronizing orchestration tools..."
 sudo pacman --needed -S ansible
 echo "Installing entertainment software..."
-echo "->Sznchronizing audio software..."
+echo "->Synchronizing audio software..."
 sudo pacman -S rhythmbox
 echo "->Synchronizing games..."
 sudo pacman --needed -S 0ad warzone2100
