@@ -6,6 +6,8 @@
 # shellcheck source=/dev/null # Deactivate SC1090
 source "$(dirname "$(readlink -f "${0}")")/base.sh"
 echo "Start setup of customized core software..."
+echo "Copying templates to home folder..."
+cp -rfv "$TEMPLATE_PATH/." $HOME
 echo "Synchronising packages..."
 echo "Synchronizing programing language interpreters..."
 sudo pacman --needed -S jdk11-openjdk python php
@@ -30,7 +32,6 @@ fi
 echo "Synchronizing gui tools..."
 sudo pacman --needed -S gnome-shell-extensions xbindkeys
 echo "->Setting up key bindings..."
-cp -fv "$TEMPLATE_PATH/.xbindkeysrc" $HOME
 xbindkeys --poll-rc
 echo "->Install NASA picture of the day GNOME extension..."
 git clone https://github.com/Elinvention/gnome-shell-extension-nasa-apod.git "$HOME/.local/share/gnome-shell/extensions/nasa_apod@elinvention.ovh"
