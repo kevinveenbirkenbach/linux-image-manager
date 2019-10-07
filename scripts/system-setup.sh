@@ -33,6 +33,17 @@ echo "Synchronizing gui tools..."
 sudo pacman --needed -S gnome-shell-extensions xbindkeys
 echo "->Setting up key bindings..."
 xbindkeys --poll-rc
+echo "->Setting up dash favourites..."
+gsettings set org.gnome.shell favorite-apps "['org.gnome.Nautilus.desktop',
+'org.gnome.Terminal.desktop',
+'org.keepassxc.KeePassXC.desktop',
+'firefox.desktop',
+'chromium.desktop',
+'atom.desktop',
+'arduino.desktop',
+'eclipse.desktop',
+'vlc.desktop',
+'rhythmbox.desktop']"
 echo "->Install NASA picture of the day GNOME extension..."
 git clone https://github.com/Elinvention/gnome-shell-extension-nasa-apod.git "$HOME/.local/share/gnome-shell/extensions/nasa_apod@elinvention.ovh"
 gnome-shell-extension-tool -e nasa_apod@elinvention.ovh
