@@ -25,46 +25,24 @@ The following *Core System* specific key bindings exist:
 Right now the software expects that the *Core System Owner* has on all systems the same username. By executing the *import script* it automatic backups the application configuration data, ssh keys and other important data which is saved in well defined configuration files and folders.
 #### Folders
 Next to this the following specific folders exist:
-##### $HOME/Documents/certificates/
-Contains certificates to authenticate via [certificate based authentication](https://blog.couchbase.com/x-509-certificate-based-authentication/).
-##### $HOME/Documents/recovery_codes/
-Contains files with recovery_codes e.g. for [Two-factor authentication](https://en.wikipedia.org/wiki/Multi-factor_authentication).
-##### $HOME/Documents/identity/
-Contains files to prove the identity of the *Core System Owner* in physical live like passports.
-##### $HOME/Documents/passwords/
-Contains e.g the [KeePassXC](https://keepassxc.org/) database with all *Core System Owner* passwords.
+
+| Path                        | Description |
+|---|---|
+$HOME/Documents/certificates/ | Contains certificates to authenticate via [certificate based authentication](https://blog.couchbase.com/x-509-certificate-based-authentication/). |
+| $HOME/Documents/recovery_codes/ | Contains files with recovery_codes e.g. for [Two-factor authentication](https://en.wikipedia.org/wiki/Multi-factor_authentication). |
+| $HOME/Documents/identity/ | Contains files to prove the identity of the *Core System Owner* in physical live like passports. |
+| $HOME/Documents/passwords/ | Contains e.g the [KeePassXC](https://keepassxc.org/) database with all *Core System Owner* passwords. |
 
 ## Functions
-### System Setup
-To setup the customized software on a system you have to execute:
-```bash
-bash ./scripts/system-setup.sh
-```
-### Import Data
-To import configuration files from the system you have to execute:
-```bash
-bash ./scripts/import-data-from-system.sh
-```
-### Export Data
-To export configuration files to the system you have to execute:
-```bash
-bash ./scripts/export-data-to-system.sh
-```
-### Unlock Data
-To decrypt the data you have to execute:
-```bash
-bash ./scripts/unlock.sh
-```
-### Lock Data
-To encrypt the data you have to execute:
-```bash
-bash ./scripts/lock.sh
-```
 
-### Change Data Password
-To change the encryption password you have to type in:
-```bash
-encfsctl passwd .encrypted
-```
+| Order | Description |
+|---|---|
+| ```bash ./scripts/system-setup.sh``` | Setup the customized software on the system on which you execute it. |
+| ```bash ./scripts/import-data-from-system.sh``` | Import data from the host system.|
+| ```bash ./scripts/export-data-to-system.sh``` | Export data to the host system.|
+| ```bash ./scripts/unlock.sh``` | Unlock the stored data.|
+| ```bash ./scripts/lock.sh``` | Lock the stored data |
+| ```encfsctl passwd .encrypted``` | Change the password of the encrypted folder. |
+
 ## License
 The ["GNU GENERAL PUBLIC LICENSE Version 3"](./LICENSE.txt) applies to this project.
