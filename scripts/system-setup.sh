@@ -7,7 +7,7 @@
 source "$(dirname "$(readlink -f "${0}")")/base.sh"
 echo "Start setup of customized core software..."
 echo "Copying templates to home folder..."
-cp -rfv "$TEMPLATE_PATH/." $HOME
+cp -rfv "$TEMPLATE_PATH/." "$HOME"
 echo "Synchronising packages..."
 echo "Synchronizing programing language interpreters..."
 sudo pacman --needed -S jdk11-openjdk python php
@@ -78,8 +78,8 @@ sudo pacman --needed -S dia
 echo "->Synchronizing IDE's..."
 sudo pacman --needed -S eclipse-java atom arduino arduino-docs
 echo "-->Add user to arduino relevant groups..."
-usermod -a -G uucp $USER
-usermod -a -G lock $USER
+usermod -a -G uucp "$USER"
+usermod -a -G lock "$USER"
 echo "-->Installing atom packages..."
 apm install -c \
 	atom-ide-ui\
