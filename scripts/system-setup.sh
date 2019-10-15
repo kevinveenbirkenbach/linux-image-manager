@@ -29,36 +29,6 @@ if [ ! -f "$ssh_key_path" ]; then
 		ssh-keygen -t rsa -b 4096 -C "$USER@$HOSTNAME"
 	fi
 fi
-echo "Synchronizing gui tools..."
-sudo pacman --needed -S gnome-shell-extensions gnome-terminal xbindkeys
-echo "->Setting up key bindings..."
-echo "" >> "$HOME/.xbindkeysrc"
-echo "\"gnome-terminal -e '/bin/bash $SCRIPT_PATH/import-data-from-system.sh'\"" >> "$HOME/.xbindkeysrc"
-echo "  control+alt+s" >> "$HOME/.xbindkeysrc"
-xbindkeys --poll-rc
-echo "->Setting up dash favourites..."
-gsettings set org.gnome.shell favorite-apps "['org.gnome.Nautilus.desktop',
-'org.gnome.Terminal.desktop',
-'org.keepassxc.KeePassXC.desktop',
-'firefox.desktop',
-'chromium.desktop',
-'atom.desktop',
-'arduino.desktop',
-'eclipse.desktop',
-'vlc.desktop',
-'gimp.desktop',
-'blender.desktop',
-'rhythmbox.desktop']"
-echo "->Install GNOME extensions..."
-echo "-->Install <<NASA picture of the day>>..."
-git clone https://github.com/Elinvention/gnome-shell-extension-nasa-apod.git "$HOME/.local/share/gnome-shell/extensions/nasa_apod@elinvention.ovh"
-gnome-shell-extension-tool -e nasa_apod@elinvention.ovh
-echo "-->Install <<Open Weather>>..."
-git clone https://gitlab.com/jenslody/gnome-shell-extension-openweather "$HOME/.local/share/gnome-shell/extensions/openweather-extension@jenslody.de"
-gnome-shell-extension-tool -e openweather-extension@jenslody.de
-echo "-->Install <<Dash to Panel>>..."
-git clone https://github.com/home-sweet-gnome/dash-to-panel "$HOME/.local/share/gnome-shell/extensions/openweather-extension@dash-to-panel@jderose9.github.com"
-gnome-shell-extension-tool -e dash-to-panel@jderose9.github.com
 echo "Synchronizing web tools..."
 sudo pacman --needed -S chromium firefox firefox-ublock-origin firefox-extension-https-everywhere firefox-dark-reader
 echo "Synchronizing office tools..."
@@ -125,4 +95,34 @@ echo "-->Installing themes..."
 mkdir .emulationstation/themes
 git clone https://github.com/RetroPie/es-theme-carbon .emulationstation/themes/carbon
 echo "More game recomendations you will find here: https://wiki.archlinux.org/index.php/List_of_games..."
+echo "Synchronizing gui tools..."
+sudo pacman --needed -S gnome-shell-extensions gnome-terminal xbindkeys
+echo "->Setting up key bindings..."
+echo "" >> "$HOME/.xbindkeysrc"
+echo "\"gnome-terminal -e '/bin/bash $SCRIPT_PATH/import-data-from-system.sh'\"" >> "$HOME/.xbindkeysrc"
+echo "  control+alt+s" >> "$HOME/.xbindkeysrc"
+xbindkeys --poll-rc
+echo "->Setting up dash favourites..."
+gsettings set org.gnome.shell favorite-apps "['org.gnome.Nautilus.desktop',
+'org.gnome.Terminal.desktop',
+'org.keepassxc.KeePassXC.desktop',
+'firefox.desktop',
+'chromium.desktop',
+'atom.desktop',
+'arduino.desktop',
+'eclipse.desktop',
+'vlc.desktop',
+'gimp.desktop',
+'blender.desktop',
+'rhythmbox.desktop']"
+echo "->Install GNOME extensions..."
+echo "-->Install <<NASA picture of the day>>..."
+git clone https://github.com/Elinvention/gnome-shell-extension-nasa-apod.git "$HOME/.local/share/gnome-shell/extensions/nasa_apod@elinvention.ovh"
+gnome-shell-extension-tool -e nasa_apod@elinvention.ovh
+echo "-->Install <<Open Weather>>..."
+git clone https://gitlab.com/jenslody/gnome-shell-extension-openweather "$HOME/.local/share/gnome-shell/extensions/openweather-extension@jenslody.de"
+gnome-shell-extension-tool -e openweather-extension@jenslody.de
+echo "-->Install <<Dash to Panel>>..."
+git clone https://github.com/home-sweet-gnome/dash-to-panel "$HOME/.local/share/gnome-shell/extensions/openweather-extension@dash-to-panel@jderose9.github.com"
+gnome-shell-extension-tool -e dash-to-panel@jderose9.github.com
 echo "More software recomendations you will find here: https://wiki.archlinux.org/index.php/list_of_applications"
