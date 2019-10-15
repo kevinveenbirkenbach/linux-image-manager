@@ -46,6 +46,8 @@ gsettings set org.gnome.shell favorite-apps "['org.gnome.Nautilus.desktop',
 'arduino.desktop',
 'eclipse.desktop',
 'vlc.desktop',
+'gimp.desktop',
+'blender.desktop',
 'rhythmbox.desktop']"
 echo "->Install GNOME extensions..."
 echo "-->Install <<NASA picture of the day>>..."
