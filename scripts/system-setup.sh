@@ -65,7 +65,7 @@ sudo pacman --needed -S ttf-liberation libreoffice-fresh \
 	hunspell \
 	hunspell-de hunspell-es_es hunspell-en_US hunspell-nl
 echo "Synchronizing grafic tools..."
-sudo pacman --needed -S gimp
+sudo pacman --needed -S gimp blender
 echo "Synchronizing communication tools..."
 yay -S slack-desktop skypeforlinux-stable-bin
 echo "Synchronizing development tools..."
