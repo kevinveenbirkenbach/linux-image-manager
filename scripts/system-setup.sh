@@ -9,6 +9,7 @@ echo "Start setup of customized core software..."
 echo "Copying templates to home folder..."
 cp -rfv "$TEMPLATE_PATH/." "$HOME"
 echo "Synchronising packages..."
+sudo pacman -Syyu
 echo "Synchronizing programing language interpreters..."
 sudo pacman --needed -S jdk11-openjdk python php
 echo "Synchronizing compression tools..."
@@ -40,6 +41,8 @@ echo "Synchronizing grafic tools..."
 sudo pacman --needed -S gimp blender
 echo "Synchronizing communication tools..."
 yay -S slack-desktop skypeforlinux-stable-bin
+echo "Synchronizing system administrator tools..."
+yay -S multibootusb
 echo "Synchronizing development tools..."
 echo "->Synchronizing code quality tools..."
 sudo pacman --needed -S shellcheck
@@ -50,8 +53,8 @@ sudo pacman --needed -S dia
 echo "->Synchronizing IDE's..."
 sudo pacman --needed -S eclipse-java atom arduino arduino-docs
 echo "-->Add user to arduino relevant groups..."
-usermod -a -G uucp "$USER"
-usermod -a -G lock "$USER"
+usermod -a -G uucp "$USER" || echo "Couldn't add <<$USER>> to group <<uucp>>. Try to add manually later!"
+usermod -a -G lock "$USER" || echo "Couldn't add <<$USER>> to group <<lock>>. Try to add manually later!"
 echo "-->Installing atom packages..."
 apm install -c \
 	atom-ide-ui\
@@ -73,7 +76,7 @@ apm install -c \
 	autocomplete-paths\
 	todo-show\
 	docblockr
-npm i -g bash-language-server #Needed by atom-package ide-bash
+sudo npm i -g bash-language-server #Needed by atom-package ide-bash
 echo "->Synchronizing containerization tools..."
 echo "-->Installing docker..."
 sudo pacman --needed -S docker docker-compose
@@ -125,4 +128,6 @@ gnome-shell-extension-tool -e openweather-extension@jenslody.de
 echo "-->Install <<Dash to Panel>>..."
 git clone https://github.com/home-sweet-gnome/dash-to-panel "$HOME/.local/share/gnome-shell/extensions/openweather-extension@dash-to-panel@jderose9.github.com"
 gnome-shell-extension-tool -e dash-to-panel@jderose9.github.com
+echo "Deaktivating <<Dashto Dock>>"
+gnome-shell-extension-tool -d dash-to-dock@micxgx.gmail.com
 echo "More software recomendations you will find here: https://wiki.archlinux.org/index.php/list_of_applications"
