@@ -121,13 +121,13 @@ gsettings set org.gnome.shell favorite-apps "['org.gnome.Nautilus.desktop',
 echo "->Install GNOME extensions..."
 echo "-->Install <<NASA picture of the day>>..."
 git clone https://github.com/Elinvention/gnome-shell-extension-nasa-apod.git "$HOME/.local/share/gnome-shell/extensions/nasa_apod@elinvention.ovh"
-gnome-shell-extension-tool -e nasa_apod@elinvention.ovh
+gnome-extensions enable  nasa_apod@elinvention.ovh
 echo "-->Install <<Open Weather>>..."
 git clone https://gitlab.com/jenslody/gnome-shell-extension-openweather "$HOME/.local/share/gnome-shell/extensions/openweather-extension@jenslody.de"
-gnome-shell-extension-tool -e openweather-extension@jenslody.de
+gnome-extensions enable openweather-extension@jenslody.de
 echo "-->Install <<Dash to Panel>>..."
 git clone https://github.com/home-sweet-gnome/dash-to-panel "$HOME/.local/share/gnome-shell/extensions/openweather-extension@dash-to-panel@jderose9.github.com"
-gnome-shell-extension-tool -e dash-to-panel@jderose9.github.com
-echo "Deaktivating <<Dashto Dock>>"
-gnome-shell-extension-tool -d dash-to-dock@micxgx.gmail.com
+gnome-extensions enable dash-to-panel@jderose9.github.com
+echo "Deaktivating <<Dash to Dock>>"
+gnome-extensions disable dash-to-dock@micxgx.gmail.com
 echo "More software recomendations you will find here: https://wiki.archlinux.org/index.php/list_of_applications"
