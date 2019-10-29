@@ -10,12 +10,12 @@ echo "Copying templates to home folder..."
 cp -rfv "$TEMPLATE_PATH/." "$HOME"
 echo "Synchronising packages..."
 sudo pacman -Syyu
-echo "Creating swap partition..." 
+echo "Creating swap partition..."
 sudo fallocate -l 16G /swapfile
 sudo chmod 600 /swapfile
 sudo mkswap /swapfile
 sudo swapon /swapfile
-sudo echo "/swapfile none swap defaults 0 0">/etc/fstab
+sudo echo "/swapfile none swap defaults 0 0">>/etc/fstab
 echo "Synchronizing programing language interpreters..."
 sudo pacman --needed -S jdk11-openjdk python php
 echo "Synchronizing compression tools..."
