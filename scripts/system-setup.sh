@@ -10,12 +10,19 @@ echo "Copying templates to home folder..."
 cp -rfv "$TEMPLATE_PATH/." "$HOME"
 echo "Synchronising packages..."
 sudo pacman -Syyu
-echo "Creating swap partition..."
-sudo fallocate -l 16G /swapfile
-sudo chmod 600 /swapfile
-sudo mkswap /swapfile
-sudo swapon /swapfile
-sudo echo "/swapfile none swap defaults 0 0">>/etc/fstab
+FSTAB_SWAP_ENTRY="/swapfile none swap defaults 0 0"
+SWAP_FILE="/swapfile"
+FSTAB_FILE="/etc/fstab"
+if grep -q "$FSTAB_SWAP_ENTRY" "$FSTAB_FILE"; then
+	echo "Skipping creation of swap partion because entry allready exists in <<$FSTAB_FILE>>!"
+else
+	echo "Creating swap partition..."
+	sudo fallocate -l 16G "$SWAP_FILE"
+	sudo chmod 600 "$SWAP_FILE"
+	sudo mkswap "$SWAP_FILE"
+	sudo swapon "$SWAP_FILE"
+	sudo echo "$FSTAB_SWAP_ENTRY">>"$FSTAB_FILE"
+fi
 echo "Synchronizing programing language interpreters..."
 sudo pacman --needed -S jdk11-openjdk python php
 echo "Synchronizing compression tools..."
