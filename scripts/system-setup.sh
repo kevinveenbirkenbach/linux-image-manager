@@ -130,7 +130,8 @@ gsettings set org.gnome.shell favorite-apps "['org.gnome.Nautilus.desktop',
 'vlc.desktop',
 'gimp.desktop',
 'blender.desktop',
-'rhythmbox.desktop']"
+'rhythmbox.desktop',
+'org.gnome.Screenshot.desktop']"
 echo "->Install GNOME extensions..."
 echo "-->Install <<NASA picture of the day>>..."
 git clone https://github.com/Elinvention/gnome-shell-extension-nasa-apod.git "$HOME/.local/share/gnome-shell/extensions/nasa_apod@elinvention.ovh"

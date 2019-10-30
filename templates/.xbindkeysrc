@@ -57,3 +57,6 @@
 
 "rhythmbox"
     control+alt+r
+
+"gnome-screenshot -i"
+    control+alt+c
