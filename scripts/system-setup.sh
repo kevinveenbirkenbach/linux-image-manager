@@ -21,7 +21,7 @@ else
 	sudo chmod 600 "$SWAP_FILE"
 	sudo mkswap "$SWAP_FILE"
 	sudo swapon "$SWAP_FILE"
-	sudo echo "$FSTAB_SWAP_ENTRY">>"$FSTAB_FILE"
+	sudo sh -c "echo \"$FSTAB_SWAP_ENTRY\">>\"$FSTAB_FILE\""
 fi
 echo "Synchronizing programing language interpreters..."
 sudo pacman --needed -S jdk11-openjdk python php
