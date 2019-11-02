@@ -12,6 +12,14 @@ if [ -z "$(mount | grep "$DECRYPTED_PATH")" ]
     echo "The decrypted folder $DECRYPTED_PATH is locked. You need to unlock it!"
     bash "$SCRIPT_PATH/unlock.sh" || exit 1;
 fi
+if [ "$1" = "reverse" ]
+  then
+    MODE="export"
+  else
+    MODE="import"
+fi
+CONCRETE_BACKUP_FOLDER="$BACKUP_PATH/$MODE/$(date '+%Y%m%d%H%M%S')"
+mkdir -p $CONCRETE_BACKUP_FOLDER
 declare -a BACKUP_LIST=("$HOME/.ssh/" \
   "$HOME/.gitconfig" \
   "$HOME/.atom/config.cson" \
@@ -24,7 +32,7 @@ declare -a BACKUP_LIST=("$HOME/.ssh/" \
 for system_item_path in "${BACKUP_LIST[@]}";
 do
     data_item_path="$DATA_PATH$system_item_path"
-    if [ "$1" = "reverse" ]
+    if [ "$MODE" = "export" ]
       then
         destination="$system_item_path"
         source="$data_item_path"
@@ -45,12 +53,13 @@ do
     if [ -f "$source" ]
       then
         echo "Copy data from $source to $destination..."
-        cp -vi "$source" "$destination"
+        rsync -uWvabPE --update --times --backup-dir="$CONCRETE_BACKUP_FOLDER" "$source" "$destination"
       else
         if [ -d "$source" ]
           then
-            echo "Copy data from directory $source to directory $destination_dir..."
-            cp -vir "$source" "$destination_dir"
+            mkdir -p "$destination"
+            echo "Copy data from directory $source to directory $destination..."
+            rsync -uWvabrPE --update --times --delete --backup-dir="$CONCRETE_BACKUP_FOLDER" "$source" "$destination"
           else
             echo "$source doesn't exist. Copying data is not possible."
         fi
