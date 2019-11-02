@@ -54,8 +54,6 @@ echo "Synchronizing grafic tools..."
 sudo pacman --needed -S gimp blender
 echo "Synchronizing communication tools..."
 yay -S slack-desktop skypeforlinux-stable-bin
-echo "Synchronizing system administrator tools..."
-yay -S multibootusb
 echo "Synchronizing development tools..."
 echo "->Synchronizing code quality tools..."
 sudo pacman --needed -S shellcheck
