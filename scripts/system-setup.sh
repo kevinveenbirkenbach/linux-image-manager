@@ -43,6 +43,10 @@ if [ ! -f "$ssh_key_path" ]; then
 		ssh-keygen -t rsa -b 4096 -C "$USER@$HOSTNAME"
 	fi
 fi
+if [[ "$(sudo lshw -C display)" == *"NVIDIA"* ]]; then
+	echo "Install NVIDIA drivers..."
+	sudo mhwd -a pci nonfree 0300
+fi
 echo "Synchronizing web tools..."
 sudo pacman --needed -S chromium firefox firefox-ublock-origin firefox-extension-https-everywhere firefox-dark-reader
 echo "Synchronizing office tools..."
