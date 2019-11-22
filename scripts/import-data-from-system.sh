@@ -19,7 +19,7 @@ if [ "$1" = "reverse" ]
     MODE="import"
 fi
 CONCRETE_BACKUP_FOLDER="$BACKUP_PATH/$MODE/$(date '+%Y%m%d%H%M%S')"
-mkdir -p $CONCRETE_BACKUP_FOLDER
+mkdir -p "$CONCRETE_BACKUP_FOLDER"
 declare -a BACKUP_LIST=("$HOME/.ssh/" \
   "$HOME/.gitconfig" \
   "$HOME/.atom/config.cson" \

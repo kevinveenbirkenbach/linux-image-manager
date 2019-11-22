@@ -107,7 +107,7 @@ echo "->Synchronizing virtualisation tools..."
 pamac install virtualbox $(pacman -Qsq "^linux" | grep "^linux[0-9]*[-rt]*$" | awk '{print $1"-virtualbox-host-modules"}' ORS=' ')
 sudo vboxreload
 pamac build virtualbox-ext-oracle
-sudo gpasswd -a $USER vboxusers
+sudo gpasswd -a "$USER" vboxusers
 echo "Keep in mind to install the guest additions in the virtualized system. See https://wiki.manjaro.org/index.php?title=VirtualBox"
 echo "Installing entertainment software..."
 echo "->Synchronizing audio software..."
