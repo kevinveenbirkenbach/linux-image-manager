@@ -29,6 +29,8 @@ echo "Synchronizing compression tools..."
 sudo pacman --needed -S p7zip
 echo "Synchronizing administration tools..."
 sudo pacman --needed -S htop tree git base-devel yay make gcc cmake
+echo "Synchronizing network analyze tools..."
+sudo pacman --needed -S traceroute wireshark-qt wireshark-cli
 echo "Synchronizing security tools..."
 sudo pacman --needed -S ecryptfs-utils encfs keepassxc
 echo "Setup SSH key..."
