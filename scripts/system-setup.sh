@@ -94,6 +94,8 @@ apm install -c \
 	highlight-selected\
 	autocomplete-paths\
 	todo-show\
+	linter-spell\
+	language-latex\
 	linter-spell-latex\
 	docblockr
 sudo npm i -g bash-language-server #Needed by atom-package ide-bash
