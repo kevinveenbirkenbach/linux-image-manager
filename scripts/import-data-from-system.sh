@@ -54,13 +54,13 @@ do
     if [ -f "$source" ]
       then
         echo "Copy data from $source to $destination..."
-        rsync -uWvabPE --update --times --backup-dir="$CONCRETE_BACKUP_FOLDER" "$source" "$destination"
+        rsync -abcEPuvW --backup-dir="$CONCRETE_BACKUP_FOLDER" "$source" "$destination"
       else
         if [ -d "$source" ]
           then
             mkdir -p "$destination"
             echo "Copy data from directory $source to directory $destination..."
-            rsync -uWvabrPE --update --times --delete --backup-dir="$CONCRETE_BACKUP_FOLDER" "$source" "$destination"
+            rsync -abcEPuvW --delete --backup-dir="$CONCRETE_BACKUP_FOLDER" "$source" "$destination"
           else
             echo "$source doesn't exist. Copying data is not possible."
         fi
