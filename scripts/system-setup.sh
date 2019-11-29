@@ -25,6 +25,8 @@ else
 fi
 echo "Synchronizing programing language interpreters..."
 sudo pacman --needed -S jdk11-openjdk python php
+echo "Synchronizing other interpreters..."
+sudo pacman --needed -S texlive-most
 echo "Synchronizing compression tools..."
 sudo pacman --needed -S p7zip
 echo "Synchronizing administration tools..."
