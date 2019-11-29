@@ -27,6 +27,7 @@ declare -a BACKUP_LIST=("$HOME/.ssh/" \
   "$HOME/Documents/recovery_codes/" \
   "$HOME/Documents/identity/" \
   "$HOME/Documents/passwords/" \
+  "$HOME/Documents/repositories/application" \
   "$HOME/.local/share/rhythmbox/rhythmdb.xml" \
   "$HOME/.config/keepassxc/keepassxc.ini");
 for system_item_path in "${BACKUP_LIST[@]}";
