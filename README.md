@@ -48,6 +48,7 @@ $HOME/Documents/certificates/ | Contains certificates to authenticate via [certi
 | Order | Description |
 |---|---|
 | ```bash ./scripts/system-setup.sh``` | Setup the customized software on the system on which you execute it. |
+| ```bash ./scripts/backup.sh``` | Executes all setup scripts. |
 | ```bash ./scripts/import-data-from-system.sh``` | Import data from the host system.|
 | ```bash ./scripts/export-data-to-system.sh``` | Export data to the host system.|
 | ```bash ./scripts/unlock.sh``` | Unlock the stored data.|
