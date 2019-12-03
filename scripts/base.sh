@@ -12,3 +12,12 @@ DATA_PATH="$DECRYPTED_PATH/data";
 BACKUP_PATH="$DECRYPTED_PATH/backup";
 TEMPLATE_PATH="$REPOSITORY_PATH/templates";
 LOCAL_REPOSITORIES_PATH="$HOME/Documents/repositories";
+declare -a BACKUP_LIST=("$HOME/.ssh/" \
+  "$HOME/.gitconfig" \
+  "$HOME/.atom/config.cson" \
+  "$HOME/Documents/certificates/" \
+  "$HOME/Documents/recovery_codes/" \
+  "$HOME/Documents/identity/" \
+  "$HOME/Documents/passwords/" \
+  "$HOME/.local/share/rhythmbox/rhythmdb.xml" \
+  "$HOME/.config/keepassxc/keepassxc.ini");

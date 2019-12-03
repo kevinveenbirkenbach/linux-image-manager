@@ -20,15 +20,6 @@ if [ "$1" = "reverse" ]
 fi
 CONCRETE_BACKUP_FOLDER="$BACKUP_PATH/$MODE/$(date '+%Y%m%d%H%M%S')"
 mkdir -p "$CONCRETE_BACKUP_FOLDER"
-declare -a BACKUP_LIST=("$HOME/.ssh/" \
-  "$HOME/.gitconfig" \
-  "$HOME/.atom/config.cson" \
-  "$HOME/Documents/certificates/" \
-  "$HOME/Documents/recovery_codes/" \
-  "$HOME/Documents/identity/" \
-  "$HOME/Documents/passwords/" \
-  "$HOME/.local/share/rhythmbox/rhythmdb.xml" \
-  "$HOME/.config/keepassxc/keepassxc.ini");
 for system_item_path in "${BACKUP_LIST[@]}";
 do
     data_item_path="$DATA_PATH$system_item_path"
@@ -52,14 +43,18 @@ do
     mkdir -p "$destination_dir"
     if [ -f "$source" ]
       then
+        backup_dir=$(dirname "$CONCRETE_BACKUP_FOLDER/$system_item_path");
+        mkdir -p "$backup_dir"
         echo "Copy data from $source to $destination..."
-        rsync -abcEPuvW --backup-dir="$CONCRETE_BACKUP_FOLDER" "$source" "$destination"
+        rsync -abcEPuvW --backup-dir="$backup_dir" "$source" "$destination"
       else
         if [ -d "$source" ]
           then
             mkdir -p "$destination"
+            backup_dir="$CONCRETE_BACKUP_FOLDER/$system_item_path";
+            mkdir -p "$backup_dir"
             echo "Copy data from directory $source to directory $destination..."
-            rsync -abcEPuvW --delete --backup-dir="$CONCRETE_BACKUP_FOLDER" "$source" "$destination"
+            rsync -abcEPuvW --delete --backup-dir="$backup_dir" "$source" "$destination"
           else
             echo "$source doesn't exist. Copying data is not possible."
         fi
