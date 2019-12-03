@@ -41,6 +41,7 @@ $HOME/Documents/certificates/ | Contains certificates to authenticate via [certi
 | $HOME/Documents/recovery_codes/ | Contains files with recovery_codes e.g. for [Two-factor authentication](https://en.wikipedia.org/wiki/Multi-factor_authentication). |
 | $HOME/Documents/identity/ | Contains files to prove the identity of the *Core System Owner* in physical live like passports. |
 | $HOME/Documents/passwords/ | Contains e.g the [KeePassXC](https://keepassxc.org/) database with all *Core System Owner* passwords. |
+| $HOME/Documents/repositories/ | Contains all git repositories |
 
 ### Functions
 
@@ -51,6 +52,8 @@ $HOME/Documents/certificates/ | Contains certificates to authenticate via [certi
 | ```bash ./scripts/export-data-to-system.sh``` | Export data to the host system.|
 | ```bash ./scripts/unlock.sh``` | Unlock the stored data.|
 | ```bash ./scripts/lock.sh``` | Lock the stored data |
+| ```bash ./scripts/pull-local-repositories.sh``` | Pulls all local repositories branches |
+| ```bash ./scripts/pushs-local-repositories.sh``` | Pushs all local repositories branches |
 | ```encfsctl passwd .encrypted``` | Change the password of the encrypted folder. |
 
 ## License
