@@ -94,7 +94,11 @@ apm install -c \
 	highlight-selected\
 	autocomplete-paths\
 	todo-show\
+	linter\
+	linter-ui-default\
 	linter-spell\
+	intentions\
+	busy-signal\
 	language-latex\
 	linter-spell-latex\
 	docblockr
