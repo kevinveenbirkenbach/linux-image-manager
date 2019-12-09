@@ -99,6 +99,7 @@ apm install -c \
 	linter-spell-latex\
 	docblockr
 sudo npm i -g bash-language-server #Needed by atom-package ide-bash
+python -m pip install 'python-language-server[all]' #Needed by atom
 echo "->Synchronizing containerization tools..."
 echo "-->Installing docker..."
 sudo pacman --needed -S docker docker-compose
