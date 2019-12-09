@@ -72,8 +72,8 @@ sudo pacman --needed -S dia
 echo "->Synchronizing IDE's..."
 sudo pacman --needed -S eclipse-java atom arduino arduino-docs
 echo "-->Add user to arduino relevant groups..."
-usermod -a -G uucp "$USER" || echo "Couldn't add <<$USER>> to group <<uucp>>. Try to add manually later!"
-usermod -a -G lock "$USER" || echo "Couldn't add <<$USER>> to group <<lock>>. Try to add manually later!"
+sudo usermod -a -G uucp "$USER" || echo "Couldn't add <<$USER>> to group <<uucp>>. Try to add manually later!"
+sudo usermod -a -G lock "$USER" || echo "Couldn't add <<$USER>> to group <<lock>>. Try to add manually later!"
 echo "-->Installing atom packages..."
 apm install -c \
 	atom-ide-ui\
