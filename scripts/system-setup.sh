@@ -122,46 +122,57 @@ echo "Keep in mind to install the guest additions in the virtualized system. See
 echo "Installing entertainment software..."
 echo "->Synchronizing audio software..."
 sudo pacman -S rhythmbox
-echo "->Synchronizing games..."
-sudo pacman --needed -S 0ad warzone2100
-echo "->Synchronizing emulationstation..."
-yay -S emulationstation #retroarch joyutils jstest-gtk-git
-yay -S libretro-snes9x-next-git libretro-quicknes-git libretro-fceumm-git libretro-prosystem-git libretro-gambatte-git libretro-mgba-git
-echo "-->Installing themes..."
-mkdir .emulationstation/themes
-git clone https://github.com/RetroPie/es-theme-carbon .emulationstation/themes/carbon
-echo "More game recomendations you will find here: https://wiki.archlinux.org/index.php/List_of_games..."
-echo "Synchronizing gui tools..."
-sudo pacman --needed -S gnome-shell-extensions gnome-terminal xbindkeys
-echo "->Setting up key bindings..."
-echo "" >> "$HOME/.xbindkeysrc"
-echo "\"gnome-terminal -e '/bin/bash $SCRIPT_PATH/import-data-from-system.sh'\"" >> "$HOME/.xbindkeysrc"
-echo "  control+alt+s" >> "$HOME/.xbindkeysrc"
-xbindkeys --poll-rc
-echo "->Setting up dash favourites..."
-gsettings set org.gnome.shell favorite-apps "['org.gnome.Nautilus.desktop',
-'org.gnome.Terminal.desktop',
-'org.keepassxc.KeePassXC.desktop',
-'firefox.desktop',
-'chromium.desktop',
-'atom.desktop',
-'arduino.desktop',
-'eclipse.desktop',
-'vlc.desktop',
-'gimp.desktop',
-'blender.desktop',
-'rhythmbox.desktop',
-'org.gnome.Screenshot.desktop']"
-echo "->Install GNOME extensions..."
-echo "-->Install <<NASA picture of the day>>..."
-git clone https://github.com/Elinvention/gnome-shell-extension-nasa-apod.git "$HOME/.local/share/gnome-shell/extensions/nasa_apod@elinvention.ovh"
-gnome-extensions enable  nasa_apod@elinvention.ovh
-echo "-->Install <<Open Weather>>..."
-git clone https://gitlab.com/jenslody/gnome-shell-extension-openweather "$HOME/.local/share/gnome-shell/extensions/openweather-extension@jenslody.de"
-gnome-extensions enable openweather-extension@jenslody.de
-echo "-->Install <<Dash to Panel>>..."
-git clone https://github.com/home-sweet-gnome/dash-to-panel "$HOME/.local/share/gnome-shell/extensions/openweather-extension@dash-to-panel@jderose9.github.com"
-gnome-extensions enable dash-to-panel@jderose9.github.com
-echo "Deaktivating <<Dash to Dock>>"
-gnome-extensions disable dash-to-dock@micxgx.gmail.com
+minimum_gaming_memory_kb="4000000"
+actual_memory_kb="$(grep MemTotal /proc/meminfo | awk '{print $2}')"
+if [ $actual_memory_kb -gt $minimum_gaming_memory_kb ]; then
+	echo "->Synchronizing games..."
+	sudo pacman --needed -S 0ad warzone2100
+	echo "->Synchronizing emulationstation..."
+	yay -S emulationstation #retroarch joyutils jstest-gtk-git
+	yay -S libretro-snes9x-next-git libretro-quicknes-git libretro-fceumm-git libretro-prosystem-git libretro-gambatte-git libretro-mgba-git
+	echo "-->Installing themes..."
+	mkdir .emulationstation/themes
+	git clone https://github.com/RetroPie/es-theme-carbon .emulationstation/themes/carbon
+	echo "More game recomendations you will find here: https://wiki.archlinux.org/index.php/List_of_games..."
+fi
+if [ "$XDG_SESSION_TYPE" == "x11" ]; then
+	echo "->Synchronizing xserver tools..."
+	sudo pacman --needed -S xbindkeys
+	echo "-->Setting up key bindings..."
+	echo "" >> "$HOME/.xbindkeysrc"
+	echo "\"gnome-terminal -e '/bin/bash $SCRIPT_PATH/import-data-from-system.sh'\"" >> "$HOME/.xbindkeysrc"
+	echo "  control+alt+s" >> "$HOME/.xbindkeysrc"
+	xbindkeys --poll-rc
+fi
+if [ "$DESKTOP_SESSION" == "gnome" ]; then
+	echo "->Synchronizing gnome tools..."
+	sudo pacman --needed -S gnome-shell-extensions gnome-terminal
+	echo "-->Setting up gnome specific software..."
+	echo "-->Setting up dash favourites..."
+	gsettings set org.gnome.shell favorite-apps "['org.gnome.Nautilus.desktop',
+	'org.gnome.Terminal.desktop',
+	'org.keepassxc.KeePassXC.desktop',
+	'firefox.desktop',
+	'chromium.desktop',
+	'atom.desktop',
+	'arduino.desktop',
+	'eclipse.desktop',
+	'vlc.desktop',
+	'gimp.desktop',
+	'blender.desktop',
+	'rhythmbox.desktop',
+	'org.gnome.Screenshot.desktop']"
+	echo "-->Install GNOME extensions..."
+	echo "--->Install <<NASA picture of the day>>..."
+	git clone https://github.com/Elinvention/gnome-shell-extension-nasa-apod.git "$HOME/.local/share/gnome-shell/extensions/nasa_apod@elinvention.ovh"
+	gnome-extensions enable  nasa_apod@elinvention.ovh
+	echo "--->Install <<Open Weather>>..."
+	git clone https://gitlab.com/jenslody/gnome-shell-extension-openweather "$HOME/.local/share/gnome-shell/extensions/openweather-extension@jenslody.de"
+	gnome-extensions enable openweather-extension@jenslody.de
+	echo "--->Install <<Dash to Panel>>..."
+	git clone https://github.com/home-sweet-gnome/dash-to-panel "$HOME/.local/share/gnome-shell/extensions/openweather-extension@dash-to-panel@jderose9.github.com"
+	gnome-extensions enable dash-to-panel@jderose9.github.com
+	echo "--->Deaktivating <<Dash to Dock>>"
+	gnome-extensions disable dash-to-dock@micxgx.gmail.com
+fi
 echo "More software recomendations you will find here: https://wiki.archlinux.org/index.php/list_of_applications"
