@@ -62,6 +62,10 @@ echo "Synchronizing grafic tools..."
 sudo pacman --needed -S gimp blender
 echo "Synchronizing communication tools..."
 yay -S slack-desktop skypeforlinux-stable-bin
+sudo pacman -S base-devel git cmake pidgin libpurple mxml libxml2 sqlite libgcrypt #Optimize later
+sudo pacman -Syyu pidgin
+yay -S libpurple-lurch libpurple-carbons
+sudo pacman -Syyu purple-facebook
 echo "Synchronizing development tools..."
 echo "->Synchronizing code quality tools..."
 sudo pacman --needed -S shellcheck
