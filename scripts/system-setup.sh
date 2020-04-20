@@ -5,6 +5,7 @@
 #
 # shellcheck source=/dev/null # Deactivate SC1090
 source "$(dirname "$(readlink -f "${0}")")/base.sh"
+SYSTEM_MEMORY_KB="$(grep MemTotal /proc/meminfo | awk '{print $2}')"
 echo "Start setup of customized core software..."
 echo "Copying templates to home folder..."
 cp -rfv "$TEMPLATE_PATH/." "$HOME"
@@ -60,6 +61,11 @@ sudo pacman --needed -S ttf-liberation libreoffice-fresh \
 	hunspell-de hunspell-es_es hunspell-en_US hunspell-nl
 echo "Synchronizing grafic tools..."
 sudo pacman --needed -S gimp blender
+obs_requirements_memory_kb="4000000"
+if [ "$SYSTEM_MEMORY_KB" -gt "$obs_requirements_memory_kb" ]; then
+	echo "Synchronizing obs studio..."
+	sudo pacman -S obs-studio
+fi
 echo "Synchronizing communication tools..."
 yay -S slack-desktop skypeforlinux-stable-bin
 sudo pacman -S base-devel git cmake pidgin libpurple mxml libxml2 sqlite libgcrypt #Optimize later
@@ -127,8 +133,7 @@ echo "Installing entertainment software..."
 echo "->Synchronizing audio software..."
 sudo pacman -S rhythmbox
 minimum_gaming_memory_kb="4000000"
-actual_memory_kb="$(grep MemTotal /proc/meminfo | awk '{print $2}')"
-if [ $actual_memory_kb -gt $minimum_gaming_memory_kb ]; then
+if [ "$SYSTEM_MEMORY_KB" -gt "$minimum_gaming_memory_kb" ]; then
 	echo "->Synchronizing games..."
 	sudo pacman --needed -S 0ad warzone2100
 	echo "->Synchronizing emulationstation..."
