@@ -184,4 +184,6 @@ if [ "$DESKTOP_SESSION" == "gnome" ]; then
 	echo "--->Deaktivating <<Dash to Dock>>"
 	gnome-extensions disable dash-to-dock@micxgx.gmail.com
 fi
+echo "Removing all software from user startup..."
+rm ~/.config/autostart/*
 echo "More software recomendations you will find here: https://wiki.archlinux.org/index.php/list_of_applications"
