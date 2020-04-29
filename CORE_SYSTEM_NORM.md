@@ -11,6 +11,7 @@ interpreted as described in [RFC 2119](https://tools.ietf.org/html/rfc2119).
 
 ## Structure
 ### Folder
+#### Obligated
 The following folder structures **MUST** be used:
 
 | Path                        | Description |
@@ -20,4 +21,10 @@ $HOME/Documents/certificates/ | Contains certificates to authenticate via [certi
 | $HOME/Documents/identity/ | Contains files to prove the identity of the *Core System Owner* in physical live like passports. |
 | $HOME/Documents/passwords/ | Contains e.g the [KeePassXC](https://keepassxc.org/) database with all *Core System Owner* passwords. |
 | $HOME/Documents/repositories/ | Contains all git repositories |
-| $HOME/images/ | contains os images|
+
+#### Optional
+The following folder structures **SHOULD** be used:
+
+| Path                        | Description |
+|---|---|
+| $HOME/Images/ | contains os images|
