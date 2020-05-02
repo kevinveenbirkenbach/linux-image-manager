@@ -1,8 +1,5 @@
 #!/bin/bash
-#
-# Installs the core system
-# @author Kevin Veen-Birkenbach [aka. Frantz]
-#
+# @author Kevin Veen-Birkenbach
 # shellcheck source=/dev/null # Deactivate SC1090
 
 source "$(dirname "$(readlink -f "${0}")")/../base.sh" || (echo "Loading base.sh failed." && exit 1)
@@ -16,6 +13,8 @@ info "Synchronizing pacman packages..."
 get_packages "general" "client-pacman" | sudo pacman -S --needed - || error "Syncronisation failed."
 info "Synchronizing yay packages..."
 get_packages "client-yay" | yay -S - || error "Syncronisation failed."
+info "Installing atom packages..."
+get_packages "atom" | apm install -c - || error "Installation failed." # @todo needs to be fixed
 exit 1
 FSTAB_SWAP_ENTRY="/swapfile none swap defaults 0 0"
 SWAP_FILE="/swapfile"
@@ -56,54 +55,21 @@ fi
 info "Add user to arduino relevant groups..."
 sudo usermod -a -G uucp "$USER" || warning "Couldn't add \"$USER\" to group \"uucp\". Try to add manually later!"
 sudo usermod -a -G lock "$USER" || warning "Couldn't add \"$USER\" to group \"lock\". Try to add manually later!"
-info "Installing atom packages..."
-apm install -c \
-	atom-ide-ui\
-	ide-bash\
-	ide-python\
-	ide-c-cpp\
-	ide-java\
-	ide-yaml\
-	atom-autocomplete-php\
-	es6-snippets\
-	javascript-snippets\
-	emmet\
-	git-blame\
-	git-plus\
-	script\
-	ask-stack\
-	atom-beautify\
-	highlight-selected\
-	autocomplete-paths\
-	todo-show\
-	linter\
-	linter-ui-default\
-	linter-spell\
-	intentions\
-	busy-signal\
-	language-latex\
-	linter-spell-latex\
-	docblockr
 sudo npm i -g bash-language-server #Needed by atom-package ide-bash
 python -m pip install 'python-language-server[all]' #Needed by atom
+
 info "Synchronizing containerization tools..."
-info "Installing docker..."
-sudo pacman --needed -S docker docker-compose
 info "Add current user \"$USER\" to user group docker..."
 sudo usermod -a -G docker "$USER"
 info "Enable docker service..."
 sudo systemctl enable docker --now
-info "Synchronizing orchestration tools..."
-sudo pacman --needed -S ansible
 info "Synchronizing virtualisation tools..."
 pamac install virtualbox $(pacman -Qsq "^linux" | grep "^linux[0-9]*[-rt]*$" | awk '{print $1"-virtualbox-host-modules"}' ORS=' ')
 sudo vboxreload
 pamac build virtualbox-ext-oracle
 sudo gpasswd -a "$USER" vboxusers
 info "Keep in mind to install the guest additions in the virtualized system. See https://wiki.manjaro.org/index.php?title=VirtualBox"
-info "Installing entertainment software..."
-info "Synchronizing audio software..."
-sudo pacman -S rhythmbox
+
 minimum_gaming_memory_kb="4000000"
 if [ "$SYSTEM_MEMORY_KB" -gt "$minimum_gaming_memory_kb" ]; then
 	info "Synchronizing games..."

@@ -67,3 +67,13 @@ eclipse-java
 atom
 arduino
 arduino-docs
+
+# containerization tools
+docker
+docker-compose
+
+# orchestration tools
+ansible
+
+# entertainment software
+rhythmbox
