@@ -6,7 +6,7 @@
 #
 # shellcheck source=/dev/null # Deactivate SC1090
 # shellcheck disable=SC2143  # Comparing with -z allowed
-source "$(dirname "$(readlink -f "${0}")")/base.sh" || echo "Loading base.sh failed." && exit 1
+source "$(dirname "$(readlink -f "${0}")")/../base.sh" || (echo "Loading base.sh failed." && exit 1)
 if [ -z "$(mount | grep "$DECRYPTED_PATH")" ]
   then
     echo "The decrypted folder $DECRYPTED_PATH is locked. You need to unlock it!"
