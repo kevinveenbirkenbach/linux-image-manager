@@ -2,3 +2,4 @@
 nano
 tree
 htop
+git

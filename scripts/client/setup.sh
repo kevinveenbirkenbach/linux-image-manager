@@ -12,8 +12,10 @@ info "Copying templates to home folder..."
 cp -rfv "$TEMPLATE_PATH/." "$HOME" || error "Copy templates failed."
 info "Update packages..."
 sudo pacman -Syyu || error "Package syncronisation failed."
-info "Synchronizing packages..."
-get_packages "general" "client" | sudo pacman -S --needed - || error "Syncronisation failed."
+info "Synchronizing pacman packages..."
+get_packages "general" "client-pacman" | sudo pacman -S --needed - || error "Syncronisation failed."
+info "Synchronizing yay packages..."
+get_packages "client-yay" | yay -S - || error "Syncronisation failed."
 exit 1
 FSTAB_SWAP_ENTRY="/swapfile none swap defaults 0 0"
 SWAP_FILE="/swapfile"
@@ -45,35 +47,12 @@ if [[ "$(sudo lshw -C display)" == *"NVIDIA"* ]]; then
 	# Could be optimized
 	sudo mhwd -a pci nonfree 0300
 fi
-info "Synchronizing web tools..."
-sudo pacman --needed -S chromium firefox firefox-ublock-origin firefox-extension-https-everywhere firefox-dark-reader
-info "Synchronizing office tools..."
-sudo pacman --needed -S ttf-liberation libreoffice-fresh \
-	libreoffice-fresh-de libreoffice-fresh-eo libreoffice-fresh-es libreoffice-fresh-nl \
-	hunspell \
-	hunspell-de hunspell-es_es hunspell-en_US hunspell-nl
-info "Synchronizing grafic tools..."
-sudo pacman --needed -S gimp blender
 obs_requirements_memory_kb="4000000"
 if [ "$SYSTEM_MEMORY_KB" -gt "$obs_requirements_memory_kb" ]; then
 	info "Synchronizing obs studio..."
 	sudo pacman -S obs-studio
 fi
-info "Synchronizing communication tools..."
-yay -S slack-desktop skypeforlinux-stable-bin
-sudo pacman -S base-devel git cmake pidgin libpurple mxml libxml2 sqlite libgcrypt #Optimize later
-sudo pacman -Syyu pidgin
-yay -S libpurple-lurch libpurple-carbons
-sudo pacman -Syyu purple-facebook
-info "Synchronizing development tools..."
-info "Synchronizing code quality tools..."
-sudo pacman --needed -S shellcheck
-info "Synchronizing language servers..."
-yay -S ccls
-info "Synchronizing visualization tools..."
-sudo pacman --needed -S dia
-info "Synchronizing IDE's..."
-sudo pacman --needed -S eclipse-java atom arduino arduino-docs
+
 info "Add user to arduino relevant groups..."
 sudo usermod -a -G uucp "$USER" || warning "Couldn't add \"$USER\" to group \"uucp\". Try to add manually later!"
 sudo usermod -a -G lock "$USER" || warning "Couldn't add \"$USER\" to group \"lock\". Try to add manually later!"

@@ -1,0 +1,8 @@
+# communication tools
+slack-desktop
+skypeforlinux-stable-bin
+# xmpp
+libpurple-lurch
+libpurple-carbons
+# language server
+ccls
