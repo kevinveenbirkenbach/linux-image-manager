@@ -1,0 +1,28 @@
+# programing language interpreters
+jdk11-openjdk
+python
+php
+
+# description language interpreters
+texlive-most
+
+# compression tools"
+p7zip
+
+# administration tools
+git
+base-devel
+yay
+make
+gcc
+cmake
+
+# network analyze tools
+traceroute
+wireshark-qt
+wireshark-cli
+
+# security tools
+ecryptfs-utils
+encfs
+keepassxc

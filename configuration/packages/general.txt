@@ -1,0 +1,4 @@
+# This packages will be used in all setup scripts
+nano
+tree
+htop

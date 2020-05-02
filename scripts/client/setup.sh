@@ -10,8 +10,11 @@ SYSTEM_MEMORY_KB="$(grep MemTotal /proc/meminfo | awk '{print $2}')"
 info "Start setup of customized core software..."
 info "Copying templates to home folder..."
 cp -rfv "$TEMPLATE_PATH/." "$HOME" || error "Copy templates failed."
-info "Synchronising packages..."
+info "Update packages..."
 sudo pacman -Syyu || error "Package syncronisation failed."
+info "Synchronizing packages..."
+get_packages "general" "client" | sudo pacman -S --needed - || error "Syncronisation failed."
+exit 1
 FSTAB_SWAP_ENTRY="/swapfile none swap defaults 0 0"
 SWAP_FILE="/swapfile"
 FSTAB_FILE="/etc/fstab"
@@ -25,18 +28,6 @@ else
 	sudo swapon "$SWAP_FILE"
 	sudo sh -c "echo \"$FSTAB_SWAP_ENTRY\">>\"$FSTAB_FILE\""
 fi
-info "Synchronizing programing language interpreters..."
-sudo pacman --needed -S jdk11-openjdk python php
-info "Synchronizing other interpreters..."
-sudo pacman --needed -S texlive-most
-info "Synchronizing compression tools..."
-sudo pacman --needed -S p7zip
-info "Synchronizing administration tools..."
-sudo pacman --needed -S htop tree git base-devel yay make gcc cmake
-info "Synchronizing network analyze tools..."
-sudo pacman --needed -S traceroute wireshark-qt wireshark-cli
-info "Synchronizing security tools..."
-sudo pacman --needed -S ecryptfs-utils encfs keepassxc
 info "Setup SSH key..."
 ssh_key_path="$HOME/.ssh/id_rsa"
 if [ ! -f "$ssh_key_path" ]; then

@@ -5,10 +5,11 @@
 #
 # shellcheck disable=SC2034 #Deactivate checking of unused variables
 
-REPOSITORY_PATH=$(readlink -f "$(dirname "$(readlink -f "${0}")")/../")
+REPOSITORY_PATH=$(readlink -f "$(dirname "$(readlink -f "${0}")")/../../") # Propably this can be optimized
+PACKAGE_PATH="$REPOSITORY_PATH/configuration/packages/"
 ENCRYPTED_PATH="$REPOSITORY_PATH/.encrypted";
 DECRYPTED_PATH="$REPOSITORY_PATH/decrypted";
-SCRIPT_PATH="$REPOSITORY_PATH/scripts";
+SCRIPT_PATH="$REPOSITORY_PATH/scripts/";
 DATA_PATH="$DECRYPTED_PATH/data";
 BACKUP_PATH="$DECRYPTED_PATH/backup";
 TEMPLATE_PATH="$REPOSITORY_PATH/templates";
@@ -67,6 +68,14 @@ error(){
       info "Can be that this script left some waste."
   fi
   exit 1;
+}
+
+# @todo May this should be moved to another place
+get_packages(){
+  for package_collection in "$@"
+  do
+    sed -e "/^#/d" -e "s/#.*//" "$PACKAGE_PATH""$package_collection.txt" || error "Loading package wasn't possible." 
+  done
 }
 
 HEADER(){
