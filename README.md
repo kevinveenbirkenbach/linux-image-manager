@@ -55,5 +55,60 @@ Right now the software expects that the *Core System Owner* has on all systems t
 | ```bash ./scripts/pushs-local-repositories.sh``` | Pushs all local repositories branches |
 | ```encfsctl passwd .encrypted``` | Change the password of the encrypted folder. |
 
+# Raspberry Pi sdc tools
+This repository contains some shell scripts to install Arch Linux for the Raspberry Pi on a SD-Card and to backup a SD-Card.
+## Todo
+
+- Implement ssh configuration
+- Implement wifi automation
+
+## Setup
+### SD-Card
+#### Guided
+To install a Linux distribution manually on a SD card type in:
+
+```bash
+  bash ./sd_setup.sh
+```
+#### Piped
+To pase the configuration to the program use this syntax:
+```bash
+(
+  echo "$USER"              # | The username
+  echo "mmcblk1"            # | The device
+  echo "3"                  # | The raspberry pi number
+  echo "arch"           # | The operation system
+  echo "n"                  # | Force image download
+  echo "n"                  # | Transfer image
+  #echo "n"                 # ├── Overwrite device before copying
+  echo "test12345"          # | The user password
+  echo "test12345"          # | The root password
+  echo "example-host"       # | The hostname
+  echo "y"                  # | Setup Wifi on target system
+)| sudo bash ./sd_setup.sh
+```
+
+### System
+#### Arch
+```bash
+  pacman-key --init
+  pacman-key --populate archlinuxarm
+  install -m640 /etc/netctl/examples/wireless-wpa domo-de-kosmopolitoj-wpa
+  nano domo-de-kosmopolitoj-wpa
+  netctl start domo-de-kosmopolitoj-wpa
+  netctl enable domo-de-kosmopolitoj-wpa
+```
+#### Ubuntu\\Debian
+```bash
+  sudo apt update
+  sudo apt upgrade
+```
+## Backup
+To backup a SD card type in:
+
+```bash
+  bash ./sd_backup.sh
+```
+
 ## License
 The ["GNU GENERAL PUBLIC LICENSE Version 3"](./LICENSE.txt) applies to this project.
