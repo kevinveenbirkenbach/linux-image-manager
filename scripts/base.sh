@@ -56,6 +56,19 @@ success(){
   message "${COLOR_GREEN}" "SUCCESS" "$1";
 }
 
+error(){
+  message "${COLOR_RED}" "ERROR" "$1 -> Leaving program."
+  if declare -f "destructor" > /dev/null
+    then
+      info "Calling destructor..."
+      destructor
+    else
+      warning "No destructor defined."
+      info "Can be that this script left some waste."
+  fi
+  exit 1;
+}
+
 HEADER(){
   echo
   echo "${COLOR_YELLOW}The"
