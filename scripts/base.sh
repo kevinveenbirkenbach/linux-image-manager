@@ -37,10 +37,10 @@ declare -a BACKUP_LIST=("$HOME/.ssh/" \
     echo
     echo "${COLOR_YELLOW}The"
     base64 -d <<<"ICBfX19fXyAgICAgICAgICAgICAgICBfX19fXyAgICAgICAgICAgXyAgICAgICAgICAgICAgICAgCiAvIF9fX198ICAgICAgICAgICAgICAvIF9fX198ICAgICAgICAgfCB8ICAgICAgICAgICAgICAgIAp8IHwgICAgIF9fXyAgXyBfXyBfX198IChfX18gIF8gICBfIF9fX3wgfF8gX19fIF8gX18gX19fICAKfCB8ICAgIC8gXyBcfCAnX18vIF8gXFxfX18gXHwgfCB8IC8gX198IF9fLyBfIFwgJ18gYCBfIFwgCnwgfF9fX3wgKF8pIHwgfCB8ICBfXy9fX19fKSB8IHxffCBcX18gXCB8fCAgX18vIHwgfCB8IHwgfAogXF9fX19fXF9fXy98X3wgIFxfX198X19fX18vIFxfXywgfF9fXy9cX19cX19ffF98IHxffCB8X3wKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgX18vIHwgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfF9fXy8gICAgICAgICAgICAgICAgICAgICAgIAo="
-    echo "is administration tool designed from and for Kevin Veen-Birkenbach."
+    echo "is an administration tool designed from and for Kevin Veen-Birkenbach."
     echo
     echo "Licensed under GNU GENERAL PUBLIC LICENSE Version 3"
     echo "${COLOR_RESET}"
   }
-  
+
   HEADER
