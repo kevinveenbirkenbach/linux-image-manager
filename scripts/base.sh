@@ -12,6 +12,7 @@ DATA_PATH="$DECRYPTED_PATH/data";
 BACKUP_PATH="$DECRYPTED_PATH/backup";
 TEMPLATE_PATH="$REPOSITORY_PATH/templates";
 LOCAL_REPOSITORIES_PATH="$HOME/Documents/repositories";
+
 declare -a BACKUP_LIST=("$HOME/.ssh/" \
   "$HOME/.gitconfig" \
   "$HOME/.atom/config.cson" \
