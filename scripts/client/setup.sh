@@ -1,8 +1,8 @@
 #!/bin/bash
 # @author Kevin Veen-Birkenbach
 # shellcheck source=/dev/null # Deactivate SC1090
-
 source "$(dirname "$(readlink -f "${0}")")/../base.sh" || (echo "Loading base.sh failed." && exit 1)
+
 SYSTEM_MEMORY_KB="$(grep MemTotal /proc/meminfo | awk '{print $2}')"
 info "Start setup of customized core software..."
 
@@ -13,9 +13,17 @@ info "Update packages..." &&
 sudo pacman -Syyu || error "Package syncronisation failed."
 
 info "Synchronizing pacman packages..." &&
-get_packages "general" "client/pacman/general" "client/pacman/games" | sudo pacman -S --needed - &&
-info "Synchronizing yay packages..." &&
-get_packages "client/yay/general" | yay -S - || error "Syncronisation failed."
+get_packages "general" "client/pacman/general" "client/pacman/games" | sudo pacman -S --needed - || error "Syncronisation failed."
+
+info "Synchronizing yay packages..."
+for package in $(get_packages "client/yay/general"); do
+	if [ "$(pacman -Qi $package 2> /dev/null)" ]; then
+		info "Package \"$package\" is allready installed. Skipped installation."
+	else
+		info "Install package \"$package\" with yay..."
+		get_packages "client/yay/general" | yay -S "package"
+	fi
+done
 
 FSTAB_SWAP_ENTRY="/swapfile none swap defaults 0 0"
 SWAP_FILE="/swapfile"
