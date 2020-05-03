@@ -13,9 +13,9 @@ info "Update packages..." &&
 sudo pacman -Syyu || error "Package syncronisation failed."
 
 info "Synchronizing pacman packages..." &&
-get_packages "general" "client-pacman" | sudo pacman -S --needed - &&
+get_packages "general" "client/pacman/general" "client/pacman/games" | sudo pacman -S --needed - &&
 info "Synchronizing yay packages..." &&
-get_packages "client-yay" | yay -S - || error "Syncronisation failed."
+get_packages "client/yay/general" | yay -S - || error "Syncronisation failed."
 
 FSTAB_SWAP_ENTRY="/swapfile none swap defaults 0 0"
 SWAP_FILE="/swapfile"
@@ -57,7 +57,7 @@ fi
 
 if pacman -Qi "atom" > /dev/null ; then
 	info "Installing atom packages..." &&
-	get_packages "atom" | apm install --verbose -c - &&
+	get_packages "client/apm/general" | apm install --verbose -c - &&
 	info "Installing software which is required by atom..." &&
 	sudo npm i -g bash-language-server &&
 	python -m pip install 'python-language-server[all]' || error "Failed."
