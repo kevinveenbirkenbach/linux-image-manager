@@ -9,7 +9,7 @@ source "$(dirname "$(readlink -f "${0}")")/../base.sh" || (echo "Loading base.sh
 if [ -z "$(mount | grep "$DECRYPTED_PATH")" ]
   then
     info "The decrypted folder $DECRYPTED_PATH is locked. You need to unlock it!" &&
-    bash "$SCRIPT_PATH/unlock.sh" || error "Unlocking failed.";
+    bash "$SCRIPT_PATH""encryption/unlock.sh" || error "Unlocking failed.";
 fi
 if [ "$1" = "reverse" ]
   then
