@@ -52,6 +52,7 @@ hunspell-nl
 # video/picture manipulation
 gimp
 blender
+obs-studio
 
 # communication tools
 pidgin
@@ -77,3 +78,18 @@ ansible
 
 # entertainment software
 rhythmbox
+
+## games
+0ad
+warzone2100
+supertuxkart
+gnuchess
+sauerbraten
+assaultcube
+minetest
+mari0
+
+### retroarch
+retroarch
+retroarch-assets-xmb
+retroarch-assets-ozone
