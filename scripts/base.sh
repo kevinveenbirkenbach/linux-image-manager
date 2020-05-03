@@ -74,7 +74,7 @@ error(){
 get_packages(){
   for package_collection in "$@"
   do
-    sed -e "/^#/d" -e "s/#.*//" "$PACKAGE_PATH""$package_collection.txt" || error "Loading package wasn't possible." 
+    sed -e "/^#/d" -e "s/#.*//" "$PACKAGE_PATH""$package_collection.txt" || error "Loading package wasn't possible."
   done
 }
 
