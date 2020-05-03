@@ -117,7 +117,7 @@ if [ "$DESKTOP_SESSION" == "gnome" ]; then
 	'gimp.desktop',
 	'blender.desktop',
 	'rhythmbox.desktop',
-	'org.gnome.Screenshot.desktop']"
+	'org.gnome.Screenshot.desktop']" || error "Setting up icons failed"
 	info "Install GNOME extensions..."
 	info "Install \"NASA picture of the day\"..."
 	git clone https://github.com/Elinvention/gnome-shell-extension-nasa-apod.git "$HOME/.local/share/gnome-shell/extensions/nasa_apod@elinvention.ovh"
@@ -132,5 +132,5 @@ if [ "$DESKTOP_SESSION" == "gnome" ]; then
 	gnome-extensions disable dash-to-dock@micxgx.gmail.com
 fi
 info "Removing all software from user startup..."
-rm ~/.config/autostart/*
+rm ~/.config/autostart/* || error "Removing startup software failed."
 info "More software recomendations you will find here: https://wiki.archlinux.org/index.php/list_of_applications"
