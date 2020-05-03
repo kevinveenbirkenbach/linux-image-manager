@@ -1,20 +1,17 @@
 #!/bin/bash
-echo "Backupscript fuer SD's"
-echo "@author KevinFrantz"
-echo "@since 2017-03-17"
-echo 
-echo "Liste der aktuell gemounteten Geraete:"
-echo 
-ls -lasi /dev/ | grep "sd"
-echo "(Die Liste zeigt nur Geraete an welche auf den Filter /dev/sd* passen)"
+info "Backupscript for memory devices started"
+echo
+info "Actual mounted devices:"
+echo
+ls -lasi /dev/ | grep -E "sd|mm"
 echo
 while [ \! -b "$ifi" ]
 	do
-		echo "Bitte waehlen Sie die korrekte SD-Karte aus:"
-		echo "/dev/:"
+		info "Please select the correct device."
+		question "/dev/:"
 		read device
-		ifi="/dev/$device" 
-done 
+		ifi="/dev/$device"
+done
 while [ "$path" == "" ]
 	do
 		echo "Bitte Backupimagepfad+Namen zu $(pwd) eingeben:"
@@ -26,8 +23,8 @@ while [ "$path" == "" ]
 				ofi=$(pwd)"/"$path.img
 		fi
 done
-echo "Inputfile: $ifi"
-echo "Outputfile: $ofi"
-echo "Bestaetigen Sie mit der Enter-Taste. Zum Abbruch Ctrl + Alt + C druecken"
+info "Input file: $ifi"
+info "Output file: $ofi"
+question "Please confirm by pushing \"Enter\". To cancel use \"Ctrl + Alt + C\""
 read bestaetigung
 dd if=$ifi of=$ofi bs=1M status=progress
