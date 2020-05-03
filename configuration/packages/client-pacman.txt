@@ -6,7 +6,7 @@ php
 # description language interpreters
 texlive-most
 
-# compression tools"
+# compression tools
 p7zip
 
 # administration tools

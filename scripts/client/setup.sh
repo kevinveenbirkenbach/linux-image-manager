@@ -5,58 +5,67 @@
 source "$(dirname "$(readlink -f "${0}")")/../base.sh" || (echo "Loading base.sh failed." && exit 1)
 SYSTEM_MEMORY_KB="$(grep MemTotal /proc/meminfo | awk '{print $2}')"
 info "Start setup of customized core software..."
-info "Copying templates to home folder..."
+
+info "Copying templates to home folder..." &&
 cp -rfv "$TEMPLATE_PATH/." "$HOME" || error "Copy templates failed."
-info "Update packages..."
+
+info "Update packages..." &&
 sudo pacman -Syyu || error "Package syncronisation failed."
-info "Synchronizing pacman packages..."
-get_packages "general" "client-pacman" | sudo pacman -S --needed - || error "Syncronisation failed."
-info "Synchronizing yay packages..."
+
+info "Synchronizing pacman packages..." &&
+get_packages "general" "client-pacman" | sudo pacman -S --needed - && #|| error "Syncronisation failed."
+info "Synchronizing yay packages..." &&
 get_packages "client-yay" | yay -S - || error "Syncronisation failed."
-info "Installing atom packages..."
+
+info "Installing atom packages..." &&
 get_packages "atom" | apm install -c - || error "Installation failed." # @todo needs to be fixed
-exit 1
+
 FSTAB_SWAP_ENTRY="/swapfile none swap defaults 0 0"
 SWAP_FILE="/swapfile"
 FSTAB_FILE="/etc/fstab"
 if grep -q "$FSTAB_SWAP_ENTRY" "$FSTAB_FILE"; then
 	info "Skipping creation of swap partion because entry allready exists in \"$FSTAB_FILE\"!"
 else
-	info "Creating swap partition..."
-	sudo fallocate -l 16G "$SWAP_FILE"
-	sudo chmod 600 "$SWAP_FILE"
-	sudo mkswap "$SWAP_FILE"
-	sudo swapon "$SWAP_FILE"
-	sudo sh -c "echo \"$FSTAB_SWAP_ENTRY\">>\"$FSTAB_FILE\""
+	info "Creating swap partition..." &&
+	sudo fallocate -l 16G "$SWAP_FILE" &&
+	sudo chmod 600 "$SWAP_FILE" &&
+	sudo mkswap "$SWAP_FILE" &&
+	sudo swapon "$SWAP_FILE" &&
+	sudo sh -c "echo \"$FSTAB_SWAP_ENTRY\">>\"$FSTAB_FILE\"" || error "Creation of swap partition failed."
 fi
+
 info "Setup SSH key..."
 ssh_key_path="$HOME/.ssh/id_rsa"
 if [ ! -f "$ssh_key_path" ]; then
 	info "SSH key $ssh_key_path doesn't exists!"
 	if [ ! -f "./data$ssh_key_path" ]; then
-		info "Importing ssh key from data..."
-		bash ./scripts/export-data-to-system.sh
+		info "Importing ssh key by copying data..." &&
+		bash "$SCRIPT_PATH""/data/export-to-system.sh" || error "Copying failed."
 	else
-		info "Generating ssh key..."
-		ssh-keygen -t rsa -b 4096 -C "$USER@$HOSTNAME"
+		info "Generating ssh key..." &&
+		ssh-keygen -t rsa -b 4096 -C "$USER@$HOSTNAME" || error "Key generation failed."
 	fi
 fi
+# @todo the following part can be optimized
 if [[ "$(sudo lshw -C display)" == *"NVIDIA"* ]]; then
-	info "Install NVIDIA drivers..."
-	# Could be optimized
-	sudo mhwd -a pci nonfree 0300
+	info "Install NVIDIA drivers..." &&
+	sudo mhwd -a pci nonfree 0300 || error "Failed."
 fi
+
+# @todo optimize
 obs_requirements_memory_kb="4000000"
 if [ "$SYSTEM_MEMORY_KB" -gt "$obs_requirements_memory_kb" ]; then
 	info "Synchronizing obs studio..."
 	sudo pacman -S obs-studio
 fi
 
-info "Add user to arduino relevant groups..."
-sudo usermod -a -G uucp "$USER" || warning "Couldn't add \"$USER\" to group \"uucp\". Try to add manually later!"
-sudo usermod -a -G lock "$USER" || warning "Couldn't add \"$USER\" to group \"lock\". Try to add manually later!"
-sudo npm i -g bash-language-server #Needed by atom-package ide-bash
-python -m pip install 'python-language-server[all]' #Needed by atom
+info "Configurate system for arduino..." &&
+sudo usermod -a -G uucp "$USER" &&
+sudo usermod -a -G lock "$USER" || error "Couldn't add \"$USER\" to the relevant groups."
+
+info "Installing software which is required by atom..." &&
+sudo npm i -g bash-language-server && #Needed by atom-package ide-bash
+python -m pip install 'python-language-server[all]' || error "Installation failed."#Needed by atom
 
 info "Synchronizing containerization tools..."
 info "Add current user \"$USER\" to user group docker..."
