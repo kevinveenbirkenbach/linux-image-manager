@@ -17,9 +17,6 @@ get_packages "general" "client-pacman" | sudo pacman -S --needed - && #|| error 
 info "Synchronizing yay packages..." &&
 get_packages "client-yay" | yay -S - || error "Syncronisation failed."
 
-info "Installing atom packages..." &&
-get_packages "atom" | apm install -c - || error "Installation failed." # @todo needs to be fixed
-
 FSTAB_SWAP_ENTRY="/swapfile none swap defaults 0 0"
 SWAP_FILE="/swapfile"
 FSTAB_FILE="/etc/fstab"
@@ -63,9 +60,12 @@ info "Configurate system for arduino..." &&
 sudo usermod -a -G uucp "$USER" &&
 sudo usermod -a -G lock "$USER" || error "Couldn't add \"$USER\" to the relevant groups."
 
+
+info "Installing atom packages..." &&
+get_packages "atom" | apm install --verbose -c - &&
 info "Installing software which is required by atom..." &&
-sudo npm i -g bash-language-server && #Needed by atom-package ide-bash
-python -m pip install 'python-language-server[all]' || error "Installation failed."#Needed by atom
+sudo npm i -g bash-language-server &&
+python -m pip install 'python-language-server[all]' || error "Installation failed."
 
 info "Synchronizing containerization tools..."
 info "Add current user \"$USER\" to user group docker..."
