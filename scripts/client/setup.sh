@@ -79,7 +79,7 @@ if pacman -Qi "docker" > /dev/null ; then
 	sudo systemctl enable docker --now || error "Failed."
 fi
 
-if pacman -Qi "docker" > /dev/null ; then
+if [ ! $(pacman -Qi "virtualbox") ] ; then
 	info "Setting up virtualbox..." &&
 	pamac install virtualbox $(pacman -Qsq "^linux" | grep "^linux[0-9]*[-rt]*$" | awk '{print $1"-virtualbox-host-modules"}' ORS=' ') &&
 	sudo vboxreload &&
@@ -98,6 +98,15 @@ if [ "$XDG_SESSION_TYPE" == "x11" ]; then
 	xbindkeys --poll-rc || error "Failed."
 fi
 
+install_gnome_extension(){
+	extension_folder="$HOME/.local/share/gnome-shell/extensions/$1"
+	if [ ! -d "$extension_folder" ];then
+		info "Install gnome extension \"$1\"..." &&
+		git clone $2 "$extension_folder" || error "Failed."
+	fi
+	gnome-extensions enable $1 || "Failed."
+}
+
 if [ "$DESKTOP_SESSION" == "gnome" ]; then
 	info "Synchronizing gnome tools..." &&
 	sudo pacman --needed -S gnome-shell-extensions gnome-terminal &&
@@ -114,18 +123,12 @@ if [ "$DESKTOP_SESSION" == "gnome" ]; then
 	'gimp.desktop',
 	'blender.desktop',
 	'rhythmbox.desktop',
-	'org.gnome.Screenshot.desktop']" &&
+	'org.gnome.Screenshot.desktop']" || error "Failed."
+
 	info "Install GNOME extensions..." &&
-	info "Install \"NASA picture of the day\"..." &&
-	git clone https://github.com/Elinvention/gnome-shell-extension-nasa-apod.git "$HOME/.local/share/gnome-shell/extensions/nasa_apod@elinvention.ovh" &&
-	gnome-extensions enable nasa_apod@elinvention.ovh &&
-	info "Install \"Open Weather\"..." &&
-	git clone https://gitlab.com/jenslody/gnome-shell-extension-openweather "$HOME/.local/share/gnome-shell/extensions/openweather-extension@jenslody.de" &&
-	gnome-extensions enable openweather-extension@jenslody.de &&
-	info "Install \"Dash to Panel\"..." &&
-	git clone https://github.com/home-sweet-gnome/dash-to-panel "$HOME/.local/share/gnome-shell/extensions/openweather-extension@dash-to-panel@jderose9.github.com" &&
-	gnome-extensions enable dash-to-panel@jderose9.github.com &&
-	info "Deaktivating \"Dash to Dock\"" &&
+	install_gnome_extension "nasa_apod@elinvention.ovh" "https://github.com/Elinvention/gnome-shell-extension-nasa-apod.git"
+	install_gnome_extension "dash-to-panel@jderose9.github.com" "https://github.com/home-sweet-gnome/dash-to-panel"
+	info "Deactivating \"Dash to Dock\"..." &&
 	gnome-extensions disable dash-to-dock@micxgx.gmail.com || error "Failed."
 fi
 
