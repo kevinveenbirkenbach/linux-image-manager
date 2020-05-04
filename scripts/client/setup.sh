@@ -91,20 +91,26 @@ fi
 if [ "$XDG_SESSION_TYPE" == "x11" ]; then
 	info "Synchronizing xserver tools..." &&
 	sudo pacman --needed -S xbindkeys &&
-	info "Setting up key bindings..." &&
-	echo "" >> "$HOME/.xbindkeysrc" &&
-	echo "\"gnome-terminal -e '/bin/bash $SCRIPT_PATH/import-data-from-system.sh'\"" >> "$HOME/.xbindkeysrc" &&
-	echo "  control+alt+s" >> "$HOME/.xbindkeysrc" &&
 	xbindkeys --poll-rc || error "Failed."
 fi
 
 install_gnome_extension(){
 	extension_folder="$HOME/.local/share/gnome-shell/extensions/$1"
-	if [ ! -d "$extension_folder" ];then
-		info "Install gnome extension \"$1\"..." &&
-		git clone $2 "$extension_folder" || error "Failed."
+	if [ -d "$extension_folder" ];
+		then
+			if [ -d "$extension_folder"".git" ];
+				then
+					info "Pulling changes from git..." &&
+					(cd "$extension_folder" && git pull) || error "Failed."
+			else
+				info "No git repository. Extension will not be updated."
+			fi
+		else
+			info "Install gnome extension \"$1\"..." &&
+			git clone $2 "$extension_folder" || error "Failed."
 	fi
-	gnome-extensions enable $1 || "Failed."
+	info "Activating GNOME extension \"$1\"..." &&
+	gnome-extensions enable $1 || error "Failed."
 }
 
 if [ "$DESKTOP_SESSION" == "gnome" ]; then
@@ -130,9 +136,18 @@ if [ "$DESKTOP_SESSION" == "gnome" ]; then
 	install_gnome_extension "dash-to-panel@jderose9.github.com" "https://github.com/home-sweet-gnome/dash-to-panel"
 	info "Deactivating \"Dash to Dock\"..." &&
 	gnome-extensions disable dash-to-dock@micxgx.gmail.com || error "Failed."
+
+	info "Restarting GNOME..." &&
+	killall -3 gnome-shell || error "Failed."
 fi
 
-info "Removing all software from user startup..." &&
-rm ~/.config/autostart/* || error "Removing startup software failed."
+info "Removing all software from user startup..."
+autostart_folder="$HOME/.config/autostart/"
+if [ "$(ls -A $autostart_folder)" ]
+	then
+		(rm "$autostart_folder"* && info "Startups had been removed.") || error "Removing startup software failed."
+	else
+		info "No startup entries found. Skipped removing."
+fi
 
 success "Setup finished successfully :)" && exit 0
