@@ -65,7 +65,7 @@ fi
 
 if pacman -Qi "atom" > /dev/null ; then
 	info "Installing atom packages..." &&
-	get_packages "client/apm/general" | apm install --verbose -c - &&
+	get_packages "client/apm/general" | apm install --verbose -c - || error "Failed."
 	info "Installing software which is required by atom..." &&
 	sudo npm i -g bash-language-server &&
 	python -m pip install 'python-language-server[all]' || error "Failed."
@@ -79,7 +79,7 @@ if pacman -Qi "docker" > /dev/null ; then
 	sudo systemctl enable docker --now || error "Failed."
 fi
 
-if [ ! $(pacman -Qi "virtualbox") ] ; then
+if [ ! "$(pacman -Qi virtualbox)" ] ; then
 	info "Setting up virtualbox..." &&
 	pamac install virtualbox $(pacman -Qsq "^linux" | grep "^linux[0-9]*[-rt]*$" | awk '{print $1"-virtualbox-host-modules"}' ORS=' ') &&
 	sudo vboxreload &&
@@ -95,20 +95,38 @@ if [ "$XDG_SESSION_TYPE" == "x11" ]; then
 fi
 
 install_gnome_extension(){
-	extension_folder="$HOME/.local/share/gnome-shell/extensions/$1"
+	info "Install GNOME extension \"$1\"..."
+	extension_folder="$HOME/.local/share/gnome-shell/extensions/$1/"
 	if [ -d "$extension_folder" ];
 		then
 			if [ -d "$extension_folder"".git" ];
 				then
+					warning "Found a .git repository didn't expect to find this here." &&
 					info "Pulling changes from git..." &&
 					(cd "$extension_folder" && git pull) || error "Failed."
 			else
 				info "No git repository. Extension will not be updated."
 			fi
 		else
-			info "Install gnome extension \"$1\"..." &&
+			info "Install..." &&
 			git clone $2 "$extension_folder" || error "Failed."
 	fi
+
+	if [ -f "$extension_folder""Makefile" ];
+		then
+
+			tmp_extension_folder="/tmp/$1"
+			mv $extension_folder $tmp_extension_folder
+			info "Compilling extension.."
+			(cd $tmp_extension_folder && make install) || error "Compilation with failed."
+
+			info "Cleaning up tmp-extension folder..."&&
+			rm -fr $tmp_extension_folder || error "Failed."
+
+		else
+			info "No Makefile found. Skipping compilation..."
+	fi
+
 	info "Activating GNOME extension \"$1\"..." &&
 	gnome-extensions enable $1 || error "Failed."
 }
@@ -137,8 +155,6 @@ if [ "$DESKTOP_SESSION" == "gnome" ]; then
 	info "Deactivating \"Dash to Dock\"..." &&
 	gnome-extensions disable dash-to-dock@micxgx.gmail.com || error "Failed."
 
-	info "Restarting GNOME..." &&
-	killall -3 gnome-shell || error "Failed."
 fi
 
 info "Removing all software from user startup..."
@@ -150,4 +166,5 @@ if [ "$(ls -A $autostart_folder)" ]
 		info "No startup entries found. Skipped removing."
 fi
 
+info "Please restart the computer, so that all updates get applied."
 success "Setup finished successfully :)" && exit 0
