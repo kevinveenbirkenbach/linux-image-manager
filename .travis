@@ -1,2 +1,2 @@
 script:
-  - shellcheck ./administration/*.sh
+  - shellcheck ./scripts/*/*.sh
