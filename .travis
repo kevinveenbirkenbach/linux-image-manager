@@ -1,2 +1,2 @@
 language: shell
-script: bash -c 'shopt -s globstar nullglob; shellcheck **/*.{sh,ksh,bash}'
+script: bash -c 'shellcheck ./scripts/*.sh'
