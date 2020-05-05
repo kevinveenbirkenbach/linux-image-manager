@@ -79,6 +79,10 @@ if pacman -Qi "docker" > /dev/null ; then
 	info "Setting up docker..." &&
 	info "Add current user \"$USER\" to user group docker..." &&
 	sudo usermod -a -G docker "$USER" || error "Failed to add user."
+	info "Restarting docker service..." &&
+	sudo systemctl restart docker &&
+	info "Disable and stop docker service..." &&
+	sudo systemctl disable --now docker || error "\"systemctl\" produced an error."
 	info "For performance reasons docker is not enabled. Start docker by executing \"sudo systemctl restart docker\" when you need it."
 fi
 
