@@ -1,0 +1,2 @@
+language: shell
+script: shellcheck ./scripts/*/*.sh

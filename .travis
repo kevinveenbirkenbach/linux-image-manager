@@ -1,2 +1,0 @@
-language: shell
-script: bash -c 'shellcheck ./scripts/*.sh'
