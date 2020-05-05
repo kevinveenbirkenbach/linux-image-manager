@@ -14,17 +14,17 @@ while [ \! -b "$ifi" ]
 done
 while [ "$path" == "" ]
 	do
-		echo "Bitte Backupimagepfad+Namen zu $(pwd) eingeben:"
-		read path
+		echo "Bitte Backupimagepfad+Namen zu $PWD eingeben:"
+		read -r path
 		if [ "${path:0:1}" == "/" ]
 			then
-				ofi=$path.img
+				ofi="$path.img"
 			else
-				ofi=$(pwd)"/"$path.img
+				ofi="$PWD/$path.img"
 		fi
 done
 info "Input file: $ifi"
 info "Output file: $ofi"
 question "Please confirm by pushing \"Enter\". To cancel use \"Ctrl + Alt + C\""
-read bestaetigung
-dd if=$ifi of=$ofi bs=1M status=progress
+read -r bestaetigung
+dd if="$ifi" of="$ofi" bs=1M status=progress

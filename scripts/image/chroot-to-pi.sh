@@ -38,8 +38,8 @@
 mkdir -p /mnt/raspbian
 
 # mount partition
-mount -o rw ${1}2  /mnt/raspbian
-mount -o rw ${1}1 /mnt/raspbian/boot
+mount -o rw "$1""2"  /mnt/raspbian
+mount -o rw "$1""1" /mnt/raspbian/boot
 
 # mount binds
 mount --bind /dev /mnt/raspbian/dev/
