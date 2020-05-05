@@ -64,19 +64,21 @@ if pacman -Qi "arduino" > /dev/null ; then
 fi
 
 if pacman -Qi "atom" > /dev/null ; then
-	info "Installing atom packages..." &&
+	info "Installing atom dependencies..."
+	info "Installing \"apm\" packages..." &&
 	get_packages "client/apm/general" | apm install --verbose -c - || error "Failed."
-	info "Installing software which is required by atom..." &&
+	info "Installing \"npm\" packages..." &&
 	sudo npm i -g bash-language-server &&
-	python -m pip install 'python-language-server[all]' || error "Failed."
+	info "Installing \"python\" packages..." &&
+	python -m pip install 'python-language-server[all]' &&
+	info "Installing atom dependencies was successfull."|| error " Installing atom dependencies failed."
 fi
 
 if pacman -Qi "docker" > /dev/null ; then
 	info "Setting up docker..." &&
 	info "Add current user \"$USER\" to user group docker..." &&
-	sudo usermod -a -G docker "$USER" &&
-	info "Enable docker service..." &&
-	sudo systemctl enable docker --now || error "Failed."
+	sudo usermod -a -G docker "$USER" || error "Failed to add user."
+	info "For performance reasons docker is not enabled. Start docker by executing \"sudo systemctl restart docker\" when you need it."
 fi
 
 if [ ! "$(pacman -Qi virtualbox)" ] ; then
