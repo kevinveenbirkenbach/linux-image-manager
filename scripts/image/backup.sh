@@ -5,11 +5,11 @@ info "Actual mounted devices:"
 echo
 ls -lasi /dev/ | grep -E "sd|mm"
 echo
-while [ \! -b "$ifi" ]
+while [ ! -b "$ifi" ]
 	do
 		info "Please select the correct device."
 		question "/dev/:"
-		read device
+		read -r device
 		ifi="/dev/$device"
 done
 while [ "$path" == "" ]

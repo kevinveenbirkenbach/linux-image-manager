@@ -5,6 +5,7 @@
 #
 # shellcheck source=/dev/null # Deactivate SC1090
 # shellcheck disable=SC2143  # Comparing with -z allowed
+# shellcheck disable=SC2015  # Deactivating bool hint
 source "$(dirname "$(readlink -f "${0}")")/../base.sh" || (echo "Loading base.sh failed." && exit 1)
 if [ -z "$(mount | grep "$DECRYPTED_PATH")" ]
   then

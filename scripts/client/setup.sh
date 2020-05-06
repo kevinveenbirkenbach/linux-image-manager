@@ -18,7 +18,7 @@ get_packages "general" "client/pacman/general" "client/pacman/games" | sudo pacm
 
 info "Synchronizing yay packages..."
 for package in $(get_packages "client/yay/general"); do
-	if [ "$(pacman -Qi $package 2> /dev/null)" ]; then
+	if [ "$(pacman -Qi "$package" 2> /dev/null)" ]; then
 		info "Package \"$package\" is allready installed. Skipped installation."
 	else
 		info "Install package \"$package\" with yay..."
@@ -116,26 +116,26 @@ install_gnome_extension(){
 			fi
 		else
 			info "Install..." &&
-			git clone $2 "$extension_folder" || error "Failed."
+			git clone "$2" "$extension_folder" || error "Failed."
 	fi
 
 	if [ -f "$extension_folder""Makefile" ];
 		then
 
 			tmp_extension_folder="/tmp/$1"
-			mv $extension_folder $tmp_extension_folder
+			mv "$extension_folder" "$tmp_extension_folder"
 			info "Compilling extension.."
-			(cd $tmp_extension_folder && make install) || error "Compilation with failed."
+			(cd "$tmp_extension_folder" && make install) || error "Compilation with failed."
 
 			info "Cleaning up tmp-extension folder..."&&
-			rm -fr $tmp_extension_folder || error "Failed."
+			rm -fr "$tmp_extension_folder" || error "Failed."
 
 		else
 			info "No Makefile found. Skipping compilation..."
 	fi
 
 	info "Activating GNOME extension \"$1\"..." &&
-	gnome-extensions enable $1 || error "Failed."
+	gnome-extensions enable "$1" || error "Failed."
 }
 
 if [ "$DESKTOP_SESSION" == "gnome" ]; then
