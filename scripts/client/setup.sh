@@ -2,6 +2,7 @@
 # @author Kevin Veen-Birkenbach
 # shellcheck disable=SC2015  # Deactivating bool hint
 # shellcheck source=/dev/null # Deactivate SC1090
+
 source "$(dirname "$(readlink -f "${0}")")/../base.sh" || (echo "Loading base.sh failed." && exit 1)
 
 SYSTEM_MEMORY_KB="$(grep MemTotal /proc/meminfo | awk '{print $2}')"
@@ -86,9 +87,9 @@ if pacman -Qi "docker" > /dev/null ; then
 	info "For performance reasons docker is not enabled. Start docker by executing \"sudo systemctl restart docker\" when you need it."
 fi
 
-if [ ! "$(pacman -Qi virtualbox)" ] ; then
+if [ ! "$(pacman -Qi "virtualbox")" ] ; then
 	info "Setting up virtualbox..." &&
-	pamac install virtualbox $(pacman -Qsq "^linux" | grep "^linux[0-9]*[-rt]*$" | awk '{print $1"-virtualbox-host-modules"}' ORS=' ') &&
+	pamac install virtualbox "$(pacman -Qsq "^linux" | grep "^linux[0-9]*[-rt]*$" | awk '{print $1"-virtualbox-host-modules"}' ORS=' ')" &&
 	sudo vboxreload &&
 	pamac build virtualbox-ext-oracle &&
 	sudo gpasswd -a "$USER" vboxusers || error "Failed."
@@ -166,7 +167,7 @@ fi
 
 info "Removing all software from user startup..."
 autostart_folder="$HOME/.config/autostart/"
-if [ "$(ls -A $autostart_folder)" ]
+if [ "$(ls -A "$autostart_folder")" ]
 	then
 		(rm "$autostart_folder"* && info "Startups had been removed.") || error "Removing startup software failed."
 	else

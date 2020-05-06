@@ -1,5 +1,7 @@
 #!/bin/bash
-info "Backupscript for memory devices started"
+# shellcheck disable=SC2010
+# shellcheck disable=SC2015  # Deactivating bool hint
+info "Backupscript for memory devices started..."
 echo
 info "Actual mounted devices:"
 echo
@@ -26,5 +28,9 @@ done
 info "Input file: $ifi"
 info "Output file: $ofi"
 question "Please confirm by pushing \"Enter\". To cancel use \"Ctrl + Alt + C\""
-read -r bestaetigung
-dd if="$ifi" of="$ofi" bs=1M status=progress
+read -r bestaetigung && echo "$bestaetigung";
+
+info "Imagetransfer starts. This can take a while..." &&
+dd if="$ifi" of="$ofi" bs=1M status=progress || error "\"dd\" failed.";
+
+success "Imagetransfer successfull." && exit 0;
