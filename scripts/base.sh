@@ -70,14 +70,6 @@ error(){
   exit 1;
 }
 
-# @todo May this should be moved to another place
-get_packages(){
-  for package_collection in "$@"
-  do
-    sed -e "/^#/d" -e "s/#.*//" "$PACKAGE_PATH""$package_collection.txt" || error "Loading package wasn't possible."
-  done
-}
-
 HEADER(){
   echo
   echo "${COLOR_YELLOW}The"

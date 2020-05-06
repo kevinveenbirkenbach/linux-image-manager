@@ -2,10 +2,28 @@
 # @author Kevin Veen-Birkenbach
 # shellcheck disable=SC2015  # Deactivating bool hint
 # shellcheck source=/dev/null # Deactivate SC1090
-
+# shellcheck disable=SC2086  # Deactivating escaping warning, because it's wrong concerning pacman_packages
 source "$(dirname "$(readlink -f "${0}")")/../base.sh" || (echo "Loading base.sh failed." && exit 1)
 
-SYSTEM_MEMORY_KB="$(grep MemTotal /proc/meminfo | awk '{print $2}')"
+get_packages(){
+  for package_collection in "$@"
+  do
+    echo "$(sed -e "/^#/d" -e "s/#.*//" "$PACKAGE_PATH""$package_collection.txt" | tr '\n' ' ')" || error "Loading package wasn't possible."
+  done
+}
+
+install_yay_packages_if_needed(){
+	info "Checking yay packages [ $1 ]..."
+	for package in $1; do
+		if [ "$(pacman -Qi "$package" 2> /dev/null)" ]; then
+			info "Package \"$package\" is allready installed. Skipped installation."
+		else
+			info "Install package \"$package\" with yay..." &&
+			yay -S "$package" || error "Failed to install package \"$package\"."
+		fi
+	done
+}
+
 info "Start setup of customized core software..."
 
 info "Copying templates to home folder..." &&
@@ -14,18 +32,12 @@ cp -rfv "$TEMPLATE_PATH/." "$HOME" || error "Copy templates failed."
 info "Update packages..." &&
 sudo pacman -Syyu || error "Package syncronisation failed."
 
-info "Synchronizing pacman packages..." &&
-get_packages "general" "client/pacman/general" "client/pacman/games" | sudo pacman -S --needed - || error "Syncronisation failed."
+pacman_packages="$(get_packages "general" "client/pacman/general")"
+info "Synchronizing pacman packages [$pacman_packages]..." &&
+sudo pacman -S --needed $pacman_packages || error "Syncronisation failed."
 
-info "Synchronizing yay packages..."
-for package in $(get_packages "client/yay/general"); do
-	if [ "$(pacman -Qi "$package" 2> /dev/null)" ]; then
-		info "Package \"$package\" is allready installed. Skipped installation."
-	else
-		info "Install package \"$package\" with yay..."
-		get_packages "client/yay/general" | yay -S "package"
-	fi
-done
+info "Synchronizing yay packages..." &&
+install_yay_packages_if_needed "$(get_packages "client/yay/general")";
 
 FSTAB_SWAP_ENTRY="/swapfile none swap defaults 0 0"
 SWAP_FILE="/swapfile"
@@ -163,6 +175,22 @@ if [ "$DESKTOP_SESSION" == "gnome" ]; then
 	info "Deactivating \"Dash to Dock\"..." &&
 	gnome-extensions disable dash-to-dock@micxgx.gmail.com || error "Failed."
 
+fi
+
+info "Testing if computer has more then 4GB of memory to process games..." &&
+if [ "$(echo "( $(grep MemTotal /proc/meminfo | awk '{print $2}') / (1024 ^ 2) ) > 4" | bc -l)" = "1" ];
+	then
+		pacman_game_packages="$(get_packages "client/pacman/games")"
+		yay_game_packages="$(get_packages "client/yay/games")"
+		success "Ok" &&
+		info "Installing games..." &&
+		info "Installing yay packages [ $yay_game_packages ]..." &&
+		install_yay_packages_if_needed "$yay_game_packages" &&
+		info "Installing pacman packages [ $pacman_game_packages ]..." &&
+		sudo pacman -S --needed "$(get_packages "client/pacman/games")" || error "Syncronisation failed.";
+	else
+		warning "Not enough ressources." &&
+		info "Skipping game installation";
 fi
 
 info "Removing all software from user startup..."
