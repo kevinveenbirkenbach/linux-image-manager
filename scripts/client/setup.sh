@@ -2,6 +2,7 @@
 # @author Kevin Veen-Birkenbach
 # shellcheck disable=SC2015  # Deactivating bool hint
 # shellcheck source=/dev/null # Deactivate SC1090
+# shellcheck disable=SC2005 # Deactivate wrong shellcheck interpretation
 # shellcheck disable=SC2086  # Deactivating escaping warning, because it's wrong concerning pacman_packages
 source "$(dirname "$(readlink -f "${0}")")/../base.sh" || (echo "Loading base.sh failed." && exit 1)
 
