@@ -203,5 +203,10 @@ if [ "$(ls -A "$autostart_folder")" ]
 		info "No startup entries found. Skipped removing."
 fi
 
+info "Showing the installed Java versions..." &&
+archlinux-java status &&
+info "Keep in mind to set the right Java-Version if it's neccessary." ||
+error "Failed."
+
 info "Please restart the computer, so that all updates get applied."
 success "Setup finished successfully :)" && exit 0
