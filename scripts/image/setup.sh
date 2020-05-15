@@ -1,7 +1,7 @@
 #!/bin/bash
 # shellcheck disable=SC2010  # ls  | grep allowed
 # shellcheck source=/dev/null # Deactivate SC1090
-source "$(dirname "$(readlink -f "${0}")")/../base.sh" || (echo "Loading base.sh failed." && exit 1)
+source "$(dirname "$(readlink -f "${0}")")/base.sh" || (echo "Loading base.sh failed." && exit 1)
 
 info "Setupscript for images started..."
 
@@ -167,15 +167,8 @@ root_mount_path="$working_folder""root/"
 mkdir -v "$boot_mount_path"
 mkdir -v "$root_mount_path"
 
-info "Defining partition paths..."
-if [ "${sd_card_path:5:1}" != "s" ]
-  then
-    partion="p"
-  else
-    partion=""
-fi
-boot_partition_path=$sd_card_path$partion"1"
-root_partition_path=$sd_card_path$partion"2"
+boot_partition_path=$(echo_partition_name $sd_card_path "1")
+root_partition_path=$(echo_partition_name $sd_card_path "2")
 
 mount_partitions(){
   info "Mount boot and root partition..."

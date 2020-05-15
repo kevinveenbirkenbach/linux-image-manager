@@ -1,7 +1,6 @@
 #!/bin/bash
 #
 # This script contains the global program variables and functions
-# @author Kevin Veen-Birkenbach [aka. Frantz]
 #
 # shellcheck disable=SC2034 #Deactivate checking of unused variables
 

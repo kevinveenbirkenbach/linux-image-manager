@@ -1,6 +1,8 @@
 #!/bin/bash
 # shellcheck disable=SC2010
 # shellcheck disable=SC2015  # Deactivating bool hint
+# shellcheck source=/dev/null # Deactivate SC1090
+source "$(dirname "$(readlink -f "${0}")")/base.sh" || (echo "Loading base.sh failed." && exit 1)
 info "Backupscript for memory devices started..."
 echo
 info "Actual mounted devices:"
