@@ -58,7 +58,13 @@ success(){
 }
 
 error(){
-  message "${COLOR_RED}" "ERROR" "$1 -> Leaving program."
+  if [ -z "$1" ]
+    then
+      message="Failed."
+    else
+      message="$1"
+  fi
+  message "${COLOR_RED}" "ERROR" "$message -> Leaving program."
   if declare -f "destructor" > /dev/null
     then
       info "Calling destructor..."

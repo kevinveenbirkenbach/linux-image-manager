@@ -41,12 +41,12 @@ source "$(dirname "$(readlink -f "${0}")")/../base.sh" || (echo "Loading base.sh
 
 info "Making mount dir..." &&
 mkdir -p /mnt/raspbian ||
-error "Failed."
+error
 
 info "Mount partitions..."
 mount -o rw "$1""2"  /mnt/raspbian &&
 mount -o rw "$1""1" /mnt/raspbian/boot ||
-error "Failed."
+error
 
 info "Mount binds..." &&
 mount --bind /dev /mnt/raspbian/dev/ &&
