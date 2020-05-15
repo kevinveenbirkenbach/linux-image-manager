@@ -5,6 +5,7 @@ source "$(dirname "$(readlink -f "${0}")")/base.sh" || (echo "Loading base.sh fa
 
 info "Setupscript for images started..."
 
+info "Define functions..."
 destructor(){
   info "Cleaning up..."
   sed -i 's/^#CHROOT //g' "$root_mount_path""etc/ld.so.preload"
@@ -23,15 +24,13 @@ destructor(){
 info "Define variables..."
 working_folder="/tmp/raspberry-pi-tools-$(date +%s)/";
 
-info "Define functions..."
-
-info "Create temporary working folder in $working_folder";
-mkdir -v "$working_folder"
-
 info "Checking if root..."
 if [ "$(id -u)" != "0" ];then
     error "This script must be executed as root!"
 fi
+
+info "Create temporary working folder in $working_folder";
+mkdir -v "$working_folder"
 
 info "Configure user..."
 question "Please type in a valid username from which the SSH-Key should be copied:" && read -r origin_username;
@@ -46,20 +45,11 @@ if [ ! -d "$image_folder" ]; then
   mkdir -v "$image_folder"
 fi
 
-info "Selecting sd-card..."
-info "Show available devices..."
-ls -lasi /dev/ | grep -E "sd|mm"
-question "Please type in the name of the correct device: /dev/" && read -r device
-sd_card_path="/dev/$device"
+set_device_path
 
-if [ ! -b "$sd_card_path" ]
+if mount | grep -q "$device_path"
   then
-    error "$sd_card_path is not valid device."
-fi
-
-if mount | grep -q "$sd_card_path"
-  then
-    error "Device $sd_card_path is allready mounted. Umount with \"umount $sd_card_path*\"."
+    error "Device $device_path is allready mounted. Umount with \"umount $device_path*\"."
 fi
 
 question "Select which Raspberry Pi version should be used:" && read -r version
@@ -167,8 +157,8 @@ root_mount_path="$working_folder""root/"
 mkdir -v "$boot_mount_path"
 mkdir -v "$root_mount_path"
 
-boot_partition_path=$(echo_partition_name $sd_card_path "1")
-root_partition_path=$(echo_partition_name $sd_card_path "2")
+boot_partition_path=$(echo_partition_name $device_path "1")
+root_partition_path=$(echo_partition_name $device_path "2")
 
 mount_partitions(){
   info "Mount boot and root partition..."
@@ -177,15 +167,15 @@ mount_partitions(){
   info "The following mounts refering this setup exist:" && mount | grep "$working_folder"
 }
 
-question "Should the image be transfered to $sd_card_path?(y/n)" && read -r transfer_image
+question "Should the image be transfered to $device_path?(y/n)" && read -r transfer_image
 if [ "$transfer_image" = "y" ]
   then
 
-    question "Should $sd_card_path be overwritten with zeros before copying?(y/n)" && read -r copy_zeros_to_device
+    question "Should $device_path be overwritten with zeros before copying?(y/n)" && read -r copy_zeros_to_device
     if [ "$copy_zeros_to_device" = "y" ]
       then
         info "Overwritting..."
-        dd if=/dev/zero of="$sd_card_path" bs=1M || error "Overwritting $sd_card_path failed."
+        dd if=/dev/zero of="$device_path" bs=1M || error "Overwritting $device_path failed."
       else
         info "Skipping Overwritting..."
     fi
@@ -209,7 +199,7 @@ if [ "$transfer_image" = "y" ]
         	echo ""		#and then press ENTER twice to accept the default first and last sector.
         	echo ""
         	echo "w"	#Write the partition table and exit by typing w.
-        )| fdisk "$sd_card_path" || error "Creating partitions failed. Try to execute this script with the overwritting parameter."
+        )| fdisk "$device_path" || error "Creating partitions failed. Try to execute this script with the overwritting parameter."
 
         info "Format boot partition..."
         mkfs.vfat "$boot_partition_path" || error "Format boot is not possible."
@@ -228,11 +218,11 @@ if [ "$transfer_image" = "y" ]
 
         ;;
       "moode")
-        unzip -p "$image_path" | sudo dd of="$sd_card_path" bs=1M conv=fsync || error "DD $image_path to $sd_card_path failed."
+        unzip -p "$image_path" | sudo dd of="$device_path" bs=1M conv=fsync || error "DD $image_path to $device_path failed."
         sync
         ;;
       "retropie")
-        gunzip -c "$image_path" | sudo dd of="$sd_card_path" bs=1M conv=fsync
+        gunzip -c "$image_path" | sudo dd of="$device_path" bs=1M conv=fsync
         sync
         ;;
       *)

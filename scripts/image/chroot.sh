@@ -3,14 +3,19 @@
 # shellcheck disable=SC2015  # Deactivating bool hint
 source "$(dirname "$(readlink -f "${0}")")/base.sh" || (echo "Loading base.sh failed." && exit 1)
 
+info "Starting chroot..."
+
+set_device_path
+
 info "Making mount dir..." &&
 mkdir -p /mnt/raspbian ||
 error
 
+
 root_mount_path="/mnt/raspbian"
 boot_mount_path="/mnt/raspbian/boot"
-root_partition_path=$(echo_partition_name $1 "2")
-boot_partition_path=$(echo_partition_name $1 "1")
+root_partition_path=$(echo_partition_name $device_path "2")
+boot_partition_path=$(echo_partition_name $device_path "1")
 
 info "Mount partitions..."
 mount -o rw "$boot_partition_path" "$boot_mount_path" ||
