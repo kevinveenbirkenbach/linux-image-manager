@@ -272,6 +272,10 @@ if [ "$password_1" == "$password_2" ]
   else
     error "Passwords didn't match."
 fi
+# @todo add to chroot
+#pacman-key --init
+#pacman-key --populate archlinuxarm
+#pacman -Syyu
 
 question "Type in the hostname:" && read -r hostname;
 echo "$hostname" > "$root_mount_path""etc/hostname" || error "Changing hostname failed."

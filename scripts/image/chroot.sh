@@ -18,12 +18,16 @@ mount_partitions
 mount_binds
 
 info "ld.so.preload fix" &&
-sed -i 's/^/#CHROOT /g' "$root_mount_path/etc/ld.so.preload" ||
+sed -i 's/^/#CHROOT /g' "$root_mount_path""etc/ld.so.preload" ||
+warning "Failed."
+
+info "Copy qemu binary..." &&
+cp -v /usr/bin/qemu-arm-static "$root_mount_path""usr/bin/" ||
 error
 
-info "copy qemu binary" &&
-cp -v /usr/bin/qemu-arm-static "$root_mount_path/usr/bin/" ||
-error
+info "Copy resolve.conf..."
+cp -v /etc/resolv.conf "$root_mount_path""etc/" &&
+warning "Failed. Propably there is no internet connection available."
 
 info "You will be transferred to the bash shell now." &&
 info "Issue 'exit' when you are done." &&
@@ -34,8 +38,8 @@ error
 
 info "Clean up" &&
 info "revert ld.so.preload fix" &&
-sed -i 's/^#CHROOT //g' "$root_mount_path/etc/ld.so.preload" ||
-error
+sed -i 's/^#CHROOT //g' "$root_mount_path""etc/ld.so.preload" ||
+warning "Failed."
 
 info "unmount everything" &&
 umount "$root_mount_path"/{dev/pts,dev,sys,proc,boot,} ||
