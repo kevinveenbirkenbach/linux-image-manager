@@ -18,19 +18,15 @@ destructor(){
   umount -v "$boot_mount_path" || warning "Umounting $boot_mount_path failed!"
   rmdir -v "$root_mount_path" || warning "Removing $root_mount_path failed!"
   rmdir -v "$boot_mount_path" || warning "Removing $boot_mount_path failed!"
-  rmdir -v "$working_folder" || warning "Removing $working_folder failed!"
+  rmdir -v "$working_folder_path" || warning "Removing $working_folder_path failed!"
 }
-
-info "Define variables..."
-working_folder="/tmp/raspberry-pi-tools-$(date +%s)/";
 
 info "Checking if root..."
 if [ "$(id -u)" != "0" ];then
     error "This script must be executed as root!"
 fi
 
-info "Create temporary working folder in $working_folder";
-mkdir -v "$working_folder"
+make_working_folder
 
 info "Configure user..."
 question "Please type in a valid username from which the SSH-Key should be copied:" && read -r origin_username;
@@ -151,20 +147,9 @@ if [[ -v image_checksum ]]
     warning "Verification is not possible. No checksum is defined."
 fi
 
-info "Preparing mount paths..."
-boot_mount_path="$working_folder""boot/"
-root_mount_path="$working_folder""root/"
-mkdir -v "$boot_mount_path"
-mkdir -v "$root_mount_path"
+make_mount_folders
 
 set_partition_paths
-
-mount_partitions(){
-  info "Mount boot and root partition..."
-  mount "$boot_partition_path" "$boot_mount_path" || error "Mount from $boot_partition_path to $boot_mount_path failed..."
-  mount "$root_partition_path" "$root_mount_path" || error "Mount from $root_partition_path to $root_mount_path failed..."
-  info "The following mounts refering this setup exist:" && mount | grep "$working_folder"
-}
 
 question "Should the image be transfered to $device_path?(y/n)" && read -r transfer_image
 if [ "$transfer_image" = "y" ]
@@ -263,16 +248,8 @@ if [ -f "$origin_user_rsa_pub" ]
 fi
 
 info "Start chroot procedures..."
-info "Mount chroot environments..."
-chroot_sys_mount_path="$root_mount_path""sys/"
-chroot_proc_mount_path="$root_mount_path""proc/"
-chroot_dev_mount_path="$root_mount_path""dev/"
-chroot_dev_pts_mount_path="$root_mount_path""dev/pts"
-mount --bind "$boot_mount_path" "$root_mount_path""/boot" || error "Mounting $chroot_dev_mount_path failed."
-mount --bind /dev "$chroot_dev_mount_path" || error "Mounting $chroot_dev_mount_path failed."
-mount --bind /sys "$chroot_sys_mount_path" || error "Mounting $chroot_sys_mount_path failed."
-mount --bind /proc "$chroot_proc_mount_path" || error "Mounting $chroot_proc_mount_path failed."
-mount --bind /dev/pts "$chroot_dev_pts_mount_path" || error "Mounting $chroot_dev_pts_mount_path failed."
+
+mount_binds
 
 sed -i 's/^/#CHROOT /g' "$root_mount_path""etc/ld.so.preload"
 cp -v /usr/bin/qemu-arm-static "$root_mount_path""/usr/bin/" || error "Copy qemu-arm-static failed. The following packages are neccessary: qemu qemu-user-static binfmt-support."

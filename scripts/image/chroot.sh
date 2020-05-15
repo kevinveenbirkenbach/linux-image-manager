@@ -7,26 +7,15 @@ info "Starting chroot..."
 
 set_device_path
 
-info "Making mount dir..." &&
-mkdir -p /mnt/raspbian ||
-error
+make_working_folder
 
+make_mount_folders
 
-root_mount_path="/mnt/raspbian"
-boot_mount_path="/mnt/raspbian/boot"
 set_partition_paths
 
-info "Mount partitions..."
-mount -o rw "$boot_partition_path" "$boot_mount_path" ||
-mount -o rw "$root_partition_path" "$root_mount_path"  &&
-error
+mount_partitions
 
-info "Mount binds..." &&
-mount --bind /dev "$root_mount_path/dev/" &&
-mount --bind /sys "$root_mount_path/sys/" &&
-mount --bind /proc "$root_mount_path/proc/" &&
-mount --bind /dev/pts "$root_mount_path/dev/pts" ||
-error
+mount_binds
 
 info "ld.so.preload fix" &&
 sed -i 's/^/#CHROOT /g' "$root_mount_path/etc/ld.so.preload" ||

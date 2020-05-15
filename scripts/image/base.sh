@@ -35,3 +35,41 @@ set_device_path(){
       error "$device_path is not valid device."
   fi
 }
+
+make_mount_folders(){
+  info "Preparing mount paths..." &&
+  boot_mount_path="$working_folder_path""boot/" &&
+  root_mount_path="$working_folder_path""root/" &&
+  mkdir -v "$boot_mount_path" &&
+  mkdir -v "$root_mount_path" ||
+  error
+}
+
+make_working_folder(){
+  working_folder_path="/tmp/raspberry-pi-tools-$(date +%s)/" &&
+  info "Create temporary working folder in $working_folder_path" &&
+  mkdir -v "$working_folder_path" ||
+  error
+}
+
+mount_partitions(){
+  info "Mount boot and root partition..." &&
+  mount "$boot_partition_path" "$boot_mount_path" &&
+  mount "$root_partition_path" "$root_mount_path" &&
+  info "The following mounts refering this setup exist:" && mount | grep "$working_folder_path" ||
+  error
+}
+
+mount_binds(){
+  info "Mount chroot environments..." &&
+  chroot_sys_mount_path="$root_mount_path""sys/" &&
+  chroot_proc_mount_path="$root_mount_path""proc/" &&
+  chroot_dev_mount_path="$root_mount_path""dev/" &&
+  chroot_dev_pts_mount_path="$root_mount_path""dev/pts" &&
+  mount --bind "$boot_mount_path" "$root_mount_path""/boot" &&
+  mount --bind /dev "$chroot_dev_mount_path" &&
+  mount --bind /sys "$chroot_sys_mount_path" &&
+  mount --bind /proc "$chroot_proc_mount_path" &&
+  mount --bind /dev/pts "$chroot_dev_pts_mount_path" ||
+  error
+}

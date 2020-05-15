@@ -5,17 +5,7 @@
 source "$(dirname "$(readlink -f "${0}")")/base.sh" || (echo "Loading base.sh failed." && exit 1)
 info "Backupscript for memory devices started..."
 echo
-info "Actual mounted devices:"
-echo
-ls -lasi /dev/ | grep -E "sd|mm"
-echo
-while [ ! -b "$ifi" ]
-	do
-		info "Please select the correct device."
-		question "/dev/:"
-		read -r device
-		ifi="/dev/$device"
-done
+set_device_path
 while [ "$path" == "" ]
 	do
 		echo "Bitte Backupimagepfad+Namen zu $PWD eingeben:"
@@ -27,12 +17,12 @@ while [ "$path" == "" ]
 				ofi="$PWD/$path.img"
 		fi
 done
-info "Input file: $ifi"
+info "Input file: $device_path"
 info "Output file: $ofi"
 question "Please confirm by pushing \"Enter\". To cancel use \"Ctrl + Alt + C\""
 read -r bestaetigung && echo "$bestaetigung";
 
 info "Imagetransfer starts. This can take a while..." &&
-dd if="$ifi" of="$ofi" bs=1M status=progress || error "\"dd\" failed.";
+dd if="$device_path" of="$ofi" bs=1M status=progress || error "\"dd\" failed.";
 
 success "Imagetransfer successfull." && exit 0;
