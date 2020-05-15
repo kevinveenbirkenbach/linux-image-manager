@@ -12,18 +12,6 @@ SCRIPT_PATH="$REPOSITORY_PATH/scripts/";
 DATA_PATH="$DECRYPTED_PATH/data";
 BACKUP_PATH="$DECRYPTED_PATH/backup";
 TEMPLATE_PATH="$REPOSITORY_PATH/templates";
-LOCAL_REPOSITORIES_PATH="$HOME/Repositories";
-
-declare -a BACKUP_LIST=("$HOME/.ssh/" \
-  "$HOME/.gitconfig" \
-  "$HOME/.atom/config.cson" \
-  "$HOME/.local/share/rhythmbox/rhythmdb.xml" \
-  "$HOME/.config/keepassxc/keepassxc.ini" \
-  "$HOME/Documents/certificates/" \
-  "$HOME/Documents/recovery_codes/" \
-  "$HOME/Documents/identity/" \
-  "$HOME/Documents/passwords/" \
-  "$HOME/Documents/licenses/");
 
 COLOR_RED=$(tput setaf 1)
 COLOR_GREEN=$(tput setaf 2)

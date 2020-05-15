@@ -7,6 +7,18 @@
 # shellcheck disable=SC2143  # Comparing with -z allowed
 # shellcheck disable=SC2015  # Deactivating bool hint
 source "$(dirname "$(readlink -f "${0}")")/../base.sh" || (echo "Loading base.sh failed." && exit 1)
+
+declare -a BACKUP_LIST=("$HOME/.ssh/" \
+  "$HOME/.gitconfig" \
+  "$HOME/.atom/config.cson" \
+  "$HOME/.local/share/rhythmbox/rhythmdb.xml" \
+  "$HOME/.config/keepassxc/keepassxc.ini" \
+  "$HOME/Documents/certificates/" \
+  "$HOME/Documents/recovery_codes/" \
+  "$HOME/Documents/identity/" \
+  "$HOME/Documents/passwords/" \
+  "$HOME/Documents/licenses/");
+  
 if [ -z "$(mount | grep "$DECRYPTED_PATH")" ]
   then
     info "The decrypted folder $DECRYPTED_PATH is locked. You need to unlock it!" &&
