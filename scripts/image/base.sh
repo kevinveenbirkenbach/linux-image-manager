@@ -12,9 +12,9 @@ source "$(dirname "$(readlink -f "${0}")")/../base.sh" || (echo "Loading base.sh
 echo_partition_name(){
   if [ "${device_path:5:1}" != "s" ]
     then
-      echo "$device_path""p""$2"
+      echo "$device_path""p""$1"
     else
-      echo "$device_path$2"
+      echo "$device_path$1"
   fi
 }
 
