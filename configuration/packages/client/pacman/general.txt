@@ -15,6 +15,7 @@ yay
 make
 gcc
 cmake
+fdupes
 
 # network analyze tools
 traceroute

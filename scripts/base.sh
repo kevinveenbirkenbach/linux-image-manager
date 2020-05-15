@@ -12,7 +12,7 @@ SCRIPT_PATH="$REPOSITORY_PATH/scripts/";
 DATA_PATH="$DECRYPTED_PATH/data";
 BACKUP_PATH="$DECRYPTED_PATH/backup";
 TEMPLATE_PATH="$REPOSITORY_PATH/templates";
-LOCAL_REPOSITORIES_PATH="$HOME/Documents/repositories";
+LOCAL_REPOSITORIES_PATH="$HOME/Repositories";
 
 declare -a BACKUP_LIST=("$HOME/.ssh/" \
   "$HOME/.gitconfig" \
