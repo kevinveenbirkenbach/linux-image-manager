@@ -10,8 +10,8 @@ info "Unlocking directory $DECRYPTED_PATH..."
 if [ ! -d "$DECRYPTED_PATH" ]
   then
     info "Creating directory $DECRYPTED_PATH..." &&
-    mkdir "$DECRYPTED_PATH" || error "Failed."
+    mkdir "$DECRYPTED_PATH" || error
 fi
 info "Encrypting directory $DECRYPTED_PATH to $DECRYPTED_PATH..." &&
-encfs "$ENCRYPTED_PATH" "$DECRYPTED_PATH" || error "Failed."
+encfs "$ENCRYPTED_PATH" "$DECRYPTED_PATH" || error
 echo "ATTENTION: DATA IS NOW DECRYPTED!"

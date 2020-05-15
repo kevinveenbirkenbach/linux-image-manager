@@ -68,7 +68,7 @@ if [ ! -f "$ssh_key_path" ]; then
 fi
 
 info "Installing nonfree drivers..." &&
-sudo mhwd -a pci nonfree 0300 || error "Failed."
+sudo mhwd -a pci nonfree 0300 || error
 
 info "Setup, configuration and installation of dependencies for installed software..."
 
@@ -81,7 +81,7 @@ fi
 if pacman -Qi "atom" > /dev/null ; then
 	info "Installing atom dependencies..."
 	info "Installing \"apm\" packages..." &&
-	get_packages "client/apm/general" | apm install --verbose -c - || error "Failed."
+	get_packages "client/apm/general" | apm install --verbose -c - || error
 	info "Installing \"npm\" packages..." &&
 	sudo npm i -g bash-language-server &&
 	info "Installing \"python\" packages..." &&
@@ -105,14 +105,14 @@ if [ ! "$(pacman -Qi "virtualbox")" ] ; then
 	pamac install virtualbox "$(pacman -Qsq "^linux" | grep "^linux[0-9]*[-rt]*$" | awk '{print $1"-virtualbox-host-modules"}' ORS=' ')" &&
 	sudo vboxreload &&
 	pamac build virtualbox-ext-oracle &&
-	sudo gpasswd -a "$USER" vboxusers || error "Failed."
+	sudo gpasswd -a "$USER" vboxusers || error
 	info "Keep in mind to install the guest additions in the virtualized system. See https://wiki.manjaro.org/index.php?title=VirtualBox"
 fi
 
 if [ "$XDG_SESSION_TYPE" == "x11" ]; then
 	info "Synchronizing xserver tools..." &&
 	sudo pacman --needed -S xbindkeys &&
-	xbindkeys --poll-rc || error "Failed."
+	xbindkeys --poll-rc || error
 fi
 
 install_gnome_extension(){
@@ -124,13 +124,13 @@ install_gnome_extension(){
 				then
 					warning "Found a .git repository didn't expect to find this here." &&
 					info "Pulling changes from git..." &&
-					(cd "$extension_folder" && git pull) || error "Failed."
+					(cd "$extension_folder" && git pull) || error
 			else
 				info "No git repository. Extension will not be updated."
 			fi
 		else
 			info "Install..." &&
-			git clone "$2" "$extension_folder" || error "Failed."
+			git clone "$2" "$extension_folder" || error
 	fi
 
 	if [ -f "$extension_folder""Makefile" ];
@@ -142,14 +142,14 @@ install_gnome_extension(){
 			(cd "$tmp_extension_folder" && make install) || error "Compilation with failed."
 
 			info "Cleaning up tmp-extension folder..."&&
-			rm -fr "$tmp_extension_folder" || error "Failed."
+			rm -fr "$tmp_extension_folder" || error
 
 		else
 			info "No Makefile found. Skipping compilation..."
 	fi
 
 	info "Activating GNOME extension \"$1\"..." &&
-	gnome-extensions enable "$1" || error "Failed."
+	gnome-extensions enable "$1" || error
 }
 
 if [ "$DESKTOP_SESSION" == "gnome" ]; then
@@ -168,13 +168,13 @@ if [ "$DESKTOP_SESSION" == "gnome" ]; then
 	'gimp.desktop',
 	'blender.desktop',
 	'rhythmbox.desktop',
-	'org.gnome.Screenshot.desktop']" || error "Failed."
+	'org.gnome.Screenshot.desktop']" || error
 
 	info "Install GNOME extensions..." &&
 	install_gnome_extension "nasa_apod@elinvention.ovh" "https://github.com/Elinvention/gnome-shell-extension-nasa-apod.git"
 	install_gnome_extension "dash-to-panel@jderose9.github.com" "https://github.com/home-sweet-gnome/dash-to-panel"
 	info "Deactivating \"Dash to Dock\"..." &&
-	gnome-extensions disable dash-to-dock@micxgx.gmail.com || error "Failed."
+	gnome-extensions disable dash-to-dock@micxgx.gmail.com || error
 
 fi
 
@@ -206,7 +206,7 @@ fi
 info "Showing the installed Java versions..." &&
 archlinux-java status &&
 info "Keep in mind to set the right Java-Version if it's neccessary." ||
-error "Failed."
+error
 
 info "Please restart the computer, so that all updates get applied."
 success "Setup finished successfully :)" && exit 0

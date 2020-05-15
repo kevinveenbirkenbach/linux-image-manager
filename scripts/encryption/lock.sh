@@ -11,4 +11,4 @@ fusermount -u "$DECRYPTED_PATH" || error "Unmounting failed."
 info "Data is now encrypted."
 
 info "Removing directory $DECRYPTED_PATH..." &&
-rmdir "$DECRYPTED_PATH" || error "Failed."
+rmdir "$DECRYPTED_PATH" || error

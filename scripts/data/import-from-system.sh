@@ -46,7 +46,7 @@ do
         backup_dir=$(dirname "$CONCRETE_BACKUP_FOLDER/$system_item_path");
         mkdir -p "$backup_dir" || error "Failed to create \"$backup_dir\"."
         info "Copy data from $source to $destination..."
-        rsync -abcEPuvW --backup-dir="$backup_dir" "$source" "$destination" || error "Failed."
+        rsync -abcEPuvW --backup-dir="$backup_dir" "$source" "$destination" || error
       else
         if [ -d "$source" ]
           then
@@ -54,7 +54,7 @@ do
             backup_dir="$CONCRETE_BACKUP_FOLDER/$system_item_path";
             mkdir -p "$backup_dir" || error "Failed to create \"$backup_dir\"."
             info "Copy data from directory $source to directory $destination..."
-            rsync -abcEPuvW --delete --backup-dir="$backup_dir" "$source" "$destination" || error "Failed."
+            rsync -abcEPuvW --delete --backup-dir="$backup_dir" "$source" "$destination" || error
           else
             warning "$source doesn't exist. Copying data is not possible."
         fi

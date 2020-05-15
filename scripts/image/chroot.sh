@@ -53,28 +53,28 @@ mount --bind /dev /mnt/raspbian/dev/ &&
 mount --bind /sys /mnt/raspbian/sys/ &&
 mount --bind /proc /mnt/raspbian/proc/ &&
 mount --bind /dev/pts /mnt/raspbian/dev/pts ||
-error "Failed."
+error
 
 info "ld.so.preload fix" &&
 sed -i 's/^/#CHROOT /g' /mnt/raspbian/etc/ld.so.preload ||
-error "Failed."
+error
 
 info "copy qemu binary" &&
 cp -v /usr/bin/qemu-arm-static /mnt/raspbian/usr/bin/ ||
-error "Failed."
+error
 
 info "You will be transferred to the bash shell now." &&
 info "Issue 'exit' when you are done." &&
 info "Issue 'su pi' if you need to work as the user pi." &&
 info "chroot to raspbian" &&
 chroot /mnt/raspbian /bin/bash ||
-error "Failed."
+error
 
 info "Clean up" &&
 info "revert ld.so.preload fix" &&
 sed -i 's/^#CHROOT //g' /mnt/raspbian/etc/ld.so.preload ||
-error "Failed."
+error
 
 info "unmount everything" &&
 umount /mnt/raspbian/{dev/pts,dev,sys,proc,boot,} ||
-error "Failed."
+error
