@@ -85,15 +85,16 @@ To pase the configuration to the program use this syntax:
   echo "$USER"              # | The username
   echo "mmcblk1"            # | The device
   echo "3"                  # | The raspberry pi number
-  echo "arch"           # | The operation system
+  echo "arch"               # | The operation system
+  #echo "n"                 # ├── If arch: Should a encrypted setup be used? (y/n)
   echo "n"                  # | Force image download
   echo "n"                  # | Transfer image
-  #echo "n"                 # ├── Overwrite device before copying
+  #echo "n"                  # ├── If image transfer yes Overwrite device before copying? (y/n)
   echo "test12345"          # | The user password
   echo "test12345"          # | The root password
   echo "example-host"       # | The hostname
   echo "y"                  # | Setup Wifi on target system
-)| sudo bash ./sd_setup.sh
+)| sudo bash ./scripts/image/setup.sh
 ```
 
 ## License

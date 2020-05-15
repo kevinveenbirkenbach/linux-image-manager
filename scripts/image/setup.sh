@@ -42,7 +42,7 @@ destructor(){
   umount -v "$chroot_dev_mount_path" || warning "Umounting $chroot_dev_mount_path failed!"
   umount -v "$chroot_proc_mount_path" || warning "Umounting $chroot_proc_mount_path failed!"
   umount -v "$chroot_sys_mount_path" || warning "Umounting $chroot_sys_mount_path failed!"
-  umount -v "$root_mount_path""/boot/" || warning "Umounting $root_mount_path/boot/ failed!"
+  umount -v "$root_mount_path""boot/" || warning "Umounting $root_mount_path""boot/ failed!"
   umount -v "$root_mount_path" || warning "Umounting $root_mount_path failed!"
   umount -v "$boot_mount_path" || warning "Umounting $boot_mount_path failed!"
   rmdir -v "$root_mount_path" || warning "Removing $root_mount_path failed!"
