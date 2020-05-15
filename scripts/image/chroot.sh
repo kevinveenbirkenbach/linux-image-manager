@@ -14,8 +14,7 @@ error
 
 root_mount_path="/mnt/raspbian"
 boot_mount_path="/mnt/raspbian/boot"
-root_partition_path=$(echo_partition_name "2")
-boot_partition_path=$(echo_partition_name "1")
+set_partition_paths
 
 info "Mount partitions..."
 mount -o rw "$boot_partition_path" "$boot_mount_path" ||

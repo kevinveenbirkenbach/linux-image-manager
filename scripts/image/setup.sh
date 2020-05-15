@@ -157,8 +157,7 @@ root_mount_path="$working_folder""root/"
 mkdir -v "$boot_mount_path"
 mkdir -v "$root_mount_path"
 
-boot_partition_path=$(echo_partition_name "1")
-root_partition_path=$(echo_partition_name "2")
+set_partition_paths
 
 mount_partitions(){
   info "Mount boot and root partition..."

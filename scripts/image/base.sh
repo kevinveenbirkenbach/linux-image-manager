@@ -18,6 +18,12 @@ echo_partition_name(){
   fi
 }
 
+set_partition_paths(){
+  info "Setting partition paths..."
+  root_partition_path=$(echo_partition_name "2")
+  boot_partition_path=$(echo_partition_name "1")
+}
+
 # Routine to echo the full sd-card-path
 set_device_path(){
   info "Available devices:"
