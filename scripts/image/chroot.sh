@@ -52,7 +52,7 @@ info "Mount binds..." &&
 mount --bind /dev /mnt/raspbian/dev/ &&
 mount --bind /sys /mnt/raspbian/sys/ &&
 mount --bind /proc /mnt/raspbian/proc/ &&
-mount --bind /dev/pts /mnt/raspbian/dev/pts &&
+mount --bind /dev/pts /mnt/raspbian/dev/pts ||
 error "Failed."
 
 info "ld.so.preload fix" &&
