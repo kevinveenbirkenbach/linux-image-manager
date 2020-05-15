@@ -1,5 +1,6 @@
 #!/bin/bash
 # shellcheck disable=SC2010  # ls  | grep allowed
+# shellcheck source=/dev/null # Deactivate SC1090
 source "$(dirname "$(readlink -f "${0}")")/../base.sh" || (echo "Loading base.sh failed." && exit 1)
 
 info "Setupscript for images started..."
