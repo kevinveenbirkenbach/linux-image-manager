@@ -1,39 +1,8 @@
 #!/bin/bash
 # shellcheck disable=SC2010  # ls  | grep allowed
+source "$(dirname "$(readlink -f "${0}")")/../base.sh" || (echo "Loading base.sh failed." && exit 1)
 
-echo "Setupscript for Raspberry Pi devices"
-echo
-echo "@author Kevin Veen-Birkenbach [kevin@veen.world]"
-echo "@since 2017-03-12"
-echo
-
-# Define colors
-red_color=$(tput setaf 1)
-green_color=$(tput setaf 2)
-yellow_color=$(tput setaf 3)
-blue_color=$(tput setaf 4)
-magenta_color=$(tput setaf 5)
-reset_color=$(tput sgr0)
-
-message(){
-  echo "$1[$2]:${reset_color} $3 ";
-}
-
-question(){
-  message "${magenta_color}" "QUESTION" "$1";
-}
-
-info(){
-  message "${blue_color}" "INFO" "$1";
-}
-
-warning(){
-  message "${yellow_color}" "WARNING" "$1";
-}
-
-success(){
-  message "${green_color}" "SUCCESS" "$1";
-}
+info "Setupscript for images started..."
 
 destructor(){
   info "Cleaning up..."
@@ -49,17 +18,6 @@ destructor(){
   rmdir -v "$boot_mount_path" || warning "Removing $boot_mount_path failed!"
   rmdir -v "$working_folder" || warning "Removing $working_folder failed!"
 }
-
-error(){
-  message "${red_color}" "ERROR" "$1 -> Leaving program."
-  if [ "$2" != "no_destructor" ]
-    then
-      destructor
-  fi
-  exit 1;
-}
-
-info "Starting setup..."
 
 info "Define variables..."
 working_folder="/tmp/raspberry-pi-tools-$(date +%s)/";
