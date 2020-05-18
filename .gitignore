@@ -1,3 +1,4 @@
 decrypted/
 .encrypted/
 *package-lock.json
+log.txt

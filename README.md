@@ -83,18 +83,22 @@ To pase the configuration to the program use this syntax:
 ```bash
 (
   echo "$USER"              # | The username
-  echo "mmcblk1"            # | The device
-  echo "3"                  # | The raspberry pi number
-  echo "arch"               # | The operation system
+  echo "sdX"                # | The device
+  echo "64_bit"             # | The architecture type; arm or 64_bit
+  echo "manjaro"            # | The operation system
+  echo "architect"          # | The version
   #echo "n"                 # ├── If arch: Should a encrypted setup be used? (y/n)
-  echo "n"                  # | Force image download
-  echo "n"                  # | Transfer image
-  #echo "n"                  # ├── If image transfer yes Overwrite device before copying? (y/n)
-  echo "test12345"          # | The user password
-  echo "test12345"          # | The root password
-  echo "example-host"       # | The hostname
-  echo "y"                  # | Setup Wifi on target system
-)| sudo bash ./scripts/image/setup.sh
+  echo "n"                  # | Should the image download be forced?(y/n)
+  echo "y"                  # | Should the image be transfered to $device_path?(y/n)
+  echo "n"                 # ├── Overwrite device before copying? (y/n)
+  echo "n"                  # | Should the ssh-key be copied to the image?(y/N)
+  #echo "test12345"         # ├── The user password_1
+  #echo "test12345"         # ├── The user password_2
+  echo "n"                 # | Should the ssh-key be copied to the image?(y/N)
+  echo "n"                  # |Should the hostname be changed?(y/N)
+  #echo "example-host"       # | The hostname
+  #echo "y"                 # | Setup Wifi on target system - Not implemented yet
+)| sudo bash ./scripts/image/setup.sh | tee log.txt
 ```
 
 ## License

@@ -82,7 +82,7 @@ case "$architecture" in
   ;;
   "64_bit")
     case "$os" in
-      "arm")
+      "manjaro")
         echo "1) architect"
       ;;
       *)
@@ -122,7 +122,7 @@ case "$os" in
     case "$version" in
       "architect")
         image_checksum="6b1c2fce12f244c1e32212767a9d3af2cf8263b2"
-        base_download_url="https://osdn.net/frs/redir.php?m=dotsrc&f=%2Fstorage%2Fg%2Fm%2Fma%2Fmanjaro%2Farchitect%2F20.0%2Fmanjaro-architect-20.0-200426-linux56.iso";
+        base_download_url="https://osdn.net/frs/redir.php?m=dotsrc&f=%2Fstorage%2Fg%2Fm%2Fma%2Fmanjaro%2Farchitect%2F20.0%2F";
         imagename="manjaro-architect-20.0-200426-linux56.iso"
         ;;
       *)
@@ -171,7 +171,7 @@ if [ "$force_image_download" = "y" ]
   then
     if [ -f "$image_path" ]
       then
-        info "Removing image $image_path."
+        info "Removing image $image_path." &&
         rm "$image_path" || error "Removing image \"$image_path\" failed."
       else
         info "Forcing download wasn't neccessary. File $image_path doesn't exist."
@@ -185,7 +185,7 @@ if [ -f "$image_path" ]
   else
 		info "Image \"$imagename\" doesn't exist under local path \"$image_path\"."
     info "Image \"$imagename\" gets downloaded from \"$download_url\"..."
-		wget "$download_url" -P "$image_folder" || error "Download from \"$download_url\" failed."
+		wget "$download_url" -O "$image_path" || error "Download from \"$download_url\" failed."
 fi
 
 info "Verifying image..."
@@ -202,6 +202,10 @@ make_mount_folders
 
 set_partition_paths
 
+# @see https://www.heise.de/ct/hotline/Optimale-Blockgroesse-fuer-dd-2056768.html
+optimal_blocksize=$(expr 64 \* "$(sudo cat /sys/block/$device/queue/physical_block_size)") &&
+info "Calculated optimal blocksize of $optimal_blocksize""Byte for \"dd\" operations."
+
 question "Should the image be transfered to $device_path?(y/n)" && read -r transfer_image
 if [ "$transfer_image" = "y" ]
   then
@@ -210,7 +214,7 @@ if [ "$transfer_image" = "y" ]
     if [ "$copy_zeros_to_device" = "y" ]
       then
         info "Overwritting..." &&
-        dd if=/dev/zero of="$device_path" bs=1M || error "Overwritting $device_path failed."
+        dd if=/dev/zero of="$device_path" bs="$optimal_blocksize" || error "Overwritting $device_path failed."
       else
         info "Skipping Overwritting..."
     fi
@@ -252,25 +256,27 @@ if [ "$transfer_image" = "y" ]
         info "Boot files will be transfered to device..." &&
         mv -v "$root_mount_path/boot/"* "$boot_mount_path" ||
         error
-      elif [${image_path: -4} = ".zip" ]
+      elif [ "${image_path: -4}" = ".zip" ]
         then
-          unzip -p "$image_path" | sudo dd of="$device_path" bs=1M conv=fsync || error "DD $image_path to $device_path failed." &&
+          info "Transfering .zip file..." &&
+          unzip -p "$image_path" | sudo dd of="$device_path" bs="$optimal_blocksize" conv=fsync || error "DD $image_path to $device_path failed." &&
           sync ||
           error
-      elif [${image_path: -3} = ".gz" ]
+      elif [ "${image_path: -3}" = ".gz" ]
         then
-          gunzip -c "$image_path" | sudo dd of="$device_path" bs=1M conv=fsync &&
+          info "Transfering .gz file..." &&
+          gunzip -c "$image_path" | sudo dd of="$device_path" bs="$optimal_blocksize" conv=fsync &&
           sync ||
           error
-      elif [${image_path: -4} = ".iso" ]
+      elif [ "${image_path: -4}" = ".iso" ]
         then
-          sudo dd of="$device_path" bs=1M conv=fsync &&
+          info "Transfering .iso file..." &&
+          sudo dd if="$image_path" of="$device_path" bs="$optimal_blocksize" conv=fsync &&
           sync ||
           error
       else
         error "Image transfer for operation system \"$os\" is not supported yet!";
       fi
-    esac
   else
     info "Skipping image transfer..."
 fi
