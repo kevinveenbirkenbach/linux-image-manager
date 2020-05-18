@@ -121,6 +121,7 @@ case "$os" in
   "manjaro")
     case "$version" in
       "architect")
+        image_checksum="6b1c2fce12f244c1e32212767a9d3af2cf8263b2"
         base_download_url="https://osdn.net/frs/redir.php?m=dotsrc&f=%2Fstorage%2Fg%2Fm%2Fma%2Fmanjaro%2Farchitect%2F20.0%2Fmanjaro-architect-20.0-200426-linux56.iso";
         imagename="manjaro-architect-20.0-200426-linux56.iso"
         ;;
