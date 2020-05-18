@@ -8,7 +8,7 @@ info "Setupscript for images started..."
 info "Define functions..."
 destructor(){
   info "Cleaning up..."
-  sed -i 's/^#CHROOT //g' "$root_mount_path""etc/ld.so.preload"
+  sed -i 's/^#CHROOT //g' "$root_mount_path""etc/ld.so.preload" || warning "sed failed."
   umount -v "$chroot_dev_pts_mount_path" || warning "Umounting $chroot_dev_pts_mount_path failed!"
   umount -v "$chroot_dev_mount_path" || warning "Umounting $chroot_dev_mount_path failed!"
   umount -v "$chroot_proc_mount_path" || warning "Umounting $chroot_proc_mount_path failed!"
@@ -28,17 +28,18 @@ fi
 
 make_working_folder
 
-info "Configure user..."
-question "Please type in a valid username from which the SSH-Key should be copied:" && read -r origin_username;
-getent passwd "$origin_username" > /dev/null 2 || error "User $origin_username doesn't exist.";
-origin_user_home="/home/$origin_username/";
+info "Configure user..." &&
+question "Please type in a valid working username:" && read -r origin_username &&
+getent passwd "$origin_username" > /dev/null 2 || error "User $origin_username doesn't exist."
+origin_user_home="/home/$origin_username/"
 
 info "Image routine starts..."
 image_folder="$origin_user_home""Images/";
 info "The images will be stored in \"$image_folder\"."
 if [ ! -d "$image_folder" ]; then
-  info "Folder \"$image_folder\" doesn't exist. It will be created now."
-  mkdir -v "$image_folder"
+  info "Folder \"$image_folder\" doesn't exist. It will be created now." &&
+  mkdir -v "$image_folder" ||
+  error
 fi
 
 set_device_path
@@ -48,16 +49,52 @@ if mount | grep -q "$device_path"
     error "Device $device_path is allready mounted. Umount with \"umount $device_path*\"."
 fi
 
-question "Select which Raspberry Pi version should be used:" && read -r version
+info "Select which architecture type should be used..." &&
+echo "1) arm " &&
+echo "2) 64_bit" &&
+question "Please type in the architecture type:" &&
+read -r architecture ||
+error
 
-info "Selecting operating system should be used..."
+
+info "Select which operating system should be used..."
 info "Available systems:"
-echo
-echo "1) arch"
-echo "2) moode"
-echo "3) retropie"
-echo
+if [ "$architecture" = "arm" ]
+  then
+    echo "1) arch"
+    echo "2) moode"
+    echo "3) retropie"
+fi
+if [ "$architecture" = "64_bit" ]
+  then
+    echo "1) manjaro"
+fi
 question "Please type in the os:" && read -r os
+
+info "Select which version should be used..."
+case "$architecture" in
+  "arm")
+    echo "Version for Raspberry Pi modell:"
+    echo "1) 1"
+    echo "2) 2"
+    echo "3) 3"
+    echo "4) 4"
+  ;;
+  "64_bit")
+    case "$os" in
+      "arm")
+        echo "1) architect"
+      ;;
+      *)
+        error "The os system \"$os\" is not supported yet for 64bit!"
+      ;;
+    esac
+  ;;
+  *)
+    error "The architecture \"$architecture\" is not supported yet!"
+  ;;
+esac
+question "Please type in the version:" && read -r version
 
 os_does_not_support_raspberry_version_error () {
   error "$os for Raspberry Pi Version $version is not supported!";
@@ -75,6 +112,17 @@ case "$os" in
         ;;
       "4")
         imagename="ArchLinuxARM-rpi-4-latest.tar.gz"
+        ;;
+      *)
+        os_does_not_support_raspberry_version_error
+        ;;
+    esac
+    ;;
+  "manjaro")
+    case "$version" in
+      "architect")
+        base_download_url="https://osdn.net/frs/redir.php?m=dotsrc&f=%2Fstorage%2Fg%2Fm%2Fma%2Fmanjaro%2Farchitect%2F20.0%2Fmanjaro-architect-20.0-200426-linux56.iso";
+        imagename="manjaro-architect-20.0-200426-linux56.iso"
         ;;
       *)
         os_does_not_support_raspberry_version_error
@@ -142,7 +190,9 @@ fi
 info "Verifying image..."
 if [[ -v image_checksum ]]
   then
-    echo "$image_checksum $image_path"| md5sum -c -|| error "Verification failed. HINT: Force the download of the image."
+    info "Checking md5 checksum..." && echo "$image_checksum $image_path"| md5sum -c -||
+    info "Checking sha1 checksum..." && echo "$image_checksum $image_path"| sha1sum -c -||
+    error "Verification failed. HINT: Force the download of the image."
   else
     warning "Verification is not possible. No checksum is defined."
 fi
@@ -158,15 +208,15 @@ if [ "$transfer_image" = "y" ]
     question "Should $device_path be overwritten with zeros before copying?(y/n)" && read -r copy_zeros_to_device
     if [ "$copy_zeros_to_device" = "y" ]
       then
-        info "Overwritting..."
+        info "Overwritting..." &&
         dd if=/dev/zero of="$device_path" bs=1M || error "Overwritting $device_path failed."
       else
         info "Skipping Overwritting..."
     fi
 
     info "Starting image transfer..."
-    case "$os" in
-      "arch")
+    if [ "$os" = "arch" ]
+      then
         info "Execute fdisk..."
         (	echo "o"	#Type o. This will clear out any partitions on the drive.
         	echo "p"	#Type p to list partitions. There should be no partitions left
@@ -185,33 +235,40 @@ if [ "$transfer_image" = "y" ]
         	echo "w"	#Write the partition table and exit by typing w.
         )| fdisk "$device_path" || error "Creating partitions failed. Try to execute this script with the overwritting parameter."
 
-        info "Format boot partition..."
+        info "Format boot partition..." &&
         mkfs.vfat "$boot_partition_path" || error "Format boot is not possible."
 
-        info "Format root partition..."
+        info "Format root partition..." &&
         mkfs.ext4 "$root_partition_path" || error "Format root is not possible."
 
         mount_partitions;
 
-        info "Root files will be transfered to device..."
-        bsdtar -xpf "$image_path" -C "$root_mount_path"
-        sync
+        info "Root files will be transfered to device..." &&
+        bsdtar -xpf "$image_path" -C "$root_mount_path" &&
+        sync ||
+        error
 
-        info "Boot files will be transfered to device..."
-        mv -v "$root_mount_path/boot/"* "$boot_mount_path"
-
-        ;;
-      "moode")
-        unzip -p "$image_path" | sudo dd of="$device_path" bs=1M conv=fsync || error "DD $image_path to $device_path failed."
-        sync
-        ;;
-      "retropie")
-        gunzip -c "$image_path" | sudo dd of="$device_path" bs=1M conv=fsync
-        sync
-        ;;
-      *)
+        info "Boot files will be transfered to device..." &&
+        mv -v "$root_mount_path/boot/"* "$boot_mount_path" ||
+        error
+      elif [${image_path: -4} = ".zip" ]
+        then
+          unzip -p "$image_path" | sudo dd of="$device_path" bs=1M conv=fsync || error "DD $image_path to $device_path failed." &&
+          sync ||
+          error
+      elif [${image_path: -3} = ".gz" ]
+        then
+          gunzip -c "$image_path" | sudo dd of="$device_path" bs=1M conv=fsync &&
+          sync ||
+          error
+      elif [${image_path: -4} = ".iso" ]
+        then
+          sudo dd of="$device_path" bs=1M conv=fsync &&
+          sync ||
+          error
+      else
         error "Image transfer for operation system \"$os\" is not supported yet!";
-        ;;
+      fi
     esac
   else
     info "Skipping image transfer..."
@@ -230,56 +287,72 @@ target_home_path="$root_mount_path""home/";
 target_username=$(ls "$target_home_path");
 target_user_home_folder_path="$target_home_path$target_username/";
 
-info "Copy ssh key to target..."
-target_user_ssh_folder_path="$target_user_home_folder_path"".ssh/"
-target_authorized_keys="$target_user_ssh_folder_path""authorized_keys"
-origin_user_rsa_pub="$origin_user_home"".ssh/id_rsa.pub";
-if [ -f "$origin_user_rsa_pub" ]
+question "Should the ssh-key be copied to the image?(y/N)" && read -r copy_ssh_key
+if [ "$copy_ssh_key" == "y" ]
   then
-    mkdir -v "$target_user_ssh_folder_path"
-    cat "$origin_user_rsa_pub" > "$target_authorized_keys"
-    target_authorized_keys_content=$(cat "$target_authorized_keys")
-    info "$target_authorized_keys contains the following: $target_authorized_keys_content"
-    chown -vR 1000 "$target_user_ssh_folder_path"
-    chmod -v 700 "$target_user_ssh_folder_path"
-    chmod -v 600 "$target_authorized_keys"
+    info "Copy ssh key to target..."
+    target_user_ssh_folder_path="$target_user_home_folder_path"".ssh/"
+    target_authorized_keys="$target_user_ssh_folder_path""authorized_keys"
+    origin_user_rsa_pub="$origin_user_home"".ssh/id_rsa.pub";
+    if [ -f "$origin_user_rsa_pub" ]
+      then
+        mkdir -v "$target_user_ssh_folder_path" &&
+        cat "$origin_user_rsa_pub" > "$target_authorized_keys" &&
+        target_authorized_keys_content=$(cat "$target_authorized_keys") &&
+        info "$target_authorized_keys contains the following: $target_authorized_keys_content" &&
+        chown -vR 1000 "$target_user_ssh_folder_path" &&
+        chmod -v 700 "$target_user_ssh_folder_path" &&
+        chmod -v 600 "$target_authorized_keys" ||
+        error
+      else
+        warning "The ssh key \"$origin_user_rsa_pub\" can't be copied to \"$target_authorized_keys\" because it doesn't exist."
+    fi
   else
-    warning "The ssh key \"$origin_user_rsa_pub\" can't be copied to \"$target_authorized_keys\" because it doesn't exist."
+    info "Skipped SSH-key copying.."
 fi
-
 info "Start chroot procedures..."
 
 mount_binds
 
-sed -i 's/^/#CHROOT /g' "$root_mount_path""etc/ld.so.preload"
+sed -i 's/^/#CHROOT /g' "$root_mount_path""etc/ld.so.preload" || warning "sed failed."
 cp -v /usr/bin/qemu-arm-static "$root_mount_path""/usr/bin/" || error "Copy qemu-arm-static failed. The following packages are neccessary: qemu qemu-user-static binfmt-support."
 
-info "Changing passwords on target system..."
-question "Type in new password: " && read -r password_1
-question "Repeat new password\"$target_username\"" && read -r password_2
-if [ "$password_1" == "$password_2" ]
+question "Should the image password of the standart user \"$target_username\" be changed?(y/N)" && read -r change_password
+if [ "$change_password" == "y" ]
   then
-    (
-    echo "(
-          echo '$password_1'
-          echo '$password_1'
-          ) | passwd $target_username"
-    echo "(
-          echo '$password_1'
-          echo '$password_1'
-          ) | passwd"
-    ) | chroot "$root_mount_path" /bin/bash || error "Password change failed."
+    info "Changing passwords on target system..."
+    question "Type in new password: " && read -r password_1
+    question "Repeat new password\"$target_username\"" && read -r password_2
+    if [ "$password_1" = "$password_2" ]
+      then
+        (
+        echo "(
+              echo '$password_1'
+              echo '$password_1'
+              ) | passwd $target_username"
+        echo "(
+              echo '$password_1'
+              echo '$password_1'
+              ) | passwd"
+        ) | chroot "$root_mount_path" /bin/bash || error "Password change failed."
+      else
+        error "Passwords didn't match."
+    fi
   else
-    error "Passwords didn't match."
+    info "Skipped password change..."
 fi
 # @todo add to chroot
 #pacman-key --init
 #pacman-key --populate archlinuxarm
 #pacman -Syyu
-
-question "Type in the hostname:" && read -r hostname;
-echo "$hostname" > "$root_mount_path""etc/hostname" || error "Changing hostname failed."
-
+question "Should the hostname be changed?(y/N)" && read -r change_hostname
+if [ "$change_hostname" == "y" ]
+  then
+    question "Type in the hostname:" && read -r hostname;
+    echo "$hostname" > "$root_mount_path""etc/hostname" || error "Changing hostname failed."
+  else
+    info "Skipped hostname change..."
+fi
 # question "Do you want to copy all Wifi passwords to the device?(y/n)" && read -r copy_wifi
 # if [ "$copy_wifi" = "y" ]
 #   then
