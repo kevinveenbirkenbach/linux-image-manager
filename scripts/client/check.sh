@@ -8,3 +8,5 @@ info "Checking relevant home folders for duplicated files..."
 fdupes -r "$HOME/Documents/" "$HOME/Downloads/" "$HOME/Images/" "$HOME/Desktop/" "$HOME/Music/" "$HOME/Pictures/" "$HOME/Videos"
 info "Searching for files which are in \"$HOME\" but don't belong to user \"$USER\"..."
 sudo find "$HOME" ! -user "$USER"
+info "Searching for files which are in \"$HOME\" and bigger then 100MB..." 
+find ~ -type f -size +100M -exec ls -lh {} \;
