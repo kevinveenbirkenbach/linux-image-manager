@@ -6,3 +6,5 @@ echo "System check"
 echo
 info "Checking relevant home folders for duplicated files..."
 fdupes -r "$HOME/Documents/" "$HOME/Downloads/" "$HOME/Images/" "$HOME/Desktop/" "$HOME/Music/" "$HOME/Pictures/" "$HOME/Videos"
+info "Searching for files which are in \"$HOME\" but don't belong to user \"$USER\"..."
+sudo find "$HOME" ! -user "$USER"
