@@ -1,5 +1,5 @@
 # communication tools
-slack-desktop
+#slack-desktop
 skypeforlinux-stable-bin
 # xmpp
 libpurple-lurch
