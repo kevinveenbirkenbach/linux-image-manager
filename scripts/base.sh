@@ -5,13 +5,15 @@
 # shellcheck disable=SC2034 #Deactivate checking of unused variables
 
 REPOSITORY_PATH=$(readlink -f "$(dirname "$(readlink -f "${0}")")/../../") # Propably this can be optimized
-PACKAGE_PATH="$REPOSITORY_PATH/configuration/packages/"
+CONFIGURATION_PATH="$REPOSITORY_PATH""/configuration/"
+PACKAGE_PATH="$CONFIGURATION_PATH""packages/"
+TEMPLATE_PATH="$CONFIGURATION_PATH""templates/";
+HOME_TEMPLATE_PATH="$TEMPLATE_PATH""home/";
 ENCRYPTED_PATH="$REPOSITORY_PATH/.encrypted";
 DECRYPTED_PATH="$REPOSITORY_PATH/decrypted";
 SCRIPT_PATH="$REPOSITORY_PATH/scripts/";
 DATA_PATH="$DECRYPTED_PATH/data";
 BACKUP_PATH="$DECRYPTED_PATH/backup";
-TEMPLATE_PATH="$REPOSITORY_PATH/templates";
 
 COLOR_RED=$(tput setaf 1)
 COLOR_GREEN=$(tput setaf 2)

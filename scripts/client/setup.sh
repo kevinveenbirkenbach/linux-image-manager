@@ -28,7 +28,7 @@ install_yay_packages_if_needed(){
 info "Start setup of customized core software..."
 
 info "Copying templates to home folder..." &&
-cp -rfv "$TEMPLATE_PATH/." "$HOME" || error "Copy templates failed."
+cp -rfv "$HOME_TEMPLATE_PATH/." "$HOME" || error "Copy templates failed."
 
 info "Update packages..." &&
 sudo pacman -Syyu || error "Package syncronisation failed."
