@@ -4,6 +4,7 @@
 source "$(dirname "$(readlink -f "${0}")")/../base.sh" || (echo "Loading base.sh failed." && exit 1)
 echo "System check - Shows things which can be optimized:"
 echo
+info "Linux-Kernel: $(uname -r)"
 info "Checking relevant home folders for duplicated files..."
 fdupes -r "$HOME/Documents/" "$HOME/Downloads/" "$HOME/Images/" "$HOME/Desktop/" "$HOME/Music/" "$HOME/Pictures/" "$HOME/Videos"
 info "Searching for files which are in \"$HOME\" but don't belong to user \"$USER\"..."
