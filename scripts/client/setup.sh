@@ -116,7 +116,7 @@ fi
 
 if [ "$XDG_SESSION_TYPE" == "x11" ]; then
 	info "Synchronizing xserver tools..." &&
-	install_yay_packages_if_needed xbindkeys
+	install_yay_packages_if_needed xbindkeys &&
 	xbindkeys --poll-rc || error
 fi
 
@@ -158,8 +158,8 @@ install_gnome_extension(){
 }
 
 if [ "$DESKTOP_SESSION" == "gnome" ]; then
-	info "Synchronizing gnome tools..." &&
-	sudo pacman --needed -S gnome-shell-extensions gnome-terminal &&
+  info "Synchronizing gnome tools..." &&
+  sudo pacman -S --needed "$(get_packages "client/pacman/gnome")" || error "Syncronisation failed."
 	info "Setting up gnome dash favourites..." &&
 	gsettings set org.gnome.shell favorite-apps "['org.gnome.Nautilus.desktop',
 	'org.gnome.Terminal.desktop',
