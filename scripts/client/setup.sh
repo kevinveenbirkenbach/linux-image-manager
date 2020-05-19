@@ -116,7 +116,7 @@ fi
 
 if [ "$XDG_SESSION_TYPE" == "x11" ]; then
 	info "Synchronizing xserver tools..." &&
-	sudo pacman --needed -S xbindkeys &&
+	install_yay_packages_if_needed xbindkeys
 	xbindkeys --poll-rc || error
 fi
 
