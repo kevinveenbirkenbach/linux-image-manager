@@ -159,7 +159,7 @@ install_gnome_extension(){
 
 if [ "$DESKTOP_SESSION" == "gnome" ]; then
   info "Synchronizing gnome tools..." &&
-  sudo pacman -S --needed "$(get_packages "client/pacman/gnome")" || error "Syncronisation failed."
+  sudo pacman -S $(get_packages "client/pacman/gnome") || error "Syncronisation failed."
 	info "Setting up gnome dash favourites..." &&
 	gsettings set org.gnome.shell favorite-apps "['org.gnome.Nautilus.desktop',
 	'org.gnome.Terminal.desktop',
