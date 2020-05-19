@@ -67,8 +67,13 @@ if [ ! -f "$ssh_key_path" ]; then
 	fi
 fi
 
-info "Installing nonfree drivers..." &&
-sudo mhwd -a pci nonfree 0300 || error
+question "Should nonfree drivers be installed?(y/N)" && read -r install_nonfree_drivers
+if [ "$install_nonfree_drivers" = "y" ]
+  then
+    info "Installing nonfree drivers..." &&
+    sudo mhwd -a pci nonfree 0300 || error
+    warning "Nonfree drivers had been installed. This can lead to unexpected side effects!"
+fi
 
 info "Setup, configuration and installation of dependencies for installed software..."
 
@@ -102,7 +107,7 @@ fi
 
 if [ ! "$(pacman -Qi "virtualbox")" ] ; then
 	info "Setting up virtualbox..." &&
-	pamac install virtualbox "$(pacman -Qsq "^linux" | grep "^linux[0-9]*[-rt]*$" | awk '{print $1"-virtualbox-host-modules"}' ORS=' ')" &&
+	sudo pacman -S virtualbox "$(pacman -Qsq "^linux" | grep "^linux[0-9]*[-rt]*$" | awk '{print $1"-virtualbox-host-modules"}' ORS=' ')" &&
 	sudo vboxreload &&
 	pamac build virtualbox-ext-oracle &&
 	sudo gpasswd -a "$USER" vboxusers || error
@@ -202,11 +207,6 @@ if [ "$(ls -A "$autostart_folder")" ]
 	else
 		info "No startup entries found. Skipped removing."
 fi
-
-info "Showing the installed Java versions..." &&
-archlinux-java status &&
-info "Keep in mind to set the right Java-Version if it's neccessary." ||
-error
 
 info "Please restart the computer, so that all updates get applied."
 success "Setup finished successfully :)" && exit 0

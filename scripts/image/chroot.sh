@@ -1,6 +1,7 @@
 #!/bin/bash
 # shellcheck source=/dev/null # Deactivate SC1090
 # shellcheck disable=SC2015  # Deactivating bool hint
+# shellcheck disable=SC2154  # Deactivate not referenced link
 source "$(dirname "$(readlink -f "${0}")")/base.sh" || (echo "Loading base.sh failed." && exit 1)
 
 info "Starting chroot..."

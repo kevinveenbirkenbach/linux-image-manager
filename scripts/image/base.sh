@@ -3,7 +3,9 @@
 # Offers base functions for the image management
 #
 # shellcheck disable=SC2034 #Deactivate checking of unused variables
+# shellcheck disable=SC2010  # ls  | grep allowed
 # shellcheck source=/dev/null # Deactivate SC1090
+# shellcheck disable=SC2015  # Deactivate bools hints
 source "$(dirname "$(readlink -f "${0}")")/../base.sh" || (echo "Loading base.sh failed." && exit 1)
 
 # Writes the full partition name

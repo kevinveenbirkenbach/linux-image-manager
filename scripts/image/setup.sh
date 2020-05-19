@@ -1,6 +1,8 @@
 #!/bin/bash
 # shellcheck disable=SC2010  # ls  | grep allowed
 # shellcheck source=/dev/null # Deactivate SC1090
+# shellcheck disable=SC2015  # Deactivate bools hints
+# shellcheck disable=SC2154  # Deactivate not referenced link
 source "$(dirname "$(readlink -f "${0}")")/base.sh" || (echo "Loading base.sh failed." && exit 1)
 
 info "Setupscript for images started..."
@@ -172,7 +174,7 @@ info "Generating os-image..."
 download_url="$base_download_url$imagename"
 image_path="$image_folder$imagename"
 
-question "Should the image download be forced?(y/n)" && read -r force_image_download
+question "Should the image download be forced?(y/N)" && read -r force_image_download
 if [ "$force_image_download" = "y" ]
   then
     if [ -f "$image_path" ]
