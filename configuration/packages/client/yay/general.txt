@@ -4,5 +4,7 @@ skypeforlinux-stable-bin
 # xmpp
 libpurple-lurch
 libpurple-carbons
+# ide's
+eclipse-java
 # language server
 ccls

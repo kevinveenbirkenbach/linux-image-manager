@@ -65,7 +65,6 @@ shellcheck
 dia
 
 # ide's
-eclipse-java
 atom
 arduino
 arduino-docs
