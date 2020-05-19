@@ -84,6 +84,7 @@ case "$architecture" in
     case "$os" in
       "manjaro")
         echo "1) architect"
+        echo "1) gnome"
       ;;
       *)
         error "The os system \"$os\" is not supported yet for 64bit!"
@@ -124,6 +125,11 @@ case "$os" in
         image_checksum="6b1c2fce12f244c1e32212767a9d3af2cf8263b2"
         base_download_url="https://osdn.net/frs/redir.php?m=dotsrc&f=%2Fstorage%2Fg%2Fm%2Fma%2Fmanjaro%2Farchitect%2F20.0%2F";
         imagename="manjaro-architect-20.0-200426-linux56.iso"
+        ;;
+      "gnome")
+        image_checksum="d16118207c546c18201703d80b6356b1522b47d0"
+        base_download_url="https://osdn.net/frs/redir.php?m=dotsrc&f=/storage/g/m/ma/manjaro/gnome/20.0.1/";
+        imagename="manjaro-gnome-20.0.1-200511-linux56.iso"
         ;;
       *)
         os_does_not_support_raspberry_version_error

@@ -86,7 +86,7 @@ To pase the configuration to the program use this syntax:
   echo "sdX"                # | The device
   echo "64_bit"             # | The architecture type; arm or 64_bit
   echo "manjaro"            # | The operation system
-  echo "architect"          # | The version
+  echo "gnome"          # | The version
   #echo "n"                 # ├── If arch: Should a encrypted setup be used? (y/n)
   echo "n"                  # | Should the image download be forced?(y/n)
   echo "y"                  # | Should the image be transfered to $device_path?(y/n)
