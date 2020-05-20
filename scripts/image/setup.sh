@@ -214,14 +214,7 @@ question "Should the image be transfered to $device_path?(y/n)" && read -r trans
 if [ "$transfer_image" = "y" ]
   then
 
-    question "Should $device_path be overwritten with zeros before copying?(y/n)" && read -r copy_zeros_to_device
-    if [ "$copy_zeros_to_device" = "y" ]
-      then
-        info "Overwritting..." &&
-        dd if=/dev/zero of="$device_path" bs="$OPTIMAL_BLOCKSIZE" status=progress || error "Overwritting $device_path failed."
-      else
-        info "Skipping Overwritting..."
-    fi
+    overwritte_device_with_zeros
 
     info "Starting image transfer..."
     if [ "$os" = "arch" ]
