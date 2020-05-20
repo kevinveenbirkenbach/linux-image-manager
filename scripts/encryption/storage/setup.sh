@@ -1,7 +1,7 @@
 source "$(dirname "$(readlink -f "${0}")")/base.sh" || (echo "Loading base.sh failed." && exit 1)
 echo "Setups disk encryption"
 
-set_device_mount_and_mapper_paths
+set_device_mount_partition_and_mapper_paths
 
 overwritte_device_with_zeros
 
@@ -21,7 +21,6 @@ info "Creating partition table..."
 )| sudo fdisk --wipe always "$device_path" ||
 error
 
-partition_path="$device_path""1"
 info "Encrypt $device_path..." &&
 sudo cryptsetup -v -y luksFormat $partition_path ||
 error
@@ -43,3 +42,5 @@ error
 info "Own partition by user..." &&
 sudo chown -R $USER:$USER $mount_path ||
 error
+
+success "Encryption successfull :)"
