@@ -1,5 +1,6 @@
+#!/bin/bash
 source "$(dirname "$(readlink -f "${0}")")/base.sh" || (echo "Loading base.sh failed." && exit 1)
-echo "Mounting encrypted storage..."
+echo "Mounts encrypted storages"
 
 set_device_mount_and_mapper_paths
 
