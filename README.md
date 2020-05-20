@@ -33,11 +33,11 @@ This repository contains the following scripts:
 | Order | Description |
 |---|---|
 | ```bash ./scripts/system-setup.sh``` | Setup the customized software on the system on which you execute it. |
-| ```bash ./scripts/backup.sh``` | Executes all setup scripts. |
-| ```bash ./scripts/import-data-from-system.sh``` | Import data from the host system.|
-| ```bash ./scripts/export-data-to-system.sh``` | Export data to the host system.|
-| ```bash ./scripts/unlock.sh``` | Unlock the stored data.|
-| ```bash ./scripts/lock.sh``` | Lock the stored data |
+| ```bash ./scripts/image/backup.sh``` | Backup an device image |
+| ```bash ./scripts/data/import-data-from-system.sh``` | Import data from the host system.|
+| ```bash ./scripts/data/export-data-to-system.sh``` | Export data to the host system.|
+| ```bash ./scripts/encryption/data/unlock.sh``` | Unlock the stored data.|
+| ```bash ./scripts/encryption/data/lock.sh``` | Lock the stored data |
 | ```bash ./scripts/pull-local-repositories.sh``` | Pulls all local repositories branches |
 | ```bash ./scripts/pushs-local-repositories.sh``` | Pushs all local repositories branches |
 | ```encfsctl passwd .encrypted``` | Change the password of the encrypted folder. |
@@ -56,7 +56,8 @@ $HOME/Documents/certificates/ | Contains certificates to authenticate via [certi
 | $HOME/Documents/recovery_codes/ | Contains files with recovery_codes e.g. for [Two-factor authentication](https://en.wikipedia.org/wiki/Multi-factor_authentication). |
 | $HOME/Documents/identity/ | Contains files to prove the identity of the *Core System Owner* in physical live like passports. |
 | $HOME/Documents/passwords/ | Contains e.g the [KeePassXC](https://keepassxc.org/) database with all *Core System Owner* passwords. |
-| $HOME/Documents/repositories/ | Contains all git repositories |
+| $HOME/Repositories/ | Contains all git repositories |
+| $HOME/Games/roms | Contains all roms |
 | $HOME/Images/ | contains os images|
 
 #### Desktop

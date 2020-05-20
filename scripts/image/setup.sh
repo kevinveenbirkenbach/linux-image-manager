@@ -210,10 +210,6 @@ make_mount_folders
 
 set_partition_paths
 
-# @see https://www.heise.de/ct/hotline/Optimale-Blockgroesse-fuer-dd-2056768.html
-optimal_blocksize=$(expr 64 \* "$(sudo cat /sys/block/$device/queue/physical_block_size)") &&
-info "Calculated optimal blocksize of $optimal_blocksize""Byte for \"dd\" operations."
-
 question "Should the image be transfered to $device_path?(y/n)" && read -r transfer_image
 if [ "$transfer_image" = "y" ]
   then
@@ -222,7 +218,7 @@ if [ "$transfer_image" = "y" ]
     if [ "$copy_zeros_to_device" = "y" ]
       then
         info "Overwritting..." &&
-        dd if=/dev/zero of="$device_path" bs="$optimal_blocksize" || error "Overwritting $device_path failed."
+        dd if=/dev/zero of="$device_path" bs="$OPTIMAL_BLOCKSIZE" status=progress || error "Overwritting $device_path failed."
       else
         info "Skipping Overwritting..."
     fi
@@ -267,19 +263,19 @@ if [ "$transfer_image" = "y" ]
       elif [ "${image_path: -4}" = ".zip" ]
         then
           info "Transfering .zip file..." &&
-          unzip -p "$image_path" | sudo dd of="$device_path" bs="$optimal_blocksize" conv=fsync || error "DD $image_path to $device_path failed." &&
+          unzip -p "$image_path" | sudo dd of="$device_path" bs="$OPTIMAL_BLOCKSIZE" conv=fsync status=progress || error "DD $image_path to $device_path failed." &&
           sync ||
           error
       elif [ "${image_path: -3}" = ".gz" ]
         then
           info "Transfering .gz file..." &&
-          gunzip -c "$image_path" | sudo dd of="$device_path" bs="$optimal_blocksize" conv=fsync &&
+          gunzip -c "$image_path" | sudo dd of="$device_path" bs="$OPTIMAL_BLOCKSIZE" conv=fsync status=progress &&
           sync ||
           error
       elif [ "${image_path: -4}" = ".iso" ]
         then
           info "Transfering .iso file..." &&
-          sudo dd if="$image_path" of="$device_path" bs="$optimal_blocksize" conv=fsync &&
+          sudo dd if="$image_path" of="$device_path" bs="$OPTIMAL_BLOCKSIZE" conv=fsync status=progress &&
           sync ||
           error
       else

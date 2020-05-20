@@ -26,18 +26,6 @@ set_partition_paths(){
   boot_partition_path=$(echo_partition_name "1")
 }
 
-# Routine to echo the full sd-card-path
-set_device_path(){
-  info "Available devices:"
-  ls -lasi /dev/ | grep -E "sd|mm"
-  question "Please type in the name of the device: /dev/" && read -r device
-  device_path="/dev/$device"
-  if [ ! -b "$device_path" ]
-    then
-      error "$device_path is not valid device."
-  fi
-}
-
 make_mount_folders(){
   info "Preparing mount paths..." &&
   boot_mount_path="$working_folder_path""boot/" &&

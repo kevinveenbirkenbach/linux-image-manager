@@ -18,11 +18,11 @@ declare -a BACKUP_LIST=("$HOME/.ssh/" \
   "$HOME/Documents/identity/" \
   "$HOME/Documents/passwords/" \
   "$HOME/Documents/licenses/");
-  
+
 if [ -z "$(mount | grep "$DECRYPTED_PATH")" ]
   then
     info "The decrypted folder $DECRYPTED_PATH is locked. You need to unlock it!" &&
-    bash "$SCRIPT_PATH""encryption/unlock.sh" || error "Unlocking failed.";
+    bash "$SCRIPT_PATH""encryption/data/unlock.sh" || error "Unlocking failed.";
 fi
 if [ "$1" = "reverse" ]
   then
