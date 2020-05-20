@@ -27,6 +27,10 @@ ecryptfs-utils
 encfs
 keepassxc
 
+# anonymous
+tor
+torbrowser-launcher
+
 # browsers
 chromium
 
