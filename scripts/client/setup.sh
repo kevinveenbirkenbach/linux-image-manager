@@ -178,6 +178,7 @@ if [ "$DESKTOP_SESSION" == "gnome" ]; then
 	info "Install GNOME extensions..." &&
 	install_gnome_extension "nasa_apod@elinvention.ovh" "https://github.com/Elinvention/gnome-shell-extension-nasa-apod.git"
 	install_gnome_extension "dash-to-panel@jderose9.github.com" "https://github.com/home-sweet-gnome/dash-to-panel"
+  install_gnome_extension "caffeine@patapon.info" "https://github.com/eonpatapon/gnome-shell-extension-caffeine.git"
 	info "Deactivating \"Dash to Dock\"..." &&
 	gnome-extensions disable dash-to-dock@micxgx.gmail.com || error
 
