@@ -8,3 +8,5 @@ libpurple-carbons
 eclipse-java
 # language server
 ccls
+# guest user support
+systemd-guest-user
