@@ -342,7 +342,7 @@ if [ "$change_password" == "y" ]
               echo '$password_1'
               echo '$password_1'
               ) | passwd"
-        ) | chroot "$root_mount_path" /bin/bash || error "Password change failed."
+        ) | chroot "$root_mount_path" /bin/bash || error
       else
         error "Passwords didn't match."
     fi
@@ -354,20 +354,22 @@ question "Should the hostname be changed?(y/N)" && read -r change_hostname
 if [ "$change_hostname" == "y" ]
   then
     question "Type in the hostname:" && read -r hostname;
-    echo "$hostname" > "$root_mount_path""etc/hostname" || error "Changing hostname failed."
+    echo "$hostname" > "$root_mount_path""etc/hostname" || error
   else
     info "Skipped hostname change..."
 fi
 
-question "Should the image system be updated?(y/N)" && read -r update_system
+question "Should the system be updated?(y/N)" && read -r update_system
 if [ "$update_system" == "y" ]
   then
+    info "Updating system..." &&
     (
     echo "yes | pacman-key --init"
     echo "yes | pacman-key --populate archlinuxarm"
     echo "yes | pacman -Syyu"
-    ) | chroot "$root_mount_path" /bin/bash || error "Password change failed."
+    ) | chroot "$root_mount_path" /bin/bash || error
 fi
+
 # question "Do you want to copy all Wifi passwords to the device?(y/n)" && read -r copy_wifi
 # if [ "$copy_wifi" = "y" ]
 #   then
@@ -375,9 +377,6 @@ fi
 #     target_wifi_config_path="$root_mount_path$origin_wifi_config_path"
 #     rsync -av "$origin_wifi_config_path" "$target_wifi_config_path"
 # fi
-
-info "The first level folder structure on $root_mount_path is:" && tree -laL 1 "$root_mount_path"
-info "The first level folder structure on $boot_mount_path is:" && tree -laL 1 "$boot_mount_path"
 
 destructor
 success "Setup successfull :)" && exit 0
