@@ -98,6 +98,7 @@ To pase the configuration to the program use this syntax:
   echo "n"                 # | Should the ssh-key be copied to the image?(y/N)
   echo "n"                  # |Should the hostname be changed?(y/N)
   #echo "example-host"       # | The hostname
+  echo "y"                  # Should the image system be updated?(y/N)
   #echo "y"                 # | Setup Wifi on target system - Not implemented yet
 )| sudo bash ./scripts/image/setup.sh | tee log.txt
 ```

@@ -4,6 +4,12 @@
 # shellcheck disable=SC2154  # Deactivate not referenced link
 source "$(dirname "$(readlink -f "${0}")")/base.sh" || (echo "Loading base.sh failed." && exit 1)
 
+destructor(){
+  info "Unmount everything" &&
+  umount "$root_mount_path"/{dev/pts,dev,sys,proc,boot,} $boot_mount_path||
+  warning "Failed."
+}
+
 info "Starting chroot..."
 
 set_device_path
@@ -26,6 +32,4 @@ info "Bash shell starts..." &&
 chroot "$root_mount_path" /bin/bash ||
 error
 
-info "unmount everything" &&
-umount "$root_mount_path"/{dev/pts,dev,sys,proc,boot,} ||
-error
+destructor

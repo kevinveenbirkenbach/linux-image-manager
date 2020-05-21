@@ -349,10 +349,7 @@ if [ "$change_password" == "y" ]
   else
     info "Skipped password change..."
 fi
-# @todo add to chroot
-#pacman-key --init
-#pacman-key --populate archlinuxarm
-#pacman -Syyu
+
 question "Should the hostname be changed?(y/N)" && read -r change_hostname
 if [ "$change_hostname" == "y" ]
   then
@@ -360,6 +357,16 @@ if [ "$change_hostname" == "y" ]
     echo "$hostname" > "$root_mount_path""etc/hostname" || error "Changing hostname failed."
   else
     info "Skipped hostname change..."
+fi
+
+question "Should the image system be updated?(y/N)" && read -r update_system
+if [ "$update_system" == "y" ]
+  then
+    (
+    echo "yes | pacman-key --init"
+    echo "yes | pacman-key --populate archlinuxarm"
+    echo "yes | pacman -Syyu"
+    ) | chroot "$root_mount_path" /bin/bash || error "Password change failed."
 fi
 # question "Do you want to copy all Wifi passwords to the device?(y/n)" && read -r copy_wifi
 # if [ "$copy_wifi" = "y" ]
