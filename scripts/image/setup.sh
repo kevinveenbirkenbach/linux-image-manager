@@ -10,7 +10,6 @@ info "Setupscript for images started..."
 info "Define functions..."
 destructor(){
   info "Cleaning up..."
-  sed -i 's/^#CHROOT //g' "$root_mount_path""etc/ld.so.preload" || warning "sed failed."
   umount -v "$chroot_dev_pts_mount_path" || warning "Umounting $chroot_dev_pts_mount_path failed!"
   umount -v "$chroot_dev_mount_path" || warning "Umounting $chroot_dev_mount_path failed!"
   umount -v "$chroot_proc_mount_path" || warning "Umounting $chroot_proc_mount_path failed!"
@@ -110,8 +109,11 @@ case "$os" in
       "1")
         imagename="ArchLinuxARM-rpi-latest.tar.gz"
         ;;
-      "2" | "3")
+      "2")
         imagename="ArchLinuxARM-rpi-2-latest.tar.gz"
+        ;;
+      "3")
+        imagename="ArchLinuxARM-rpi-3-latest.tar.gz"
         ;;
       "4")
         imagename="ArchLinuxARM-rpi-4-latest.tar.gz"
@@ -314,12 +316,14 @@ if [ "$copy_ssh_key" == "y" ]
   else
     info "Skipped SSH-key copying.."
 fi
+
 info "Start chroot procedures..."
 
-mount_binds
+mount_chroot_binds
 
-sed -i 's/^/#CHROOT /g' "$root_mount_path""etc/ld.so.preload" || warning "sed failed."
-cp -v /usr/bin/qemu-arm-static "$root_mount_path""/usr/bin/" || error "Copy qemu-arm-static failed. The following packages are neccessary: qemu qemu-user-static binfmt-support."
+copy_qemu
+
+copy_resolve_conf
 
 question "Should the image password of the standart user \"$target_username\" be changed?(y/N)" && read -r change_password
 if [ "$change_password" == "y" ]

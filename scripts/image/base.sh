@@ -50,7 +50,7 @@ mount_partitions(){
   error
 }
 
-mount_binds(){
+mount_chroot_binds(){
   info "Mount chroot environments..." &&
   chroot_sys_mount_path="$root_mount_path""sys/" &&
   chroot_proc_mount_path="$root_mount_path""proc/" &&
@@ -62,4 +62,16 @@ mount_binds(){
   mount --bind /proc "$chroot_proc_mount_path" &&
   mount --bind /dev/pts "$chroot_dev_pts_mount_path" ||
   error
+}
+
+copy_qemu(){
+  info "Copy qemu binary..." &&
+  cp -v /usr/bin/qemu-arm-static "$root_mount_path""usr/bin/" ||
+  error
+}
+
+copy_resolve_conf(){
+  info "Copy resolve.conf..." &&
+  cp -v /etc/resolv.conf "$root_mount_path""etc/" ||
+  warning "Failed. Propably there is no internet connection available."
 }

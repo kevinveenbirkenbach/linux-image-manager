@@ -16,31 +16,15 @@ set_partition_paths
 
 mount_partitions
 
-mount_binds
+mount_chroot_binds
 
-info "ld.so.preload fix" &&
-sed -i 's/^/#CHROOT /g' "$root_mount_path""etc/ld.so.preload" ||
-warning "Failed."
+copy_qemu
 
-info "Copy qemu binary..." &&
-cp -v /usr/bin/qemu-arm-static "$root_mount_path""usr/bin/" ||
-error
+copy_resolve_conf
 
-info "Copy resolve.conf..."
-cp -v /etc/resolv.conf "$root_mount_path""etc/" &&
-warning "Failed. Propably there is no internet connection available."
-
-info "You will be transferred to the bash shell now." &&
-info "Issue 'exit' when you are done." &&
-info "Issue 'su pi' if you need to work as the user pi." &&
-info "chroot to raspbian" &&
+info "Bash shell starts..." &&
 chroot "$root_mount_path" /bin/bash ||
 error
-
-info "Clean up" &&
-info "revert ld.so.preload fix" &&
-sed -i 's/^#CHROOT //g' "$root_mount_path""etc/ld.so.preload" ||
-warning "Failed."
 
 info "unmount everything" &&
 umount "$root_mount_path"/{dev/pts,dev,sys,proc,boot,} ||
