@@ -201,8 +201,8 @@ fi
 info "Verifying image..."
 if [[ -v image_checksum ]]
   then
-    info "Checking md5 checksum..." && echo "$image_checksum $image_path"| md5sum -c -||
-    info "Checking sha1 checksum..." && echo "$image_checksum $image_path"| sha1sum -c -||
+    (info "Checking md5 checksum..." && echo "$image_checksum $image_path"| md5sum -c -) ||
+    (info "Checking sha1 checksum..." && echo "$image_checksum $image_path"| sha1sum -c -) ||
     error "Verification failed. HINT: Force the download of the image."
   else
     warning "Verification is not possible. No checksum is defined."
@@ -212,7 +212,7 @@ make_mount_folders
 
 set_partition_paths
 
-question "Should the image be transfered to $device_path?(y/n)" && read -r transfer_image
+question "Should the image be transfered to $device_path?(y/N)" && read -r transfer_image
 if [ "$transfer_image" = "y" ]
   then
 
@@ -302,7 +302,7 @@ if [ "$copy_ssh_key" == "y" ]
     origin_user_rsa_pub="$origin_user_home"".ssh/id_rsa.pub";
     if [ -f "$origin_user_rsa_pub" ]
       then
-        mkdir -v "$target_user_ssh_folder_path" &&
+        mkdir -v "$target_user_ssh_folder_path" || warning "Folder \"$target_user_ssh_folder_path\" exists. Can't be created."
         cat "$origin_user_rsa_pub" > "$target_authorized_keys" &&
         target_authorized_keys_content=$(cat "$target_authorized_keys") &&
         info "$target_authorized_keys contains the following: $target_authorized_keys_content" &&
@@ -415,7 +415,7 @@ fi
 info "Running system specific procedures..."
 if [ "$os" = "retropie" ]
   then
-    question "Should the roms be copied to the system?" && read -r copy_roms
+    question "Should the roms be copied to the system?(y/N)" && read -r copy_roms
     if [ "$copy_roms" == "y" ]
       then
         target_roms_path="$target_user_home_folder_path""/RetroPie/roms/" &&
@@ -424,7 +424,7 @@ if [ "$os" = "retropie" ]
         cp -v "$source_roms_path" "$target_roms_path" &&
         chown -vR 1000 "$target_roms_path" || error
     fi
-    question "Should the RetroFlag specific procedures be executed?" && read -r setup_retroflag
+    question "Should the RetroFlag specific procedures be executed?(y/N)" && read -r setup_retroflag
     if [ "$setup_retroflag" == "y" ]
       then
         info "Executing RetroFlag specific procedures..." &&
