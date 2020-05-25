@@ -6,13 +6,6 @@
 # shellcheck disable=SC2086  # Deactivating escaping warning, because it's wrong concerning pacman_packages
 source "$(dirname "$(readlink -f "${0}")")/../base.sh" || (echo "Loading base.sh failed." && exit 1)
 
-get_packages(){
-  for package_collection in "$@"
-  do
-    echo "$(sed -e "/^#/d" -e "s/#.*//" "$PACKAGE_PATH""$package_collection.txt" | tr '\n' ' ')" || error "Loading package wasn't possible."
-  done
-}
-
 install_yay_packages_if_needed(){
 	info "Checking yay packages [ $1 ]..."
 	for package in $1; do

@@ -1,0 +1,10 @@
+# Packages to install LUKS on servers
+sudo
+git
+rsync
+base-devel
+uboot-tools
+dropbear
+mkinitcpio-utils
+mkinitcpio-netconf
+mkinitcpio-dropbear

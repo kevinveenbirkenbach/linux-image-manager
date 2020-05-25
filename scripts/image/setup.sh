@@ -370,6 +370,27 @@ if [ "$update_system" == "y" ]
     ) | chroot "$root_mount_path" /bin/bash || error
 fi
 
+question "Should the system be encrypted?(y/N)" && read -r encrypt_system
+if [ "$encrypt_system" == "y" ]
+  then
+    # @see https://gist.github.com/gea0/4fc2be0cb7a74d0e7cc4322aed710d38
+    search_hooks="HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)"
+    replace_hooks="HOOKS=(base udev autodetect modconf block sleep netconf dropbear encryptssh filesystems keyboard fsck)"
+    mkinitcpio_path="/etc/mkinitcpio.conf"
+    mkinitcpio_rescue_path="$mkinitcpio_path.$(date +%s).rescue"
+    search_modules="MODULES=()"
+    replace_modules="MODULES=(g_cdc usb_f_acm usb_f_ecm smsc95xx g_ether)"
+    info "Setup encryption..." &&
+    (
+    echo "yes | pacman -S --needed $(get_packages "server/luks")"
+    echo "cp -v /home/$target_username/.ssh/authorized_keys /etc/dropbear/root_key"
+    echo "cp -v $mkinitcpio_path $mkinitcpio_rescue_path"
+    echo "sed -i 's/$search_modules/$replace_modules/g' $mkinitcpio_path"
+    echo "sed -i 's/$search_hooks/$replace_hooks/g' $mkinitcpio_path"
+    echo "mkinitcpio -P"
+    ) | chroot "$root_mount_path" /bin/bash || error
+fi
+
 # question "Do you want to copy all Wifi passwords to the device?(y/n)" && read -r copy_wifi
 # if [ "$copy_wifi" = "y" ]
 #   then
