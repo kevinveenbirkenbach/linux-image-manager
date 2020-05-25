@@ -325,7 +325,7 @@ copy_qemu
 
 copy_resolve_conf
 
-question "Should the image password of the standart user \"$target_username\" be changed?(y/N)" && read -r change_password
+question "Should the password of the standart user \"$target_username\" be changed?(y/N)" && read -r change_password
 if [ "$change_password" == "y" ]
   then
     info "Changing passwords on target system..."
@@ -362,12 +362,25 @@ fi
 question "Should the system be updated?(y/N)" && read -r update_system
 if [ "$update_system" == "y" ]
   then
-    info "Updating system..." &&
-    (
-    echo "yes | pacman-key --init"
-    echo "yes | pacman-key --populate archlinuxarm"
-    echo "yes | pacman -Syyu"
-    ) | chroot "$root_mount_path" /bin/bash || error
+    info "Updating system..."
+    case "$os" in
+      "arch"|"manjaro")
+        (
+        echo "yes | pacman-key --init"
+        echo "yes | pacman-key --populate archlinuxarm"
+        echo "yes | pacman -Syyu"
+        ) | chroot "$root_mount_path" /bin/bash || error
+        ;;
+      "moode"|"retropie")
+        (
+        echo "yes | apt update"
+        echo "yes | apt upgrade"
+        ) | chroot "$root_mount_path" /bin/bash || error
+        ;;
+      *)
+        warning "System update for operation system \"$os\" is not supported yet. Skipped."
+        ;;
+    esac
 fi
 
 question "Should the system be encrypted?(y/N)" && read -r encrypt_system
@@ -398,6 +411,28 @@ fi
 #     target_wifi_config_path="$root_mount_path$origin_wifi_config_path"
 #     rsync -av "$origin_wifi_config_path" "$target_wifi_config_path"
 # fi
+
+info "Running system specific procedures..."
+if [ "$os" = "retropie" ]
+  then
+    question "Should the roms be copied to the system?" && read -r copy_roms
+    if [ "$copy_roms" == "y" ]
+      then
+        target_roms_path="$target_user_home_folder_path""/RetroPie/roms/" &&
+        source_roms_path="$origin_user_home""Games/roms/" &&
+        info "Copy roms from $source_roms_path to $target_roms_path..."
+        cp -v "$source_roms_path" "$target_roms_path" &&
+        chown -vR 1000 "$target_roms_path" || error
+    fi
+    question "Should the RetroFlag specific procedures be executed?" && read -r setup_retroflag
+    if [ "$setup_retroflag" == "y" ]
+      then
+        info "Executing RetroFlag specific procedures..." &&
+        (
+        echo 'wget -O - "https://raw.githubusercontent.com/RetroFlag/retroflag-picase/master/install_gpi.sh" | bash'
+        ) | chroot "$root_mount_path" /bin/bash || error
+    fi
+fi
 
 destructor
 success "Setup successfull :)" && exit 0
