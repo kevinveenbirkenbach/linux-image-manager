@@ -404,13 +404,22 @@ if [ "$encrypt_system" == "y" ]
     ) | chroot "$root_mount_path" /bin/bash || error
 fi
 
-# question "Do you want to copy all Wifi passwords to the device?(y/n)" && read -r copy_wifi
-# if [ "$copy_wifi" = "y" ]
-#   then
-#     origin_wifi_config_path="/etc/NetworkManager/system-connections/"
-#     target_wifi_config_path="$root_mount_path$origin_wifi_config_path"
-#     rsync -av "$origin_wifi_config_path" "$target_wifi_config_path"
-# fi
+question "Do you want to setup Wifi on the device?(y/N)" && read -r setup_wifi
+if [ "$setup_wifi" = "y" ]
+  then
+    question "Please type in the ssid:" && read -r ssid
+    question "Please type in the psk:" && read -r psk
+    case "$os" in
+      "retropie")
+        wifi_file="$boot_mount_path""wifikeyfile.txt"
+        echo "ssid=\"$ssid\"" > "$wifi_file"
+        echo "psk=\"$psk\"" >> "$wifi_file"
+        ;;
+      *)
+        warning "Wifi setting for operation system \"$os\" is not supported yet. Skipped."
+        ;;
+    esac
+fi
 
 info "Running system specific procedures..."
 if [ "$os" = "retropie" ]
