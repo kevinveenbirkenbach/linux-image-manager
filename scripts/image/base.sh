@@ -56,7 +56,7 @@ mount_chroot_binds(){
   chroot_proc_mount_path="$root_mount_path""proc/" &&
   chroot_dev_mount_path="$root_mount_path""dev/" &&
   chroot_dev_pts_mount_path="$root_mount_path""dev/pts" &&
-  mount --bind "$boot_mount_path" "$root_mount_path""/boot" &&
+  mount --bind "$boot_mount_path" "$root_mount_path""boot" &&
   mount --bind /dev "$chroot_dev_mount_path" &&
   mount --bind /sys "$chroot_sys_mount_path" &&
   mount --bind /proc "$chroot_proc_mount_path" &&

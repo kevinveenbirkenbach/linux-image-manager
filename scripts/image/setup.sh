@@ -253,7 +253,7 @@ if [ "$transfer_image" = "y" ]
         error
 
         info "Boot files will be transfered to device..." &&
-        mv -v "$root_mount_path/boot/"* "$boot_mount_path" ||
+        mv -v "$root_mount_path""boot/"* "$boot_mount_path" ||
         error
       elif [ "${image_path: -4}" = ".zip" ]
         then
@@ -281,11 +281,15 @@ if [ "$transfer_image" = "y" ]
 fi
 
 info "Start regular mounting procedure..."
-if mount | grep -q "$boot_mount_path" && mount | grep -q "$root_mount_path"
+if ! mount | grep -q "$boot_mount_path"
   then
-    info "Everything allready mounted. Skipping..."
-  else
-    mount_partitions
+    info "$boot_mount_path is allready mounted..."
+    if ! mount | grep -q "$root_mount_path"
+      then
+        info "$root_mount_path is allready mounted..."
+      else
+        mount_partitions
+    fi
 fi
 
 info "Define target paths..."
