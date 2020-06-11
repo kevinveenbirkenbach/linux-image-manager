@@ -72,6 +72,6 @@ copy_qemu(){
 
 copy_resolve_conf(){
   info "Copy resolve.conf..." &&
-  cp -v /etc/resolv.conf "$root_mount_path""etc/" ||
+  cp --remove-destination -v /etc/resolv.conf "$root_mount_path""etc/" ||
   warning "Failed. Propably there is no internet connection available."
 }
