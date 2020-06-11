@@ -298,13 +298,13 @@ if [ "$transfer_image" = "y" ]
 fi
 
 info "Start regular mounting procedure..."
-if mount | grep -q "$boot_mount_path"
+if mount | grep -q "$boot_partition_path"
   then
-    info "$boot_mount_path is allready mounted..."
+    info "$boot_partition_path is allready mounted..."
   else
-    if mount | grep -q "$root_mount_path"
+    if mount | grep -q "$root_partition_path"
       then
-        info "$root_mount_path is allready mounted..."
+        info "$root_partition_path is allready mounted..."
       else
         mount_partitions
     fi
