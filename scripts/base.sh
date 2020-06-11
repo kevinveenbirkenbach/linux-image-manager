@@ -97,7 +97,7 @@ get_packages(){
   for package_collection in "$@"
   do
     package_collection_path="$PACKAGE_PATH""$package_collection.txt" &&
-    info "Loading package collection from $package_collection_path..." &&
+    #info "Loading package collection from $package_collection_path..." &&
     echo "$(sed -e "/^#/d" -e "s/#.*//" "$package_collection_path" | tr '\n' ' ')" ||
     error
   done

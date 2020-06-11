@@ -50,7 +50,7 @@ mount_partitions(){
   error
 }
 
-umount_everything(){
+destructor(){
   info "Cleaning up..."
   info "Unmounting everything..."
   umount -lv "$chroot_dev_pts_mount_path" || warning "Umounting $chroot_dev_pts_mount_path failed!"
