@@ -6,7 +6,7 @@ source "$(dirname "$(readlink -f "${0}")")/base.sh" || (echo "Loading base.sh fa
 
 destructor(){
   info "Unmount everything" &&
-  umount "$root_mount_path"/{dev/pts,dev,sys,proc,boot,} $boot_mount_path||
+  umount "$root_mount_path"{dev/pts,dev,sys,proc,boot,} $boot_mount_path||
   warning "Failed."
 }
 
