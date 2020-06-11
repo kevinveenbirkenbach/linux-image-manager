@@ -233,9 +233,6 @@ if [ "$transfer_image" = "y" ]
             	echo ""        #Default end sector
             	echo "w"       #Write the partition table and exit by typing w.
             )| fdisk "$device_path" || error
-
-            info "Format encrypted partition..." &&
-            mkfs.ext4 "$encrypted_partition_path" || error
           else
             info "Creating partitions..." &&
             (	echo "o"       #Type o. This will clear out any partitions on the drive.
