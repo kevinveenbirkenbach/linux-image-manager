@@ -22,8 +22,9 @@ echo_partition_name(){
 
 set_partition_paths(){
   info "Setting partition paths..."
-  root_partition_path=$(echo_partition_name "2")
   boot_partition_path=$(echo_partition_name "1")
+  root_partition_path=$(echo_partition_name "2")
+  encrypted_partition_path=$(echo_partition_name "3")
 }
 
 make_mount_folders(){
@@ -44,8 +45,8 @@ make_working_folder(){
 
 mount_partitions(){
   info "Mount boot and root partition..." &&
-  mount "$boot_partition_path" "$boot_mount_path" &&
-  mount "$root_partition_path" "$root_mount_path" &&
+  mount -v "$boot_partition_path" "$boot_mount_path" &&
+  mount -v "$root_partition_path" "$root_mount_path" &&
   info "The following mounts refering this setup exist:" && mount | grep "$working_folder_path" ||
   error
 }

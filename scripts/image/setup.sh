@@ -89,6 +89,7 @@ os_does_not_support_raspberry_version_error () {
 
 case "$os" in
   "arch")
+    question "Should the system be encrypted?(y/N)" && read -r encrypt_system
     base_download_url="http://os.archlinuxarm.org/os/";
     case "$version" in
       "1")
@@ -206,29 +207,60 @@ if [ "$transfer_image" = "y" ]
     info "Starting image transfer..."
     if [ "$os" = "arch" ]
       then
-        info "Execute fdisk..."
-        (	echo "o"	#Type o. This will clear out any partitions on the drive.
-        	echo "p"	#Type p to list partitions. There should be no partitions left
-        	echo "n"	#Type n,
-        	echo "p"	#then p for primary,
-        	echo "1"	#1 for the first partition on the drive,
-        	echo ""		#press ENTER to accept the default first sector,
-        	echo "+100M"	#then type +100M for the last sector.
-        	echo "t"	#Type t,
-        	echo "c"	#then c to set the first partition to type W95 FAT32 (LBA).
-        	echo "n"	#Type n,
-        	echo "p"	#then p for primary,
-        	echo "2"	#2 for the second partition on the drive,
-        	echo ""		#and then press ENTER twice to accept the default first and last sector.
-        	echo ""
-        	echo "w"	#Write the partition table and exit by typing w.
-        )| fdisk "$device_path" || error "Creating partitions failed. Try to execute this script with the overwritting parameter."
+        info "Deleting partition tables..." &&
+        wipefs -a "$device_path" || error
+        if [ "$encrypt_system" == "y" ]
+          then
+            info "Creating partitions for encrypted system..." &&
+            (	echo "o"       #Type o. This will clear out any partitions on the drive.
+            	echo "p"       #Type p to list partitions. There should be no partitions left
+            	echo "n"       #Type n,
+            	echo "p"       #then p for primary,
+            	echo "1"       #1 for the first partition on the drive,
+            	echo ""        #press ENTER to accept the default first sector,
+            	echo "+300M"   #then type +100M for the last sector.
+            	echo "t"       #Type t,
+            	echo "c"       #then c to set the first partition to type W95 FAT32 (LBA).
+            	echo "n"       #Type n,
+            	echo "p"       #then p for primary,
+            	echo "2"       #2 for the second partition on the drive,
+            	echo ""        #Default start sector
+            	echo "+3G"     #Endsector
+              echo "n"       #Type n,
+            	echo "p"       #then p for primary,
+            	echo "3"       #2 for the second partition on the drive,
+            	echo ""        #Default start sector
+            	echo ""        #Default end sector
+            	echo "w"       #Write the partition table and exit by typing w.
+            )| fdisk "$device_path" || error
+
+            info "Format encrypted partition..." &&
+            mkfs.ext4 "$encrypted_partition_path" || error
+          else
+            info "Creating partitions..." &&
+            (	echo "o"       #Type o. This will clear out any partitions on the drive.
+            	echo "p"       #Type p to list partitions. There should be no partitions left
+            	echo "n"       #Type n,
+            	echo "p"       #then p for primary,
+            	echo "1"       #1 for the first partition on the drive,
+            	echo ""        #Default start sector
+            	echo "+100M"   #then type +100M for the last sector.
+            	echo "t"       #Type t,
+            	echo "c"       #then c to set the first partition to type W95 FAT32 (LBA).
+            	echo "n"       #Type n,
+            	echo "p"       #then p for primary,
+            	echo "2"       #2 for the second partition on the drive,
+            	echo ""        #Default start sector
+            	echo ""        #Default end sector
+            	echo "w"       #Write the partition table and exit by typing w.
+            )| fdisk "$device_path" || error 
+      fi
 
         info "Format boot partition..." &&
-        mkfs.vfat "$boot_partition_path" || error "Format boot is not possible."
+        mkfs.vfat "$boot_partition_path" || error
 
         info "Format root partition..." &&
-        mkfs.ext4 "$root_partition_path" || error "Format root is not possible."
+        mkfs.ext4 "$root_partition_path" || error
 
         mount_partitions;
 
@@ -373,7 +405,6 @@ if [ "$update_system" == "y" ]
     esac
 fi
 
-question "Should the system be encrypted?(y/N)" && read -r encrypt_system
 if [ "$encrypt_system" == "y" ]
   then
     # @see https://gist.github.com/gea0/4fc2be0cb7a74d0e7cc4322aed710d38
