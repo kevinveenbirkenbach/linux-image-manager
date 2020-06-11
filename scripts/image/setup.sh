@@ -7,15 +7,6 @@ source "$(dirname "$(readlink -f "${0}")")/base.sh" || (echo "Loading base.sh fa
 
 info "Setupscript for images started..."
 
-info "Define functions..."
-destructor(){
-  info "Cleaning up..."
-  umount_everything
-  rmdir -v "$root_mount_path" || warning "Removing $root_mount_path failed!"
-  rmdir -v "$boot_mount_path" || warning "Removing $boot_mount_path failed!"
-  rmdir -v "$working_folder_path" || warning "Removing $working_folder_path failed!"
-}
-
 info "Checking if root..."
 if [ "$(id -u)" != "0" ];then
     error "This script must be executed as root!"
