@@ -50,6 +50,18 @@ mount_partitions(){
   error
 }
 
+umount_everything(){
+  info "Unmounting everything..." &&
+  (umount -lv "$chroot_dev_pts_mount_path" || warning "Umounting $chroot_dev_pts_mount_path failed!") &&
+  (umount -lv "$chroot_dev_mount_path" || warning "Umounting $chroot_dev_mount_path failed!" ) &&
+  (umount -v "$chroot_proc_mount_path" || warning "Umounting $chroot_proc_mount_path failed!" ) &&
+  (umount -v "$chroot_sys_mount_path" || warning "Umounting $chroot_sys_mount_path failed!") &&
+  (umount -v "$root_mount_path""boot/" || warning "Umounting $root_mount_path""boot/ failed!") &&
+  (umount -v "$root_mount_path" || warning "Umounting $root_mount_path failed!") &&
+  (umount -v "$boot_mount_path" || warning "Umounting $boot_mount_path failed!") ||
+  warning "Failed."
+}
+
 mount_chroot_binds(){
   info "Mount chroot environments..." &&
   chroot_sys_mount_path="$root_mount_path""sys/" &&

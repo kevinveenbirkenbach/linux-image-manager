@@ -5,9 +5,7 @@
 source "$(dirname "$(readlink -f "${0}")")/base.sh" || (echo "Loading base.sh failed." && exit 1)
 
 destructor(){
-  info "Unmount everything" &&
-  umount "$root_mount_path"{dev/pts,dev,sys,proc,boot,} $boot_mount_path||
-  warning "Failed."
+  umount_everything
 }
 
 info "Starting chroot..."
