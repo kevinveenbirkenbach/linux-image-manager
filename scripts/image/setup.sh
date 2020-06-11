@@ -358,7 +358,7 @@ if [ "$update_system" == "y" ]
         (
         echo "yes | pacman-key --init"
         echo "yes | pacman-key --populate archlinuxarm"
-        echo "yes | pacman -Syyu"
+        echo "pacman --noconfirm -Syyu"
         ) | chroot "$root_mount_path" /bin/bash || error
         ;;
       "moode"|"retropie")
@@ -385,7 +385,7 @@ if [ "$encrypt_system" == "y" ]
     replace_modules="MODULES=(g_cdc usb_f_acm usb_f_ecm smsc95xx g_ether)"
     info "Setup encryption..." &&
     (
-    echo "yes | pacman -S --needed $(get_packages "server/luks")"
+    echo "pacman --noconfirm -S --needed $(get_packages "server/luks")"
     echo "cp -v /home/$target_username/.ssh/authorized_keys /etc/dropbear/root_key"
     echo "cp -v $mkinitcpio_path $mkinitcpio_rescue_path"
     echo "sed -i 's/$search_modules/$replace_modules/g' $mkinitcpio_path"
