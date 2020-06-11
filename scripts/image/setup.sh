@@ -266,10 +266,11 @@ if [ "$transfer_image" = "y" ]
 fi
 
 info "Start regular mounting procedure..."
-if ! mount | grep -q "$boot_mount_path"
+if mount | grep -q "$boot_mount_path"
   then
     info "$boot_mount_path is allready mounted..."
-    if ! mount | grep -q "$root_mount_path"
+  else
+    if mount | grep -q "$root_mount_path"
       then
         info "$root_mount_path is allready mounted..."
       else
