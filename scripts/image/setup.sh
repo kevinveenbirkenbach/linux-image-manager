@@ -253,7 +253,7 @@ if [ "$transfer_image" = "y" ]
             	echo ""        #Default start sector
             	echo ""        #Default end sector
             	echo "w"       #Write the partition table and exit by typing w.
-            )| fdisk "$device_path" || error 
+            )| fdisk "$device_path" || error
       fi
 
         info "Format boot partition..." &&
@@ -414,6 +414,11 @@ if [ "$encrypt_system" == "y" ]
     mkinitcpio_rescue_path="$mkinitcpio_path.$(date +%s).rescue"
     search_modules="MODULES=()"
     replace_modules="MODULES=(g_cdc usb_f_acm usb_f_ecm smsc95xx g_ether)"
+    standart_luks_password="luks_password"
+    boot_txt_path="/boot/boot.txt"
+    boot_txt_uncomment_line="part uuid ${devtype} ${devnum}:2 uuid"
+    boot_txt_setenv_origin="setenv bootargs console=ttyS1,115200 console=tty0 root=PARTUUID=\${uuid} rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\""
+    boot_txt_setenv_replace="setenv bootargs earlyprintk console=ttyS1,115200 console=tty0 ip=::::pi_rescue:eth0:dhcp cryptdevice=$encrypted_partition_path:root root=/dev/mapper/root rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\""
     info "Setup encryption..." &&
     (
     echo "pacman --noconfirm -S --needed $(get_packages "server/luks")"
@@ -422,6 +427,20 @@ if [ "$encrypt_system" == "y" ]
     echo "sed -i 's/$search_modules/$replace_modules/g' $mkinitcpio_path"
     echo "sed -i 's/$search_hooks/$replace_hooks/g' $mkinitcpio_path"
     echo "mkinitcpio -P"
+    echo "( echo 'YES'
+            echo '$standart_luks_password'
+            echo '$standart_luks_password'
+          )|sudo cryptsetup luksFormat -c aes-xts-plain64 -s 512 -h sha512 --use-random -i 1000 $encrypted_partition_path"
+    echo "echo $standart_luks_password | sudo cryptsetup luksOpen $encrypted_partition_path root"
+    echo "mkfs.ext4 /dev/mapper/root"
+    echo "mount /dev/mapper/root /mnt"
+    echo "rsync --info=progress2 -axHAX / /mnt/"
+    echo "echo '/dev/mapper/root  /               ext4    defaults,noatime  0       1' >> /mnt/etc/fstab"
+    echo "echo 'root $encrypted_partition_path none luks' >> /mnt/etc/crypttab"
+    echo "sed -i 's/$boot_txt_uncomment_line/#$boot_txt_uncomment_line/g' $boot_txt_path"
+    echo "sed -i 's/$boot_txt_setenv_origin/$boot_txt_setenv_replace/g' $boot_txt_path"
+    echo "cd /boot/ && ./mkscr"
+    echo "exit"
     ) | chroot "$root_mount_path" /bin/bash || error
 fi
 
