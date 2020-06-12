@@ -369,14 +369,17 @@ if [ "$change_password" == "y" ]
     info "Skipped password change..."
 fi
 
+hostname_path="$root_mount_path""etc/hostname"
 question "Should the hostname be changed?(y/N)" && read -r change_hostname
 if [ "$change_hostname" == "y" ]
   then
-    question "Type in the hostname:" && read -r hostname;
-    echo "$hostname" > "$root_mount_path""etc/hostname" || error
+    question "Type in the hostname:" && read -r target_hostname;
+    echo "$target_hostname" > "$hostname_path" || error
   else
+    target_hostname=$(cat "$hostname_path")
     info "Skipped hostname change..."
 fi
+info "Used hostname is: $target_hostname"
 
 question "Should the system be updated?(y/N)" && read -r update_system
 if [ "$update_system" == "y" ]
@@ -422,7 +425,7 @@ if [ "$encrypt_system" == "y" ]
     boot_txt_rescue_path="/boot/boot.txt$rescue_suffix"
     boot_txt_uncomment_line="part uuid ${devtype} ${devnum}:2 uuid"
     boot_txt_setenv_origin="setenv bootargs console=ttyS1,115200 console=tty0 root=PARTUUID=\${uuid} rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\""
-    boot_txt_setenv_replace="setenv bootargs console=ttyS1,115200 console=tty0 ip=::::pi_rescue:eth0:dhcp cryptdevice=$encrypted_partition_path:root root=$root_mapper_path rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\""
+    boot_txt_setenv_replace="setenv bootargs console=ttyS1,115200 console=tty0 ip=::::$target_hostname:eth0:dhcp cryptdevice=$encrypted_partition_path:root root=$root_mapper_path rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\""
     info "Setup encryption..." &&
     (
     echo "pacman --noconfirm -S --needed $(get_packages "server/luks")"
