@@ -6,6 +6,7 @@
 # shellcheck disable=SC2010  # ls  | grep allowed
 # shellcheck source=/dev/null # Deactivate SC1090
 # shellcheck disable=SC2015  # Deactivate bools hints
+# shellcheck disable=SC2154  # Deactivate referenced but not assigned hints
 source "$(dirname "$(readlink -f "${0}")")/../base.sh" || (echo "Loading base.sh failed." && exit 1)
 
 # Writes the full partition name

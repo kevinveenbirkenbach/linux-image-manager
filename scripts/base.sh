@@ -3,6 +3,10 @@
 # This script contains the global program variables and functions
 #
 # shellcheck disable=SC2034 #Deactivate checking of unused variables
+# shellcheck disable=SC2003 #Deactivate "expr is antiquated"
+# shellcheck disable=SC2015 #Deactivate bool hint
+# shellcheck disable=SC2005 #Remove useless echo hint
+# shellcheck disable=SC2010 #Deactivate ls | grep hint
 
 REPOSITORY_PATH=$(readlink -f "$(dirname "$(readlink -f "${0}")")/../../") # Propably this can be optimized
 CONFIGURATION_PATH="$REPOSITORY_PATH""/configuration/"
@@ -76,7 +80,7 @@ set_device_path(){
       error "$device_path is not valid device."
   fi
   # @see https://www.heise.de/ct/hotline/Optimale-Blockgroesse-fuer-dd-2056768.html
-  OPTIMAL_BLOCKSIZE=$(expr 64 \* "$(sudo cat /sys/block/$device/queue/physical_block_size)") &&
+  OPTIMAL_BLOCKSIZE=$(expr 64 \* "$(sudo cat /sys/block/"$device"/queue/physical_block_size)") &&
   info "Device path set to: $device_path" &&
   info "Optimal blocksize set to: $OPTIMAL_BLOCKSIZE" ||
   error
