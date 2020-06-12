@@ -405,17 +405,24 @@ fi
 if [ "$encrypt_system" == "y" ]
   then
     # @see https://gist.github.com/gea0/4fc2be0cb7a74d0e7cc4322aed710d38
+    rescue_suffix=".$(date +%s).rescue"
     search_hooks="HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)"
     replace_hooks="HOOKS=(base udev autodetect modconf block sleep netconf dropbear encryptssh filesystems keyboard fsck)"
     mkinitcpio_path="/etc/mkinitcpio.conf"
-    mkinitcpio_rescue_path="$mkinitcpio_path.$(date +%s).rescue"
+    mkinitcpio_rescue_path="$mkinitcpio_path$rescue_suffix"
     search_modules="MODULES=()"
     replace_modules="MODULES=(g_cdc usb_f_acm usb_f_ecm smsc95xx g_ether)"
     standart_luks_password="luks_password"
+    root_mapper_path="/dev/mapper/root"
+    fstab_path="/mnt/etc/fstab"
+    fstab_rescue_path="$fstab_path$rescue_suffix"
+    crypttab_path="/mnt/etc/crypttab"
+    crypttab_rescue_path="$crypttab_path$rescue_suffix"
     boot_txt_path="/boot/boot.txt"
+    boot_txt_rescue_path="/boot/boot.txt$rescue_suffix"
     boot_txt_uncomment_line="part uuid ${devtype} ${devnum}:2 uuid"
     boot_txt_setenv_origin="setenv bootargs console=ttyS1,115200 console=tty0 root=PARTUUID=\${uuid} rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\""
-    boot_txt_setenv_replace="setenv bootargs earlyprintk console=ttyS1,115200 console=tty0 ip=::::pi_rescue:eth0:dhcp cryptdevice=$encrypted_partition_path:root root=/dev/mapper/root rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\""
+    boot_txt_setenv_replace="setenv bootargs console=ttyS1,115200 console=tty0 ip=::::pi_rescue:eth0:dhcp cryptdevice=$encrypted_partition_path:root root=$root_mapper_path rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\""
     info "Setup encryption..." &&
     (
     echo "pacman --noconfirm -S --needed $(get_packages "server/luks")"
@@ -429,13 +436,16 @@ if [ "$encrypt_system" == "y" ]
             echo '$standart_luks_password'
           )|sudo cryptsetup luksFormat -c aes-xts-plain64 -s 512 -h sha512 --use-random -i 1000 $encrypted_partition_path"
     echo "echo $standart_luks_password | sudo cryptsetup luksOpen $encrypted_partition_path root"
-    echo "mkfs.ext4 /dev/mapper/root"
-    echo "mount /dev/mapper/root /mnt"
+    echo "mkfs.ext4 $root_mapper_path"
+    echo "mount $root_mapper_path /mnt"
     echo "rsync --info=progress2 -axHAX / /mnt/"
-    echo "echo '/dev/mapper/root  /               ext4    defaults,noatime  0       1' >> /mnt/etc/fstab"
-    echo "echo 'root $encrypted_partition_path none luks' >> /mnt/etc/crypttab"
-    echo "sed -i 's/$boot_txt_uncomment_line/#$boot_txt_uncomment_line/g' $boot_txt_path"
-    echo "sed -i 's/$boot_txt_setenv_origin/$boot_txt_setenv_replace/g' $boot_txt_path"
+    echo "cp -v $fstab_path $fstab_rescue_path"
+    echo "echo '$root_mapper_path  /               ext4    defaults,noatime  0       1' >> $fstab_path"
+    echo "cp -v $crypttab_path $crypttab_rescue_path"
+    echo "echo 'root $encrypted_partition_path none luks' >> $crypttab_path"
+    echo "cp -v $boot_txt_path $boot_txt_rescue_path"
+    echo "sed -i 's/$boot_txt_uncomment_line/#$boot_txt_uncomment_line/g' $boot_txt_path" #@todo doesn't work yet
+    echo "sed -i 's/$boot_txt_setenv_origin/$boot_txt_setenv_replace/g' $boot_txt_path" #@todo  doesn't work yet
     echo "cd /boot/ && ./mkscr"
     echo "exit"
     ) | chroot "$root_mount_path" /bin/bash || error
