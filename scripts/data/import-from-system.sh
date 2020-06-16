@@ -11,6 +11,7 @@ source "$(dirname "$(readlink -f "${0}")")/../base.sh" || (echo "Loading base.sh
 declare -a BACKUP_LIST=("$HOME/.ssh/" \
   "$HOME/.gitconfig" \
   "$HOME/.atom/config.cson" \
+  "$HOME/.projectlibre/projectlibre.conf" \
   "$HOME/.local/share/rhythmbox/rhythmdb.xml" \
   "$HOME/.config/keepassxc/keepassxc.ini" \
   "$HOME/Documents/certificates/" \
