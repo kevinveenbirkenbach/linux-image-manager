@@ -453,6 +453,7 @@ if [ "$encrypt_system" == "y" ]
     echo "sed -i 's/$boot_txt_setenv_origin/$boot_txt_setenv_replace/g' $boot_txt_path" #@todo  doesn't work yet
     echo "echo \"$boot_txt_path:\" && cat \"$boot_txt_path\""
     echo "cd /boot/ && ./mkscr"
+    echo "umount $root_mapper_path"
     echo "exit"
     ) | chroot "$root_mount_path" /bin/bash || error
 fi
