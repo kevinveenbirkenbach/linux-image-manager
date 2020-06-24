@@ -7,8 +7,7 @@
 # shellcheck disable=SC2015 #Deactivate bool hint
 # shellcheck disable=SC2005 #Remove useless echo hint
 # shellcheck disable=SC2010 #Deactivate ls | grep hint
-
-REPOSITORY_PATH=$(readlink -f "$(dirname "$(readlink -f "${0}")")/../../") # Propably this can be optimized
+REPOSITORY_PATH="$(readlink -f "${0}" | sed -e 's/\/scripts\/.*//g')"
 CONFIGURATION_PATH="$REPOSITORY_PATH""/configuration/"
 PACKAGE_PATH="$CONFIGURATION_PATH""packages/"
 TEMPLATE_PATH="$CONFIGURATION_PATH""templates/";
