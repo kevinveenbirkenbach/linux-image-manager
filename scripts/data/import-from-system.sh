@@ -18,6 +18,7 @@ declare -a BACKUP_LIST=("$HOME/.ssh/" \
   "$HOME/Documents/recovery_codes/" \
   "$HOME/Documents/identity/" \
   "$HOME/Documents/passwords/" \
+  "$HOME/Documents/health/" \
   "$HOME/Documents/licenses/");
 
 if [ -z "$(mount | grep "$DECRYPTED_PATH")" ]
