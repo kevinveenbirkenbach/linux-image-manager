@@ -8,22 +8,6 @@ source "$(dirname "$(readlink -f "${0}")")/base.sh" || (echo "Loading base.sh fa
 
 info "Setupscript for images started..."
 
-info "Define functions..."
-destructor(){
-  info "Cleaning up..."
-  sed -i 's/^#CHROOT //g' "$root_mount_path""etc/ld.so.preload" || warning "sed failed."
-  umount -v "$chroot_dev_pts_mount_path" || warning "Umounting $chroot_dev_pts_mount_path failed!"
-  umount -v "$chroot_dev_mount_path" || warning "Umounting $chroot_dev_mount_path failed!"
-  umount -v "$chroot_proc_mount_path" || warning "Umounting $chroot_proc_mount_path failed!"
-  umount -v "$chroot_sys_mount_path" || warning "Umounting $chroot_sys_mount_path failed!"
-  umount -v "$root_mount_path""boot/" || warning "Umounting $root_mount_path""boot/ failed!"
-  umount -v "$root_mount_path" || warning "Umounting $root_mount_path failed!"
-  umount -v "$boot_mount_path" || warning "Umounting $boot_mount_path failed!"
-  rmdir -v "$root_mount_path" || warning "Removing $root_mount_path failed!"
-  rmdir -v "$boot_mount_path" || warning "Removing $boot_mount_path failed!"
-  rmdir -v "$working_folder_path" || warning "Removing $working_folder_path failed!"
-}
-
 info "Checking if root..."
 if [ "$(id -u)" != "0" ];then
     error "This script must be executed as root!"
@@ -106,13 +90,17 @@ os_does_not_support_raspberry_version_error () {
 
 case "$os" in
   "arch")
+    question "Should the system be encrypted?(y/N)" && read -r encrypt_system
     base_download_url="http://os.archlinuxarm.org/os/";
     case "$version" in
       "1")
         imagename="ArchLinuxARM-rpi-latest.tar.gz"
         ;;
-      "2" | "3")
+      "2")
         imagename="ArchLinuxARM-rpi-2-latest.tar.gz"
+        ;;
+      "3")
+        imagename="ArchLinuxARM-rpi-3-latest.tar.gz"
         ;;
       "4")
         imagename="ArchLinuxARM-rpi-4-latest.tar.gz"
@@ -200,8 +188,8 @@ fi
 info "Verifying image..."
 if [[ -v image_checksum ]]
   then
-    info "Checking md5 checksum..." && echo "$image_checksum $image_path"| md5sum -c -||
-    info "Checking sha1 checksum..." && echo "$image_checksum $image_path"| sha1sum -c -||
+    (info "Checking md5 checksum..." && echo "$image_checksum $image_path"| md5sum -c -) ||
+    (info "Checking sha1 checksum..." && echo "$image_checksum $image_path"| sha1sum -c -) ||
     error "Verification failed. HINT: Force the download of the image."
   else
     warning "Verification is not possible. No checksum is defined."
@@ -211,7 +199,7 @@ make_mount_folders
 
 set_partition_paths
 
-question "Should the image be transfered to $device_path?(y/n)" && read -r transfer_image
+question "Should the image be transfered to $device_path?(y/N)" && read -r transfer_image
 if [ "$transfer_image" = "y" ]
   then
 
@@ -220,29 +208,57 @@ if [ "$transfer_image" = "y" ]
     info "Starting image transfer..."
     if [ "$os" = "arch" ]
       then
-        info "Execute fdisk..."
-        (	echo "o"	#Type o. This will clear out any partitions on the drive.
-        	echo "p"	#Type p to list partitions. There should be no partitions left
-        	echo "n"	#Type n,
-        	echo "p"	#then p for primary,
-        	echo "1"	#1 for the first partition on the drive,
-        	echo ""		#press ENTER to accept the default first sector,
-        	echo "+100M"	#then type +100M for the last sector.
-        	echo "t"	#Type t,
-        	echo "c"	#then c to set the first partition to type W95 FAT32 (LBA).
-        	echo "n"	#Type n,
-        	echo "p"	#then p for primary,
-        	echo "2"	#2 for the second partition on the drive,
-        	echo ""		#and then press ENTER twice to accept the default first and last sector.
-        	echo ""
-        	echo "w"	#Write the partition table and exit by typing w.
-        )| fdisk "$device_path" || error "Creating partitions failed. Try to execute this script with the overwritting parameter."
+        info "Deleting partition tables..." &&
+        wipefs -a "$device_path" || error
+        if [ "$encrypt_system" == "y" ]
+          then
+            info "Creating partitions for encrypted system..." &&
+            (	echo "o"       #Type o. This will clear out any partitions on the drive.
+            	echo "p"       #Type p to list partitions. There should be no partitions left
+            	echo "n"       #Type n,
+            	echo "p"       #then p for primary,
+            	echo "1"       #1 for the first partition on the drive,
+            	echo ""        #press ENTER to accept the default first sector,
+            	echo "+300M"   #then type +100M for the last sector.
+            	echo "t"       #Type t,
+            	echo "c"       #then c to set the first partition to type W95 FAT32 (LBA).
+            	echo "n"       #Type n,
+            	echo "p"       #then p for primary,
+            	echo "2"       #2 for the second partition on the drive,
+            	echo ""        #Default start sector
+            	echo "+3G"     #Endsector
+              echo "n"       #Type n,
+            	echo "p"       #then p for primary,
+            	echo "3"       #2 for the second partition on the drive,
+            	echo ""        #Default start sector
+            	echo ""        #Default end sector
+            	echo "w"       #Write the partition table and exit by typing w.
+            )| fdisk "$device_path" || error
+          else
+            info "Creating partitions..." &&
+            (	echo "o"       #Type o. This will clear out any partitions on the drive.
+            	echo "p"       #Type p to list partitions. There should be no partitions left
+            	echo "n"       #Type n,
+            	echo "p"       #then p for primary,
+            	echo "1"       #1 for the first partition on the drive,
+            	echo ""        #Default start sector
+            	echo "+100M"   #then type +100M for the last sector.
+            	echo "t"       #Type t,
+            	echo "c"       #then c to set the first partition to type W95 FAT32 (LBA).
+            	echo "n"       #Type n,
+            	echo "p"       #then p for primary,
+            	echo "2"       #2 for the second partition on the drive,
+            	echo ""        #Default start sector
+            	echo ""        #Default end sector
+            	echo "w"       #Write the partition table and exit by typing w.
+            )| fdisk "$device_path" || error
+      fi
 
         info "Format boot partition..." &&
-        mkfs.vfat "$boot_partition_path" || error "Format boot is not possible."
+        mkfs.vfat "$boot_partition_path" || error
 
         info "Format root partition..." &&
-        mkfs.ext4 "$root_partition_path" || error "Format root is not possible."
+        mkfs.ext4 "$root_partition_path" || error
 
         mount_partitions;
 
@@ -252,7 +268,7 @@ if [ "$transfer_image" = "y" ]
         error
 
         info "Boot files will be transfered to device..." &&
-        mv -v "$root_mount_path/boot/"* "$boot_mount_path" ||
+        mv -v "$root_mount_path""boot/"* "$boot_mount_path" ||
         error
       elif [ "${image_path: -4}" = ".zip" ]
         then
@@ -280,11 +296,16 @@ if [ "$transfer_image" = "y" ]
 fi
 
 info "Start regular mounting procedure..."
-if mount | grep -q "$boot_mount_path" && mount | grep -q "$root_mount_path"
+if mount | grep -q "$boot_partition_path"
   then
-    info "Everything allready mounted. Skipping..."
+    info "$boot_partition_path is allready mounted..."
   else
-    mount_partitions
+    if mount | grep -q "$root_partition_path"
+      then
+        info "$root_partition_path is allready mounted..."
+      else
+        mount_partitions
+    fi
 fi
 
 info "Define target paths..."
@@ -301,7 +322,7 @@ if [ "$copy_ssh_key" == "y" ]
     origin_user_rsa_pub="$origin_user_home"".ssh/id_rsa.pub";
     if [ -f "$origin_user_rsa_pub" ]
       then
-        mkdir -v "$target_user_ssh_folder_path" &&
+        mkdir -v "$target_user_ssh_folder_path" || warning "Folder \"$target_user_ssh_folder_path\" exists. Can't be created."
         cat "$origin_user_rsa_pub" > "$target_authorized_keys" &&
         target_authorized_keys_content=$(cat "$target_authorized_keys") &&
         info "$target_authorized_keys contains the following: $target_authorized_keys_content" &&
@@ -315,14 +336,16 @@ if [ "$copy_ssh_key" == "y" ]
   else
     info "Skipped SSH-key copying.."
 fi
+
 info "Start chroot procedures..."
 
-mount_binds
+mount_chroot_binds
 
-sed -i 's/^/#CHROOT /g' "$root_mount_path""etc/ld.so.preload" || warning "sed failed."
-cp -v /usr/bin/qemu-arm-static "$root_mount_path""/usr/bin/" || error "Copy qemu-arm-static failed. The following packages are neccessary: qemu qemu-user-static binfmt-support."
+copy_qemu
 
-question "Should the image password of the standart user \"$target_username\" be changed?(y/N)" && read -r change_password
+copy_resolve_conf
+
+question "Should the password of the standart user \"$target_username\" be changed?(y/N)" && read -r change_password
 if [ "$change_password" == "y" ]
   then
     info "Changing passwords on target system..."
@@ -339,35 +362,141 @@ if [ "$change_password" == "y" ]
               echo '$password_1'
               echo '$password_1'
               ) | passwd"
-        ) | chroot "$root_mount_path" /bin/bash || error "Password change failed."
+        ) | chroot "$root_mount_path" /bin/bash || error
       else
         error "Passwords didn't match."
     fi
   else
     info "Skipped password change..."
 fi
-# @todo add to chroot
-#pacman-key --init
-#pacman-key --populate archlinuxarm
-#pacman -Syyu
+
+hostname_path="$root_mount_path""etc/hostname"
 question "Should the hostname be changed?(y/N)" && read -r change_hostname
 if [ "$change_hostname" == "y" ]
   then
-    question "Type in the hostname:" && read -r hostname;
-    echo "$hostname" > "$root_mount_path""etc/hostname" || error "Changing hostname failed."
+    question "Type in the hostname:" && read -r target_hostname;
+    echo "$target_hostname" > "$hostname_path" || error
   else
+    target_hostname=$(cat "$hostname_path")
     info "Skipped hostname change..."
 fi
-# question "Do you want to copy all Wifi passwords to the device?(y/n)" && read -r copy_wifi
-# if [ "$copy_wifi" = "y" ]
-#   then
-#     origin_wifi_config_path="/etc/NetworkManager/system-connections/"
-#     target_wifi_config_path="$root_mount_path$origin_wifi_config_path"
-#     rsync -av "$origin_wifi_config_path" "$target_wifi_config_path"
-# fi
+info "Used hostname is: $target_hostname"
 
-info "The first level folder structure on $root_mount_path is:" && tree -laL 1 "$root_mount_path"
-info "The first level folder structure on $boot_mount_path is:" && tree -laL 1 "$boot_mount_path"
+question "Should the system be updated?(y/N)" && read -r update_system
+if [ "$update_system" == "y" ]
+  then
+    info "Updating system..."
+    case "$os" in
+      "arch"|"manjaro")
+        (
+        echo "yes | pacman-key --init"
+        echo "yes | pacman-key --populate archlinuxarm"
+        echo "pacman --noconfirm -Syyu"
+        ) | chroot "$root_mount_path" /bin/bash || error
+        ;;
+      "moode"|"retropie")
+        (
+        echo "yes | apt update"
+        echo "yes | apt upgrade"
+        ) | chroot "$root_mount_path" /bin/bash || error
+        ;;
+      *)
+        warning "System update for operation system \"$os\" is not supported yet. Skipped."
+        ;;
+    esac
+fi
+
+if [ "$encrypt_system" == "y" ]
+  then
+    # @see https://gist.github.com/gea0/4fc2be0cb7a74d0e7cc4322aed710d38
+    rescue_suffix=".$(date +%s).rescue"
+    search_hooks="HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)"
+    replace_hooks="HOOKS=(base udev autodetect modconf block sleep netconf dropbear encryptssh filesystems keyboard fsck)"
+    mkinitcpio_path="/etc/mkinitcpio.conf"
+    mkinitcpio_rescue_path="$mkinitcpio_path$rescue_suffix"
+    search_modules="MODULES=()"
+    replace_modules="MODULES=(g_cdc usb_f_acm usb_f_ecm smsc95xx g_ether)"
+    standart_luks_password="luks_password"
+    root_mapper_path="/dev/mapper/root"
+    fstab_path="/mnt/etc/fstab"
+    fstab_rescue_path="$fstab_path$rescue_suffix"
+    crypttab_path="/mnt/etc/crypttab"
+    crypttab_rescue_path="$crypttab_path$rescue_suffix"
+    boot_txt_path="/boot/boot.txt"
+    boot_txt_rescue_path="/boot/boot.txt$rescue_suffix"
+    boot_txt_delete_line=$(echo "part uuid \${devtype} \${devnum}:2 uuid" | sed -e 's/[]\/$*.^[]/\\&/g')
+    boot_txt_setenv_origin=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 root=PARTUUID=\${uuid} rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\"" | sed -e 's/[]\/$*.^[]/\\&/g')
+    boot_txt_setenv_replace=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 ip=::::$target_hostname:eth0:dhcp cryptdevice=$encrypted_partition_path:root root=$root_mapper_path rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\""| sed -e 's/[\/&]/\\&/g')
+    info "Setup encryption..." &&
+    (
+    echo "pacman --noconfirm -S --needed $(get_packages "server/luks")"
+    echo "cp -v /home/$target_username/.ssh/authorized_keys /etc/dropbear/root_key"
+    echo "cp -v $mkinitcpio_path $mkinitcpio_rescue_path"
+    echo "sed -i 's/$search_modules/$replace_modules/g' $mkinitcpio_path"
+    echo "sed -i 's/$search_hooks/$replace_hooks/g' $mkinitcpio_path"
+    echo "mkinitcpio -P"
+    echo "( echo 'YES'
+            echo '$standart_luks_password'
+            echo '$standart_luks_password'
+          )|sudo cryptsetup luksFormat -c aes-xts-plain64 -s 512 -h sha512 --use-random -i 1000 $encrypted_partition_path"
+    echo "echo $standart_luks_password | sudo cryptsetup luksOpen $encrypted_partition_path root"
+    echo "mkfs.ext4 $root_mapper_path"
+    echo "mount $root_mapper_path /mnt"
+    echo "rsync --info=progress2 -axHAX / /mnt/"
+    echo "cp -v $fstab_path $fstab_rescue_path"
+    echo "echo '$root_mapper_path /               ext4    defaults,noatime  0       1' >> $fstab_path"
+    echo "echo \"$fstab_path:\" && cat \"$fstab_path\""
+    echo "cp -v $crypttab_path $crypttab_rescue_path"
+    echo "echo 'root $encrypted_partition_path none luks' >> $crypttab_path"
+    echo "echo \"$crypttab_path:\" && cat \"$crypttab_path\""
+    echo "cp -v $boot_txt_path $boot_txt_rescue_path"
+    echo "sed -i 's/$boot_txt_delete_line//g' $boot_txt_path" #@todo doesn't work yet
+    echo "sed -i 's/$boot_txt_setenv_origin/$boot_txt_setenv_replace/g' $boot_txt_path" #@todo  doesn't work yet
+    echo "echo \"$boot_txt_path:\" && cat \"$boot_txt_path\""
+    echo "cd /boot/ && ./mkscr"
+    echo "umount $root_mapper_path"
+    echo "exit"
+    ) | chroot "$root_mount_path" /bin/bash || error
+fi
+
+question "Do you want to setup Wifi on the device?(y/N)" && read -r setup_wifi
+if [ "$setup_wifi" = "y" ]
+  then
+    question "Please type in the ssid:" && read -r ssid
+    question "Please type in the psk:" && read -r psk
+    case "$os" in
+      "retropie")
+        wifi_file="$boot_mount_path""wifikeyfile.txt"
+        echo "ssid=\"$ssid\"" > "$wifi_file"
+        echo "psk=\"$psk\"" >> "$wifi_file"
+        ;;
+      *)
+        warning "Wifi setting for operation system \"$os\" is not supported yet. Skipped."
+        ;;
+    esac
+fi
+
+info "Running system specific procedures..."
+if [ "$os" = "retropie" ]
+  then
+    question "Should the roms be copied to the system?(y/N)" && read -r copy_roms
+    if [ "$copy_roms" == "y" ]
+      then
+        target_roms_path="$target_user_home_folder_path""/RetroPie/roms/" &&
+        source_roms_path="$origin_user_home""Games/roms/" &&
+        info "Copy roms from $source_roms_path to $target_roms_path..."
+        cp -v "$source_roms_path" "$target_roms_path" &&
+        chown -vR 1000 "$target_roms_path" || error
+    fi
+    question "Should the RetroFlag specific procedures be executed?(y/N)" && read -r setup_retroflag
+    if [ "$setup_retroflag" == "y" ]
+      then
+        info "Executing RetroFlag specific procedures..." &&
+        (
+        echo 'wget -O - "https://raw.githubusercontent.com/RetroFlag/retroflag-picase/master/install_gpi.sh" | bash'
+        ) | chroot "$root_mount_path" /bin/bash || error
+    fi
+fi
 
 destructor
 success "Setup successfull :)" && exit 0

@@ -6,13 +6,6 @@
 # shellcheck disable=SC2086  # Deactivating escaping warning, because it's wrong concerning pacman_packages
 source "$(dirname "$(readlink -f "${0}")")/../base.sh" || (echo "Loading base.sh failed." && exit 1)
 
-get_packages(){
-  for package_collection in "$@"
-  do
-    echo "$(sed -e "/^#/d" -e "s/#.*//" "$PACKAGE_PATH""$package_collection.txt" | tr '\n' ' ')" || error "Loading package wasn't possible."
-  done
-}
-
 install_yay_packages_if_needed(){
 	info "Checking yay packages [ $1 ]..."
 	for package in $1; do
@@ -159,7 +152,7 @@ install_gnome_extension(){
 
 if [ "$DESKTOP_SESSION" == "gnome" ]; then
   info "Synchronizing gnome tools..." &&
-  sudo pacman -S $(get_packages "client/pacman/gnome") || error "Syncronisation failed."
+  sudo pacman -S "$(get_packages 'client/pacman/gnome')" || error "Syncronisation failed."
 	info "Setting up gnome dash favourites..." &&
 	gsettings set org.gnome.shell favorite-apps "['org.gnome.Nautilus.desktop',
 	'org.gnome.Terminal.desktop',
@@ -178,6 +171,7 @@ if [ "$DESKTOP_SESSION" == "gnome" ]; then
 	info "Install GNOME extensions..." &&
 	install_gnome_extension "nasa_apod@elinvention.ovh" "https://github.com/Elinvention/gnome-shell-extension-nasa-apod.git"
 	install_gnome_extension "dash-to-panel@jderose9.github.com" "https://github.com/home-sweet-gnome/dash-to-panel"
+  install_gnome_extension "caffeine@patapon.info" "https://github.com/eonpatapon/gnome-shell-extension-caffeine.git"
 	info "Deactivating \"Dash to Dock\"..." &&
 	gnome-extensions disable dash-to-dock@micxgx.gmail.com || error
 

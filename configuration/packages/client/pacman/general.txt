@@ -85,3 +85,6 @@ ansible
 
 # entertainment software
 rhythmbox
+
+# cloud
+nextcloud-client

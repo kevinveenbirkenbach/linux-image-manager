@@ -3,8 +3,11 @@
 # This script contains the global program variables and functions
 #
 # shellcheck disable=SC2034 #Deactivate checking of unused variables
-
-REPOSITORY_PATH=$(readlink -f "$(dirname "$(readlink -f "${0}")")/../../") # Propably this can be optimized
+# shellcheck disable=SC2003 #Deactivate "expr is antiquated"
+# shellcheck disable=SC2015 #Deactivate bool hint
+# shellcheck disable=SC2005 #Remove useless echo hint
+# shellcheck disable=SC2010 #Deactivate ls | grep hint
+REPOSITORY_PATH="$(readlink -f "${0}" | sed -e 's/\/scripts\/.*//g')"
 CONFIGURATION_PATH="$REPOSITORY_PATH""/configuration/"
 PACKAGE_PATH="$CONFIGURATION_PATH""packages/"
 TEMPLATE_PATH="$CONFIGURATION_PATH""templates/";
@@ -76,7 +79,7 @@ set_device_path(){
       error "$device_path is not valid device."
   fi
   # @see https://www.heise.de/ct/hotline/Optimale-Blockgroesse-fuer-dd-2056768.html
-  OPTIMAL_BLOCKSIZE=$(expr 64 \* "$(sudo cat /sys/block/$device/queue/physical_block_size)") &&
+  OPTIMAL_BLOCKSIZE=$(expr 64 \* "$(sudo cat /sys/block/"$device"/queue/physical_block_size)") &&
   info "Device path set to: $device_path" &&
   info "Optimal blocksize set to: $OPTIMAL_BLOCKSIZE" ||
   error
@@ -91,6 +94,15 @@ overwritte_device_with_zeros(){
     else
       info "Skipping Overwritting..."
   fi
+}
+
+get_packages(){
+  for package_collection in "$@"
+  do
+    package_collection_path="$PACKAGE_PATH""$package_collection.txt" &&
+    echo "$(sed -e "/^#/d" -e "s/#.*//" "$package_collection_path" | tr '\n' ' ')" ||
+    error
+  done
 }
 
 HEADER(){
