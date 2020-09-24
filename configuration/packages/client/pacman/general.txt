@@ -73,6 +73,9 @@ atom
 arduino
 arduino-docs
 
+# virtualization tools
+qemu
+
 # containerization tools
 docker
 docker-compose

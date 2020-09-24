@@ -3,6 +3,7 @@
 # shellcheck source=/dev/null # Deactivate SC1090
 # shellcheck disable=SC2015  # Deactivate bools hints
 # shellcheck disable=SC2154  # Deactivate not referenced link
+# @see https://wiki.polaire.nl/doku.php?id=archlinux-raspberry-encrypted
 source "$(dirname "$(readlink -f "${0}")")/base.sh" || (echo "Loading base.sh failed." && exit 1)
 
 info "Setupscript for images started..."
