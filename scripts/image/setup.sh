@@ -418,6 +418,12 @@ fi
 if [ "$encrypt_system" == "y" ]
   then
     # @see https://gist.github.com/gea0/4fc2be0cb7a74d0e7cc4322aed710d38
+    ##########
+    #target_username="alarm"
+    #encrypted_partition_path="/dev/mmcblk1p3"
+    #target_hostname="test_host"
+    #echo '$standart_luks_password' | sudo cryptsetup luksClose root
+    ##########
     rescue_suffix=".$(date +%s).rescue"
     search_hooks="HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)"
     replace_hooks="HOOKS=(base udev autodetect modconf block sleep netconf dropbear encryptssh filesystems keyboard fsck)"
@@ -453,7 +459,7 @@ if [ "$encrypt_system" == "y" ]
     echo "mount $root_mapper_path /mnt &&"
     echo "rsync --info=progress2 -axHAX / /mnt/ &&"
     echo "cp -v $fstab_path $fstab_rescue_path &&"
-    echo "echo '$root_mapper_path /               ext4    defaults,noatime  0       1' >> $fstab_path &&"
+    echo "echo $root_mapper_path' /               ext4    defaults,noatime  0       1' >> $fstab_path &&"
     echo "echo \"Content of $fstab_path:\" && cat \"$fstab_path\" &&"
     echo "cp -v $crypttab_path $crypttab_rescue_path &&"
     echo "echo 'root $encrypted_partition_path none luks' >> $crypttab_path &&"
