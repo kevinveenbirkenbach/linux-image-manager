@@ -451,8 +451,8 @@ if [ "$encrypt_system" == "y" ]
     echo "sed -i 's/$search_hooks/$replace_hooks/g' $mkinitcpio_path &&"
     echo "mkinitcpio -P &&"
     echo "( echo 'YES'
-            echo '$standart_luks_password'
-            echo '$standart_luks_password'
+            echo $standart_luks_password
+            echo $standart_luks_password
           )|sudo cryptsetup luksFormat -c aes-xts-plain64 -s 512 -h sha512 --use-random -i 1000 $encrypted_partition_path &&"
     echo "echo $standart_luks_password | sudo cryptsetup luksOpen $encrypted_partition_path root &&"
     echo "mkfs.ext4 $root_mapper_path &&"
