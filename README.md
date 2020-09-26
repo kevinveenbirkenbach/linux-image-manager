@@ -87,7 +87,7 @@ To pase the configuration to the program use this syntax:
   echo "mmcblk1"                # | The device
   echo "arm"             # | The architecture type; arm or 64_bit
   echo "arch"            # | The operation system
-  echo "3"          # | The version
+  echo "4"          # | The version
   #echo "n"                 # ├── If arch: Should a encrypted setup be used? (y/n)
   echo "n"                  # | Should the image download be forced?(y/n)
   echo "n"                  # | Should the image be transfered to $device_path?(y/n)
