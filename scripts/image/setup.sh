@@ -203,6 +203,15 @@ question "Should the image be transfered to $device_path?(y/N)" && read -r trans
 if [ "$transfer_image" = "y" ]
   then
 
+    question "Should the partition table of $device_path be deleted?(y/N)" && read -r delete_partition_table
+    if [ "$delete_partition_table" = "y" ]
+      then
+        info "Deleting..." &&
+        wipefs -a "$device_path" || error
+      else
+        info "Skipping partition table deletion..."
+    fi
+
     overwritte_device_with_zeros
 
     info "Starting image transfer..."

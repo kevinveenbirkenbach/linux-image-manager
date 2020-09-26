@@ -91,6 +91,7 @@ To pase the configuration to the program use this syntax:
   #echo "n"                 # ├── If arch: Should a encrypted setup be used? (y/n)
   echo "n"                  # | Should the image download be forced?(y/n)
   echo "n"                  # | Should the image be transfered to $device_path?(y/n)
+  #echo "n"                 # ├── Delete the partition table? (y/n)
   #echo "n"                 # ├── Overwrite device before copying? (y/n)
   echo "n"                  # | Should the password be changed?(y/N)
   #echo "test12345"         # ├── The user password_1
