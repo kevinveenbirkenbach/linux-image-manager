@@ -460,14 +460,14 @@ if [ "$encrypt_system" == "y" ]
     echo "rsync --info=progress2 -axHAX / /mnt/ &&"
     echo "cp -v $fstab_path $fstab_rescue_path &&"
     echo "echo $root_mapper_path' /               ext4    defaults,noatime  0       1' >> $fstab_path &&"
-    echo "echo \"Content of $fstab_path:\" && cat \"$fstab_path\" &&"
+    echo "echo \"Content of $fstab_path:\$(cat \"$fstab_path\")\" &&"
     echo "cp -v $crypttab_path $crypttab_rescue_path &&"
     echo "echo 'root $encrypted_partition_path none luks' >> $crypttab_path &&"
-    echo "echo \"Content of $crypttab_path:\" && cat \"$crypttab_path\" &&"
+    echo "echo \"Content of $crypttab_path:\$(cat \"$crypttab_path\")\" &&"
     echo "cp -v $boot_txt_path $boot_txt_rescue_path &&"
     echo "sed -i 's/$boot_txt_delete_line//g' $boot_txt_path &&" #@todo doesn't work yet
     echo "sed -i 's/$boot_txt_setenv_origin/$boot_txt_setenv_replace/g' $boot_txt_path &&" #@todo  doesn't work yet
-    echo "echo \"Content of $boot_txt_path:\" && cat \"$boot_txt_path\" &&"
+    echo "echo \"Content of $boot_txt_path:\$(cat \"$boot_txt_path\")\" &&"
     echo "cd /boot/ && ./mkscr &&"
     echo "umount $root_mapper_path &&"
     echo "exit"
