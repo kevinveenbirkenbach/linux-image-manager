@@ -470,7 +470,7 @@ if [ "$encrypt_system" == "y" ]
     echo "echo \"Content of $boot_txt_path:\$(cat \"$boot_txt_path\")\" &&"
     echo "cd /boot/ && ./mkscr &&"
     echo "umount $root_mapper_path &&"
-    echo "exit"
+    echo "exit || echo 'Error in chroot environment!' && exit 1"
     ) | chroot "$root_mount_path" /bin/bash || error
 fi
 
