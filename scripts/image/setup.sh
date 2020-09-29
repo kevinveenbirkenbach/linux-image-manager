@@ -476,6 +476,17 @@ if [ "$encrypt_system" == "y" ]
     echo "sudo cryptsetup -v luksClose root &&"
     echo "exit || echo 'Error in chroot environment!' echo 'Trying to close decrypted root.'; sudo cryptsetup -v luksClose root"
     ) | chroot "$root_mount_path" /bin/bash || error
+    info "Execute file tests..."
+    info "Testing $mkinitcpio_path..."
+    if ! grep -q "$replace_modules" "$mkinitcpio_path"; then
+      error "File $mkinitcpio_path doesn't contain the string: $replace_modules"
+    fi
+    if ! grep -q "$replace_hooks" "$mkinitcpio_path"; then
+      error "File $mkinitcpio_path doesn't contain the string: $replace_hooks"
+    fi
+    if ! grep -q "$boot_txt_setenv_replace" "$boot_txt_path"; then
+      error "File $boot_txt_path doesn't contain the string: $boot_txt_setenv_replace"
+    fi
 fi
 
 question "Do you want to setup Wifi on the device?(y/N)" && read -r setup_wifi
