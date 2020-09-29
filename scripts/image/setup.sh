@@ -428,7 +428,7 @@ if [ "$encrypt_system" == "y" ]
     replace_hooks="HOOKS=(base udev autodetect modconf block sleep netconf dropbear encryptssh filesystems keyboard fsck)"
     mkinitcpio_path="/etc/mkinitcpio.conf"
     mkinitcpio_rescue_path="$mkinitcpio_path$rescue_suffix"
-    search_modules="MODULES=()"
+    search_modules='MODULES=""'
     replace_modules="MODULES=(g_cdc usb_f_acm usb_f_ecm smsc95xx g_ether)"
     root_mapper_path="/dev/mapper/root"
     fstab_path="/mnt/etc/fstab"
