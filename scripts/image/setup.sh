@@ -422,7 +422,6 @@ if [ "$encrypt_system" == "y" ]
     #target_username="alarm"
     #encrypted_partition_path="/dev/mmcblk1p3"
     #target_hostname="test_host"
-    #echo '$standart_luks_password' | sudo cryptsetup luksClose root
     ##########
     rescue_suffix=".$(date +%s).rescue"
     search_hooks="HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)"
@@ -431,7 +430,6 @@ if [ "$encrypt_system" == "y" ]
     mkinitcpio_rescue_path="$mkinitcpio_path$rescue_suffix"
     search_modules="MODULES=()"
     replace_modules="MODULES=(g_cdc usb_f_acm usb_f_ecm smsc95xx g_ether)"
-    standart_luks_password="luks_password"
     root_mapper_path="/dev/mapper/root"
     fstab_path="/mnt/etc/fstab"
     fstab_rescue_path="$fstab_path$rescue_suffix"
@@ -443,6 +441,12 @@ if [ "$encrypt_system" == "y" ]
     boot_txt_setenv_origin=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 root=PARTUUID=\${uuid} rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\"" | sed -e 's/[]\/$*.^[]/\\&/g')
     boot_txt_setenv_replace=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 ip=::::$target_hostname:eth0:dhcp cryptdevice=$encrypted_partition_path:root root=$root_mapper_path rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\""| sed -e 's/[\/&]/\\&/g')
     info "Setup encryption..." &&
+    question "Type in encryption password: " && read -r luks_password
+    question "Repeat encryption password:" && read -r luks_password_repeat
+    if [ "$luks_password" != "$luks_password_repeat" ]
+      then
+        error "Passwords didn't match."
+    fi
     (
     echo "pacman --noconfirm -S --needed $(get_packages "server/luks") &&"
     echo "cp -v /home/$target_username/.ssh/authorized_keys /etc/dropbear/root_key &&"
@@ -450,8 +454,8 @@ if [ "$encrypt_system" == "y" ]
     echo "sed -i 's/$search_modules/$replace_modules/g' $mkinitcpio_path &&"
     echo "sed -i 's/$search_hooks/$replace_hooks/g' $mkinitcpio_path &&"
     echo "mkinitcpio -P &&"
-    echo "echo '$standart_luks_password' |sudo cryptsetup -v luksFormat -c aes-xts-plain64 -s 512 -h sha512 --use-random -i 1000 $encrypted_partition_path &&"
-    echo "echo '$standart_luks_password' | sudo cryptsetup -v luksOpen $encrypted_partition_path root &&"
+    echo "echo '$luks_password' |sudo cryptsetup -v luksFormat -c aes-xts-plain64 -s 512 -h sha512 --use-random -i 1000 $encrypted_partition_path &&"
+    echo "echo '$luks_password' | sudo cryptsetup -v luksOpen $encrypted_partition_path root &&"
     echo "mkfs.ext4 $root_mapper_path &&"
     echo "mount $root_mapper_path /mnt &&"
     echo "rsync --info=progress2 -axHAX / /mnt/ &&"
