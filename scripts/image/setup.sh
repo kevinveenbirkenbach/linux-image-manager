@@ -428,7 +428,7 @@ if [ "$encrypt_system" == "y" ]
     replace_hooks="HOOKS=(base udev autodetect modconf block sleep netconf dropbear encryptssh filesystems keyboard fsck)"
     mkinitcpio_path="/etc/mkinitcpio.conf"
     mkinitcpio_rescue_path="$mkinitcpio_path$rescue_suffix"
-    search_modules='MODULES=""'
+    search_modules="MODULES=()"
     replace_modules="MODULES=(g_cdc usb_f_acm usb_f_ecm smsc95xx g_ether)"
     root_mapper_path="/dev/mapper/root"
     fstab_path="/mnt/etc/fstab"
@@ -455,7 +455,7 @@ if [ "$encrypt_system" == "y" ]
     echo "sed -i 's/$search_hooks/$replace_hooks/g' $mkinitcpio_path &&"
     echo "echo \"Content of $mkinitcpio_path:\$(cat \"$mkinitcpio_path\")\" &&"
     echo "mkinitcpio -P &&"
-    echo "echo '$luks_password' |sudo cryptsetup -v luksFormat -c aes-xts-plain64 -s 512 -h sha512 --use-random -i 1000 $encrypted_partition_path &&"
+    echo "echo '$luks_password' | sudo cryptsetup -v luksFormat -c aes-xts-plain64 -s 512 -h sha512 --use-random -i 1000 $encrypted_partition_path &&"
     echo "echo '$luks_password' | sudo cryptsetup -v luksOpen $encrypted_partition_path root &&"
     echo "mkfs.ext4 $root_mapper_path &&"
     echo "mount $root_mapper_path /mnt &&"
