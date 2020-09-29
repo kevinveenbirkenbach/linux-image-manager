@@ -453,6 +453,7 @@ if [ "$encrypt_system" == "y" ]
     echo "cp -v $mkinitcpio_path $mkinitcpio_rescue_path &&"
     echo "sed -i 's/$search_modules/$replace_modules/g' $mkinitcpio_path &&"
     echo "sed -i 's/$search_hooks/$replace_hooks/g' $mkinitcpio_path &&"
+    echo "echo \"Content of $mkinitcpio_path:\$(cat \"$mkinitcpio_path\")\" &&"
     echo "mkinitcpio -P &&"
     echo "echo '$luks_password' |sudo cryptsetup -v luksFormat -c aes-xts-plain64 -s 512 -h sha512 --use-random -i 1000 $encrypted_partition_path &&"
     echo "echo '$luks_password' | sudo cryptsetup -v luksOpen $encrypted_partition_path root &&"
