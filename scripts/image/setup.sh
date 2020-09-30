@@ -439,7 +439,7 @@ if [ "$encrypt_system" == "y" ]
     boot_txt_rescue_path="$boot_txt_path$rescue_suffix"
     boot_txt_delete_line=$(echo "part uuid \${devtype} \${devnum}:2 uuid" | sed -e 's/[]\/$*.^[]/\\&/g')
     boot_txt_setenv_origin=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 root=PARTUUID=\${uuid} rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\"" | sed -e 's/[]\/$*.^[]/\\&/g')
-    boot_txt_setenv_replace=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 ip=::::$target_hostname:eth0:dhcp cryptdevice=$encrypted_partition_path:root root=$root_mapper_path rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\""| sed -e 's/[\/&]/\\&/g')
+    boot_txt_setenv_replace=$(echo "setenv bootargs earlyprintk console=ttyS1,115200 console=tty0 ip=::::$target_hostname:eth0:dhcp cryptdevice=$encrypted_partition_path:root root=$root_mapper_path rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\""| sed -e 's/[\/&]/\\&/g')
     info "Setup encryption..." &&
     question "Type in encryption password: " && read -r luks_password
     question "Repeat encryption password:" && read -r luks_password_repeat
@@ -454,6 +454,7 @@ if [ "$encrypt_system" == "y" ]
     echo "sed -i 's/$search_modules/$replace_modules/g' $mkinitcpio_path &&"
     echo "sed -i 's/$search_hooks/$replace_hooks/g' $mkinitcpio_path &&"
     echo "echo \"Content of $mkinitcpio_path:\$(cat \"$mkinitcpio_path\")\" &&"
+    #Concerning mkinitcpio warning @see https://gist.github.com/imrvelj/c65cd5ca7f5505a65e59204f5a3f7a6d
     echo "mkinitcpio -P &&"
     echo "echo '$luks_password' | sudo cryptsetup -v luksFormat -c aes-xts-plain64 -s 512 -h sha512 --use-random -i 1000 $encrypted_partition_path &&"
     echo "echo '$luks_password' | sudo cryptsetup -v luksOpen $encrypted_partition_path root &&"
@@ -476,17 +477,6 @@ if [ "$encrypt_system" == "y" ]
     echo "sudo cryptsetup -v luksClose root &&"
     echo "exit || echo 'Error in chroot environment!' echo 'Trying to close decrypted root.'; sudo cryptsetup -v luksClose root"
     ) | chroot "$root_mount_path" /bin/bash || error
-    info "Execute file tests..."
-    info "Testing $mkinitcpio_path..."
-    if ! grep -q "$replace_modules" "$mkinitcpio_path"; then
-      error "File $mkinitcpio_path doesn't contain the string: $replace_modules"
-    fi
-    if ! grep -q "$replace_hooks" "$mkinitcpio_path"; then
-      error "File $mkinitcpio_path doesn't contain the string: $replace_hooks"
-    fi
-    if ! grep -q "$boot_txt_setenv_replace" "$boot_txt_path"; then
-      error "File $boot_txt_path doesn't contain the string: $boot_txt_setenv_replace"
-    fi
 fi
 
 question "Do you want to setup Wifi on the device?(y/N)" && read -r setup_wifi
