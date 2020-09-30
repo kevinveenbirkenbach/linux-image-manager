@@ -417,12 +417,7 @@ fi
 
 if [ "$encrypt_system" == "y" ]
   then
-    # @see https://gist.github.com/gea0/4fc2be0cb7a74d0e7cc4322aed710d38
-    ##########
-    #target_username="alarm"
-    #encrypted_partition_path="/dev/mmcblk1p3"
-    #target_hostname="test_host"
-    ##########
+    # Adapted this instruction @see https://gist.github.com/gea0/4fc2be0cb7a74d0e7cc4322aed710d38
     rescue_suffix=".$(date +%s).rescue"
     search_hooks="HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)"
     replace_hooks="HOOKS=(base udev autodetect modconf block sleep netconf dropbear encryptssh filesystems keyboard fsck)"
