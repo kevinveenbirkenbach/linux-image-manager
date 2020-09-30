@@ -77,7 +77,7 @@ This repository contains some shell scripts to install Arch Linux for the Raspbe
 To install a Linux distribution manually on a SD card type in:
 
 ```bash
-  bash ./sd_setup.sh
+  sudo bash ./scripts/image/setup.sh
 ```
 
 ## License
