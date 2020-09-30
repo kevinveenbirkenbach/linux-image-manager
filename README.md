@@ -79,30 +79,6 @@ To install a Linux distribution manually on a SD card type in:
 ```bash
   bash ./sd_setup.sh
 ```
-###### Piped
-To pase the configuration to the program use this syntax:
-```bash
-(
-  echo "$USER"              # | The username
-  echo "mmcblk1"                # | The device
-  echo "arm"             # | The architecture type; arm or 64_bit
-  echo "arch"            # | The operation system
-  echo "4"          # | The version
-  #echo "n"                 # ├── If arch: Should a encrypted setup be used? (y/n)
-  echo "n"                  # | Should the image download be forced?(y/n)
-  echo "n"                  # | Should the image be transfered to $device_path?(y/n)
-  #echo "n"                 # ├── Delete the partition table? (y/n)
-  #echo "n"                 # ├── Overwrite device before copying? (y/n)
-  echo "n"                  # | Should the password be changed?(y/N)
-  #echo "test12345"         # ├── The user password_1
-  #echo "test12345"         # ├── The user password_2
-  echo "n"                 # | Should the ssh-key be copied to the image?(y/N)
-  echo "n"                  # |Should the hostname be changed?(y/N)
-  #echo "example-host"       # | The hostname
-  echo "y"                  # Should the image system be updated?(y/N)
-  #echo "y"                 # | Setup Wifi on target system - Not implemented yet
-)| sudo bash ./scripts/image/setup.sh | tee log.txt
-```
 
 ## License
 The ["GNU GENERAL PUBLIC LICENSE Version 3"](./LICENSE.txt) applies to this project.
