@@ -67,17 +67,28 @@ Depending on the desktop environment you have different functionalities.
 #### User Data
 Right now the software expects that the *Core System Owner* has on all systems the same username. By executing the *import script* it automatic backups the application configuration data, ssh keys and other important data which is saved in well defined configuration files and folders.
 
-### Server
+### Images
 
-#### Raspberry Pi
-This repository contains some shell scripts to install Arch Linux for the Raspberry Pi on a SD-Card and to backup a SD-Card.
+This repository contains some shell scripts to configure and generate images and transfer them to a storage.
 
-##### Setup
-###### Guided
-To install a Linux distribution manually on a SD card type in:
+#### Setup
+To install a Linux distribution execute:
 
 ```bash
   sudo bash ./scripts/image/setup.sh
+```
+#### Chroot
+To chroot into a Linux distribution on a storage execute:
+
+```bash
+  sudo bash ./scripts/image/chroot.sh
+```
+
+#### Backup
+To backup a image execute:
+
+```bash
+  sudo bash ./scripts/image/backup.sh
 ```
 
 ## License
