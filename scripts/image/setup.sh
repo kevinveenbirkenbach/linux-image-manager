@@ -264,9 +264,9 @@ if [ "$transfer_image" = "y" ]
             mkinitcpio_replace_binaries=$(echo "BINARIES=(/usr/lib/libgcc_s.so.1)"| sed -e 's/[\/&]/\\&/g') &&
             mkinitcpio_search_hooks="HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)" &&
             mkinitcpio_replace_hooks="HOOKS=(base udev autodetect modconf block sleep netconf dropbear encryptssh filesystems keyboard fsck)" &&
-            fstab_path="/mnt/etc/fstab" &&
+            fstab_path="/etc/fstab" &&
             fstab_rescue_path="$fstab_path$rescue_suffix" &&
-            crypttab_path="/mnt/etc/crypttab" &&
+            crypttab_path="/etc/crypttab" &&
             crypttab_rescue_path="$crypttab_path$rescue_suffix" &&
             boot_txt_path="/boot/boot.txt" &&
             boot_txt_rescue_path="$boot_txt_path$rescue_suffix" &&
