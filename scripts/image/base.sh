@@ -45,6 +45,15 @@ make_working_folder(){
 }
 
 mount_partitions(){
+  if [ "$(blkid "$root_partition_path" -s TYPE -o value)" == "crypto_LUKS" ]
+    then
+      encrypted_partition_uuid=$(blkid "$root_partition_path" -s UUID -o value) &&
+      root_mapper_name="arch-root-$encrypted_partition_uuid" &&
+      root_mapper_path="/dev/mapper/$root_mapper_name" &&
+      info "Decrypting of $root_partition_path is neccessary..." &&
+      sudo cryptsetup -v luksOpen "$root_partition_path" "$root_mapper_name" ||
+      error
+  fi
   info "Mount boot and root partition..." &&
   mount -v "$boot_partition_path" "$boot_mount_path" &&
   mount -v "$root_mapper_path" "$root_mount_path" &&
@@ -54,8 +63,6 @@ mount_partitions(){
 
 destructor(){
   info "Cleaning up..."
-  info "Encrypt decrypted root..."
-  sudo cryptsetup -v luksClose root | warning "Failed."
   info "Unmounting everything..."
   umount -lv "$chroot_dev_pts_mount_path" || warning "Umounting $chroot_dev_pts_mount_path failed!"
   umount -lv "$chroot_dev_mount_path" || warning "Umounting $chroot_dev_mount_path failed!"
@@ -68,6 +75,11 @@ destructor(){
   rmdir -v "$root_mount_path" || warning "Removing $root_mount_path failed!"
   rmdir -v "$boot_mount_path" || warning "Removing $boot_mount_path failed!"
   rmdir -v "$working_folder_path" || warning "Removing $working_folder_path failed!"
+  if [ "$(blkid "$root_partition_path" -s TYPE -o value)" == "crypto_LUKS" ]
+    then
+      info "Trying to close decrypted $root_mapper_name..." &&
+      sudo cryptsetup -v luksClose $root_mapper_name || warning "Failed."
+  fi
 }
 
 mount_chroot_binds(){

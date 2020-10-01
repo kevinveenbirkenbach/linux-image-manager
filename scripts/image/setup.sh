@@ -242,37 +242,8 @@ if [ "$transfer_image" = "y" ]
 
         if [ "$encrypt_system" == "y" ]
           then
-            root_mapper_path="/dev/mapper/root"
-            question "Type in encryption password: " && read -r luks_password
-            question "Repeat encryption password:" && read -r luks_password_repeat
-            if [ "$luks_password" != "$luks_password_repeat" ]
-              then
-                error "Passwords didn't match."
-            fi
             info "Formating $root_partition_path with LUKS..." &&
-            echo "$luks_password" | sudo cryptsetup -v luksFormat -c aes-xts-plain64 -s 512 -h sha512 --use-random -i 1000 "$root_partition_path" &&
-            info "Decrypting $root_partition_path..." &&
-            echo "$luks_password" | sudo cryptsetup -v luksOpen "$root_partition_path" root &&
-            info "Setting encryption variables..." &&
-            encrypted_partition_uuid=$(blkid "$root_partition_path" -s UUID -o value) &&
-            rescue_suffix=".$(date +%s).rescue" &&
-            mkinitcpio_path="/etc/mkinitcpio.conf" &&
-            mkinitcpio_rescue_path="$mkinitcpio_path$rescue_suffix" &&
-            mkinitcpio_search_modules="MODULES=()" &&
-            mkinitcpio_replace_modules="MODULES=(g_cdc usb_f_acm usb_f_ecm smsc95xx g_ether)" &&
-            mkinitcpio_search_binaries="BINARIES=()" &&
-            mkinitcpio_replace_binaries=$(echo "BINARIES=(/usr/lib/libgcc_s.so.1)"| sed -e 's/[\/&]/\\&/g') &&
-            mkinitcpio_search_hooks="HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)" &&
-            mkinitcpio_replace_hooks="HOOKS=(base udev autodetect modconf block sleep netconf dropbear encryptssh filesystems keyboard fsck)" &&
-            fstab_path="/etc/fstab" &&
-            fstab_rescue_path="$fstab_path$rescue_suffix" &&
-            crypttab_path="/etc/crypttab" &&
-            crypttab_rescue_path="$crypttab_path$rescue_suffix" &&
-            boot_txt_path="/boot/boot.txt" &&
-            boot_txt_rescue_path="$boot_txt_path$rescue_suffix" &&
-            boot_txt_delete_line=$(echo "part uuid \${devtype} \${devnum}:2 uuid" | sed -e 's/[]\/$*.^[]/\\&/g') &&
-            boot_txt_setenv_origin=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 root=PARTUUID=\${uuid} rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\"" | sed -e 's/[]\/$*.^[]/\\&/g') &&
-            boot_txt_setenv_replace=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 ip=::::$target_hostname:eth0:dhcp cryptdevice=UUID=$encrypted_partition_uuid:root root=$root_mapper_path rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\""| sed -e 's/[\/&]/\\&/g') ||
+            sudo cryptsetup -v luksFormat -c aes-xts-plain64 -s 512 -h sha512 --use-random -i 1000 "$root_partition_path" ||
             error
         fi
 
@@ -427,6 +398,25 @@ fi
 if [ "$encrypt_system" == "y" ]
   then
     # Adapted this instruction for setting up encrypted systems @see https://gist.github.com/gea0/4fc2be0cb7a74d0e7cc4322aed710d38
+    info "Setting encryption variables..." &&
+    rescue_suffix=".$(date +%s).rescue" &&
+    mkinitcpio_path="/etc/mkinitcpio.conf" &&
+    mkinitcpio_rescue_path="$mkinitcpio_path$rescue_suffix" &&
+    mkinitcpio_search_modules="MODULES=()" &&
+    mkinitcpio_replace_modules="MODULES=(g_cdc usb_f_acm usb_f_ecm smsc95xx g_ether)" &&
+    mkinitcpio_search_binaries="BINARIES=()" &&
+    mkinitcpio_replace_binaries=$(echo "BINARIES=(/usr/lib/libgcc_s.so.1)"| sed -e 's/[\/&]/\\&/g') &&
+    mkinitcpio_search_hooks="HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)" &&
+    mkinitcpio_replace_hooks="HOOKS=(base udev autodetect modconf block sleep netconf dropbear encryptssh filesystems keyboard fsck)" &&
+    fstab_path="/etc/fstab" &&
+    fstab_rescue_path="$fstab_path$rescue_suffix" &&
+    crypttab_path="/etc/crypttab" &&
+    crypttab_rescue_path="$crypttab_path$rescue_suffix" &&
+    boot_txt_path="/boot/boot.txt" &&
+    boot_txt_rescue_path="$boot_txt_path$rescue_suffix" &&
+    boot_txt_delete_line=$(echo "part uuid \${devtype} \${devnum}:2 uuid" | sed -e 's/[]\/$*.^[]/\\&/g') &&
+    boot_txt_setenv_origin=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 root=PARTUUID=\${uuid} rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\"" | sed -e 's/[]\/$*.^[]/\\&/g') &&
+    boot_txt_setenv_replace=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 ip=::::$target_hostname:eth0:dhcp cryptdevice=UUID=$encrypted_partition_uuid:root root=$root_mapper_path rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\""| sed -e 's/[\/&]/\\&/g') || error
     info "Setup encryption..." &&
     (
     echo "pacman --noconfirm -S --needed $(get_packages "server/luks") &&"
