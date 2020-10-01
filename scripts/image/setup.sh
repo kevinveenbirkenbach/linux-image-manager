@@ -243,8 +243,8 @@ if [ "$transfer_image" = "y" ]
         if [ "$encrypt_system" == "y" ]
           then
             info "Formating $root_partition_path with LUKS..." &&
-            sudo cryptsetup -v luksFormat -c aes-xts-plain64 -s 512 -h sha512 --use-random -i 1000 "$root_partition_path" ||
-            error
+            sudo cryptsetup -v luksFormat -c aes-xts-plain64 -s 512 -h sha512 --use-random -i 1000 "$root_partition_path" &&
+            set_root_variables || error
         fi
 
         info "Format root partition..." &&
