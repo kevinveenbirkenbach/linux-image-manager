@@ -462,7 +462,7 @@ if [ "$encrypt_system" == "y" ]
     echo "echo $root_mapper_path' /               ext4    defaults,noatime  0       1' >> $fstab_path &&"
     echo "echo \"Content of $fstab_path:\$(cat \"$fstab_path\")\" &&"
     echo "cp -v $crypttab_path $crypttab_rescue_path &&"
-    echo "echo 'root '$destination_encrypted_partition_path' none luks' >> $crypttab_path &&"
+    echo "echo 'root $destination_encrypted_partition_path none luks' >> $crypttab_path &&"
     echo "echo \"Content of $crypttab_path:\$(cat \"$crypttab_path\")\" &&"
     #boot.txt just works with raspberry pi 3 @todo Needs to be implemented for arch raspbery pi 4
     echo "cp -v $boot_txt_path $boot_txt_rescue_path &&"
