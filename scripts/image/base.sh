@@ -51,7 +51,7 @@ set_root_variables(){
   root_mapper_path="/dev/mapper/$root_mapper_name" || error
 }
 
-mount_partitions(){
+decrypt_root(){
   if [ "$(blkid "$root_partition_path" -s TYPE -o value)" == "crypto_LUKS" ]
     then
       set_root_variables &&
@@ -59,6 +59,9 @@ mount_partitions(){
       sudo cryptsetup -v luksOpen "$root_partition_path" "$root_mapper_name" ||
       error
   fi
+}
+
+mount_partitions(){
   info "Mount boot and root partition..." &&
   mount -v "$boot_partition_path" "$boot_mount_path" &&
   mount -v "$root_mapper_path" "$root_mount_path" &&

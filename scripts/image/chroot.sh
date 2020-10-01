@@ -14,6 +14,8 @@ make_mount_folders
 
 set_partition_paths
 
+decrypt_root
+
 mount_partitions
 
 mount_chroot_binds

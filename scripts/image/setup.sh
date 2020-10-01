@@ -244,7 +244,7 @@ if [ "$transfer_image" = "y" ]
           then
             info "Formating $root_partition_path with LUKS..." &&
             sudo cryptsetup -v luksFormat -c aes-xts-plain64 -s 512 -h sha512 --use-random -i 1000 "$root_partition_path" &&
-            set_root_variables || error
+            decrypt_root || error
         fi
 
         info "Format root partition..." &&
@@ -293,6 +293,7 @@ if mount | grep -q "$boot_partition_path"
       then
         info "$root_mapper_path is allready mounted..."
       else
+        decrypt_root
         mount_partitions
     fi
 fi
