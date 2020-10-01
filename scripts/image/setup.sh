@@ -419,7 +419,7 @@ if [ "$encrypt_system" == "y" ]
   then
     # Adapted this instruction for setting up encrypted systems @see https://gist.github.com/gea0/4fc2be0cb7a74d0e7cc4322aed710d38
     # The following variable is neccessary because of a bug @see https://bbs.archlinux.de/viewtopic.php?id=33554
-    destination_encrypted_partition_path="/dev/mmcblk0p3"
+    encrypted_partition_uuid=$(blkid | grep $encrypted_partition_path | sed -n 's/.*UUID=\"\([^\"]*\)\".*/\1/p' )
     rescue_suffix=".$(date +%s).rescue"
     mkinitcpio_path="/etc/mkinitcpio.conf"
     mkinitcpio_rescue_path="$mkinitcpio_path$rescue_suffix"
@@ -438,7 +438,7 @@ if [ "$encrypt_system" == "y" ]
     boot_txt_rescue_path="$boot_txt_path$rescue_suffix"
     boot_txt_delete_line=$(echo "part uuid \${devtype} \${devnum}:2 uuid" | sed -e 's/[]\/$*.^[]/\\&/g')
     boot_txt_setenv_origin=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 root=PARTUUID=\${uuid} rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\"" | sed -e 's/[]\/$*.^[]/\\&/g')
-    boot_txt_setenv_replace=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 ip=::::$target_hostname:eth0:dhcp cryptdevice=$destination_encrypted_partition_path:root root=$root_mapper_path rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\""| sed -e 's/[\/&]/\\&/g')
+    boot_txt_setenv_replace=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 ip=::::$target_hostname:eth0:dhcp cryptdevice=UUID=$encrypted_partition_uuid:root root=$root_mapper_path rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\""| sed -e 's/[\/&]/\\&/g')
     info "Setup encryption..." &&
     question "Type in encryption password: " && read -r luks_password
     question "Repeat encryption password:" && read -r luks_password_repeat
@@ -465,7 +465,7 @@ if [ "$encrypt_system" == "y" ]
     echo "echo $root_mapper_path' /               ext4    defaults,noatime  0       1' >> $fstab_path &&"
     echo "echo \"Content of $fstab_path:\$(cat \"$fstab_path\")\" &&"
     echo "cp -v $crypttab_path $crypttab_rescue_path &&"
-    echo "echo 'root $destination_encrypted_partition_path none luks' >> $crypttab_path &&"
+    echo "echo 'root UUID=$encrypted_partition_uuid none luks' >> $crypttab_path &&"
     echo "echo \"Content of $crypttab_path:\$(cat \"$crypttab_path\")\" &&"
     #boot.txt just works with raspberry pi 3 @todo Needs to be implemented for arch raspbery pi 4
     echo "cp -v $boot_txt_path $boot_txt_rescue_path &&"
