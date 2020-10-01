@@ -427,6 +427,8 @@ if [ "$encrypt_system" == "y" ]
     mkinitcpio_rescue_path="$mkinitcpio_path$rescue_suffix"
     mkinitcpio_search_modules="MODULES=()"
     mkinitcpio_replace_modules="MODULES=(g_cdc usb_f_acm usb_f_ecm smsc95xx g_ether)"
+    mkinitcpio_search_binaries="BINARIES=()"
+    mkinitcpio_replace_binaries="BINARIES=(/usr/lib/libgcc_s.so.1)"
     root_mapper_path="/dev/mapper/root"
     fstab_path="/mnt/etc/fstab"
     fstab_rescue_path="$fstab_path$rescue_suffix"
@@ -449,6 +451,7 @@ if [ "$encrypt_system" == "y" ]
     echo "cp -v /home/$target_username/.ssh/authorized_keys /etc/dropbear/root_key &&"
     echo "cp -v $mkinitcpio_path $mkinitcpio_rescue_path &&"
     echo "sed -i 's/$mkinitcpio_search_modules/$mkinitcpio_replace_modules/g' $mkinitcpio_path &&"
+    echo "sed -i 's/$mkinitcpio_search_binaries/$mkinitcpio_replace_binaries/g' $mkinitcpio_path &&"
     echo "sed -i 's/$search_hooks/$replace_hooks/g' $mkinitcpio_path &&"
     echo "echo \"Content of $mkinitcpio_path:\$(cat \"$mkinitcpio_path\")\" &&"
     #Concerning mkinitcpio warning @see https://gist.github.com/imrvelj/c65cd5ca7f5505a65e59204f5a3f7a6d
