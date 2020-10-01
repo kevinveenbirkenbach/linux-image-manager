@@ -22,10 +22,10 @@ echo_partition_name(){
 }
 
 set_partition_paths(){
-  info "Setting partition paths..."
+  info "Setting partition and mapper paths..."
   boot_partition_path=$(echo_partition_name "1")
   root_partition_path=$(echo_partition_name "2")
-  encrypted_partition_path=$(echo_partition_name "3")
+  root_mapper_path=$root_partition_path
 }
 
 make_mount_folders(){
@@ -47,13 +47,15 @@ make_working_folder(){
 mount_partitions(){
   info "Mount boot and root partition..." &&
   mount -v "$boot_partition_path" "$boot_mount_path" &&
-  mount -v "$root_partition_path" "$root_mount_path" &&
+  mount -v "$root_mapper_path" "$root_mount_path" &&
   info "The following mounts refering this setup exist:" && mount | grep "$working_folder_path" ||
   error
 }
 
 destructor(){
   info "Cleaning up..."
+  info "Encrypt decrypted root..."
+  sudo cryptsetup -v luksClose root | warning "Failed."
   info "Unmounting everything..."
   umount -lv "$chroot_dev_pts_mount_path" || warning "Umounting $chroot_dev_pts_mount_path failed!"
   umount -lv "$chroot_dev_mount_path" || warning "Umounting $chroot_dev_mount_path failed!"

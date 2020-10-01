@@ -218,57 +218,66 @@ if [ "$transfer_image" = "y" ]
     if [ "$os" = "arch" ]
       then
         info "Deleting partition tables..." &&
-        wipefs -a "$device_path" || error
-        if [ "$encrypt_system" == "y" ]
-          then
-            info "Creating partitions for encrypted system..." &&
-            (	echo "o"       #Type o. This will clear out any partitions on the drive.
-            	echo "p"       #Type p to list partitions. There should be no partitions left
-            	echo "n"       #Type n,
-            	echo "p"       #then p for primary,
-            	echo "1"       #1 for the first partition on the drive,
-            	echo ""        #press ENTER to accept the default first sector,
-            	echo "+300M"   #then type +100M for the last sector.
-            	echo "t"       #Type t,
-            	echo "c"       #then c to set the first partition to type W95 FAT32 (LBA).
-            	echo "n"       #Type n,
-            	echo "p"       #then p for primary,
-            	echo "2"       #2 for the second partition on the drive,
-            	echo ""        #Default start sector
-            	echo "+3G"     #Endsector
-              echo "n"       #Type n,
-            	echo "p"       #then p for primary,
-            	echo "3"       #2 for the second partition on the drive,
-            	echo ""        #Default start sector
-            	echo ""        #Default end sector
-            	echo "w"       #Write the partition table and exit by typing w.
-            )| fdisk "$device_path" || error
-          else
-            info "Creating partitions..." &&
-            (	echo "o"       #Type o. This will clear out any partitions on the drive.
-            	echo "p"       #Type p to list partitions. There should be no partitions left
-            	echo "n"       #Type n,
-            	echo "p"       #then p for primary,
-            	echo "1"       #1 for the first partition on the drive,
-            	echo ""        #Default start sector
-            	echo "+100M"   #then type +100M for the last sector.
-            	echo "t"       #Type t,
-            	echo "c"       #then c to set the first partition to type W95 FAT32 (LBA).
-            	echo "n"       #Type n,
-            	echo "p"       #then p for primary,
-            	echo "2"       #2 for the second partition on the drive,
-            	echo ""        #Default start sector
-            	echo ""        #Default end sector
-            	echo "w"       #Write the partition table and exit by typing w.
-            )| fdisk "$device_path" || error
-      fi
+        wipefs -a "$device_path" &&
+        info "Creating partitions..." &&
+        (	echo "o"       #Type o. This will clear out any partitions on the drive.
+        	echo "p"       #Type p to list partitions. There should be no partitions left
+        	echo "n"       #Type n,
+        	echo "p"       #then p for primary,
+        	echo "1"       #1 for the first partition on the drive,
+        	echo ""        #Default start sector
+        	echo "+300M"   #then type +300M for the last sector.
+        	echo "t"       #Type t,
+        	echo "c"       #then c to set the first partition to type W95 FAT32 (LBA).
+        	echo "n"       #Type n,
+        	echo "p"       #then p for primary,
+        	echo "2"       #2 for the second partition on the drive,
+        	echo ""        #Default start sector
+        	echo ""        #Default end sector
+        	echo "w"       #Write the partition table and exit by typing w.
+        )| fdisk "$device_path" || error
 
         info "Format boot partition..." &&
         mkfs.vfat "$boot_partition_path" || error
 
-        info "Format root partition..." &&
-        mkfs.ext4 "$root_partition_path" || error
+        if [ "$encrypt_system" == "y" ]
+          then
+            root_mapper_path="/dev/mapper/root"
+            question "Type in encryption password: " && read -r luks_password
+            question "Repeat encryption password:" && read -r luks_password_repeat
+            if [ "$luks_password" != "$luks_password_repeat" ]
+              then
+                error "Passwords didn't match."
+            fi
+            info "Formating $root_partition_path with LUKS..." &&
+            echo "$luks_password" | sudo cryptsetup -v luksFormat -c aes-xts-plain64 -s 512 -h sha512 --use-random -i 1000 "$root_partition_path" &&
+            info "Decrypting $root_partition_path..." &&
+            echo "$luks_password" | sudo cryptsetup -v luksOpen "$root_partition_path" root &&
+            info "Setting encryption variables..." &&
+            encrypted_partition_uuid=$(blkid "$root_partition_path" -s UUID -o value) &&
+            rescue_suffix=".$(date +%s).rescue" &&
+            mkinitcpio_path="/etc/mkinitcpio.conf" &&
+            mkinitcpio_rescue_path="$mkinitcpio_path$rescue_suffix" &&
+            mkinitcpio_search_modules="MODULES=()" &&
+            mkinitcpio_replace_modules="MODULES=(g_cdc usb_f_acm usb_f_ecm smsc95xx g_ether)" &&
+            mkinitcpio_search_binaries="BINARIES=()" &&
+            mkinitcpio_replace_binaries=$(echo "BINARIES=(/usr/lib/libgcc_s.so.1)"| sed -e 's/[\/&]/\\&/g') &&
+            mkinitcpio_search_hooks="HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)" &&
+            mkinitcpio_replace_hooks="HOOKS=(base udev autodetect modconf block sleep netconf dropbear encryptssh filesystems keyboard fsck)" &&
+            fstab_path="/mnt/etc/fstab" &&
+            fstab_rescue_path="$fstab_path$rescue_suffix" &&
+            crypttab_path="/mnt/etc/crypttab" &&
+            crypttab_rescue_path="$crypttab_path$rescue_suffix" &&
+            boot_txt_path="/boot/boot.txt" &&
+            boot_txt_rescue_path="$boot_txt_path$rescue_suffix" &&
+            boot_txt_delete_line=$(echo "part uuid \${devtype} \${devnum}:2 uuid" | sed -e 's/[]\/$*.^[]/\\&/g') &&
+            boot_txt_setenv_origin=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 root=PARTUUID=\${uuid} rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\"" | sed -e 's/[]\/$*.^[]/\\&/g') &&
+            boot_txt_setenv_replace=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 ip=::::$target_hostname:eth0:dhcp cryptdevice=UUID=$encrypted_partition_uuid:root root=$root_mapper_path rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\""| sed -e 's/[\/&]/\\&/g') ||
+            error
+        fi
 
+        info "Format root partition..." &&
+        mkfs.ext4 "$root_mapper_path" || error
         mount_partitions;
 
         info "Root files will be transfered to device..." &&
@@ -309,9 +318,9 @@ if mount | grep -q "$boot_partition_path"
   then
     info "$boot_partition_path is allready mounted..."
   else
-    if mount | grep -q "$root_partition_path"
+    if mount | grep -q "$root_mapper_path"
       then
-        info "$root_partition_path is allready mounted..."
+        info "$root_mapper_path is allready mounted..."
       else
         mount_partitions
     fi
@@ -418,34 +427,7 @@ fi
 if [ "$encrypt_system" == "y" ]
   then
     # Adapted this instruction for setting up encrypted systems @see https://gist.github.com/gea0/4fc2be0cb7a74d0e7cc4322aed710d38
-    # The following variable is neccessary because of a bug @see https://bbs.archlinux.de/viewtopic.php?id=33554
-    encrypted_partition_uuid=$(blkid "$encrypted_partition_path" -s UUID -o value)
-    rescue_suffix=".$(date +%s).rescue"
-    mkinitcpio_path="/etc/mkinitcpio.conf"
-    mkinitcpio_rescue_path="$mkinitcpio_path$rescue_suffix"
-    mkinitcpio_search_modules="MODULES=()"
-    mkinitcpio_replace_modules="MODULES=(g_cdc usb_f_acm usb_f_ecm smsc95xx g_ether)"
-    mkinitcpio_search_binaries="BINARIES=()"
-    mkinitcpio_replace_binaries=$(echo "BINARIES=(/usr/lib/libgcc_s.so.1)"| sed -e 's/[\/&]/\\&/g')
-    mkinitcpio_search_hooks="HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)"
-    mkinitcpio_replace_hooks="HOOKS=(base udev autodetect modconf block sleep netconf dropbear encryptssh filesystems keyboard fsck)"
-    root_mapper_path="/dev/mapper/root"
-    fstab_path="/mnt/etc/fstab"
-    fstab_rescue_path="$fstab_path$rescue_suffix"
-    crypttab_path="/mnt/etc/crypttab"
-    crypttab_rescue_path="$crypttab_path$rescue_suffix"
-    boot_txt_path="/boot/boot.txt"
-    boot_txt_rescue_path="$boot_txt_path$rescue_suffix"
-    boot_txt_delete_line=$(echo "part uuid \${devtype} \${devnum}:2 uuid" | sed -e 's/[]\/$*.^[]/\\&/g')
-    boot_txt_setenv_origin=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 root=PARTUUID=\${uuid} rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\"" | sed -e 's/[]\/$*.^[]/\\&/g')
-    boot_txt_setenv_replace=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 ip=::::$target_hostname:eth0:dhcp cryptdevice=UUID=$encrypted_partition_uuid:root root=$root_mapper_path rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\""| sed -e 's/[\/&]/\\&/g')
     info "Setup encryption..." &&
-    question "Type in encryption password: " && read -r luks_password
-    question "Repeat encryption password:" && read -r luks_password_repeat
-    if [ "$luks_password" != "$luks_password_repeat" ]
-      then
-        error "Passwords didn't match."
-    fi
     (
     echo "pacman --noconfirm -S --needed $(get_packages "server/luks") &&"
     echo "cp -v /home/$target_username/.ssh/authorized_keys /etc/dropbear/root_key &&"
@@ -456,13 +438,8 @@ if [ "$encrypt_system" == "y" ]
     echo "echo \"Content of $mkinitcpio_path:\$(cat \"$mkinitcpio_path\")\" &&"
     #Concerning mkinitcpio warning @see https://gist.github.com/imrvelj/c65cd5ca7f5505a65e59204f5a3f7a6d
     echo "mkinitcpio -P &&"
-    echo "echo '$luks_password' | sudo cryptsetup -v luksFormat -c aes-xts-plain64 -s 512 -h sha512 --use-random -i 1000 $encrypted_partition_path &&"
-    echo "echo '$luks_password' | sudo cryptsetup -v luksOpen $encrypted_partition_path root &&"
-    echo "mkfs.ext4 $root_mapper_path &&"
-    echo "mount $root_mapper_path /mnt &&"
-    echo "rsync --info=progress2 -axHAX / /mnt/ &&"
     echo "cp -v $fstab_path $fstab_rescue_path &&"
-    echo "echo $root_mapper_path' /               ext4    defaults,noatime  0       1' >> $fstab_path &&"
+    echo "echo '$root_mapper_path /               ext4    defaults,noatime  0       1' >> $fstab_path &&"
     echo "echo \"Content of $fstab_path:\$(cat \"$fstab_path\")\" &&"
     echo "cp -v $crypttab_path $crypttab_rescue_path &&"
     echo "echo 'root UUID=$encrypted_partition_uuid none luks' >> $crypttab_path &&"
@@ -473,9 +450,7 @@ if [ "$encrypt_system" == "y" ]
     echo "sed -i 's/$boot_txt_setenv_origin/$boot_txt_setenv_replace/g' $boot_txt_path &&"
     echo "echo \"Content of $boot_txt_path:\$(cat \"$boot_txt_path\")\" &&"
     echo "cd /boot/ && ./mkscr &&"
-    echo "umount $root_mapper_path &&"
-    echo "sudo cryptsetup -v luksClose root &&"
-    echo "exit || echo 'Error in chroot environment!' echo 'Trying to close decrypted root.'; sudo cryptsetup -v luksClose root"
+    echo "exit || echo 'Error in chroot environment!'"
     ) | chroot "$root_mount_path" /bin/bash || error
 fi
 
