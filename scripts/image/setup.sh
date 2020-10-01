@@ -419,7 +419,7 @@ if [ "$encrypt_system" == "y" ]
   then
     # Adapted this instruction for setting up encrypted systems @see https://gist.github.com/gea0/4fc2be0cb7a74d0e7cc4322aed710d38
     # The following variable is neccessary because of a bug @see https://bbs.archlinux.de/viewtopic.php?id=33554
-    encrypted_partition_uuid=$(blkid | grep "$encrypted_partition_path" | sed -n 's/.*UUID=\"\([^\"]*\)\".*/\1/p')
+    encrypted_partition_uuid=$(blkid "$encrypted_partition_path" -s UUID -o value)
     rescue_suffix=".$(date +%s).rescue"
     mkinitcpio_path="/etc/mkinitcpio.conf"
     mkinitcpio_rescue_path="$mkinitcpio_path$rescue_suffix"
