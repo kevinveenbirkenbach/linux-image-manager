@@ -429,7 +429,7 @@ if [ "$encrypt_system" == "y" ]
     #Concerning mkinitcpio warning @see https://gist.github.com/imrvelj/c65cd5ca7f5505a65e59204f5a3f7a6d
     echo "mkinitcpio -P &&"
     echo "cp -v $fstab_path $fstab_rescue_path &&"
-    echo "echo '$root_mapper_path /               ext4    defaults,noatime  0       1' >> $fstab_path &&"
+    echo "echo 'UUID=$encrypted_partition_uuid  /               ext4    defaults,noatime  0       1' >> $fstab_path &&"
     echo "echo \"Content of $fstab_path:\$(cat \"$fstab_path\")\" &&"
     echo "cp -v $crypttab_path $crypttab_rescue_path &&"
     echo "echo 'root UUID=$encrypted_partition_uuid none luks' >> $crypttab_path &&"
