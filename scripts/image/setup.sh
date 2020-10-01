@@ -419,14 +419,14 @@ if [ "$encrypt_system" == "y" ]
   then
     # Adapted this instruction for setting up encrypted systems @see https://gist.github.com/gea0/4fc2be0cb7a74d0e7cc4322aed710d38
     # The following variable is neccessary because of a bug @see https://bbs.archlinux.de/viewtopic.php?id=33554
-    encrypted_partition_uuid=$(blkid | grep $encrypted_partition_path | sed -n 's/.*UUID=\"\([^\"]*\)\".*/\1/p' )
+    encrypted_partition_uuid=$(blkid | grep "$encrypted_partition_path" | sed -n 's/.*UUID=\"\([^\"]*\)\".*/\1/p')
     rescue_suffix=".$(date +%s).rescue"
     mkinitcpio_path="/etc/mkinitcpio.conf"
     mkinitcpio_rescue_path="$mkinitcpio_path$rescue_suffix"
     mkinitcpio_search_modules="MODULES=()"
     mkinitcpio_replace_modules="MODULES=(g_cdc usb_f_acm usb_f_ecm smsc95xx g_ether)"
     mkinitcpio_search_binaries="BINARIES=()"
-    mkinitcpio_replace_binaries="BINARIES=(/usr/lib/libgcc_s.so.1)"
+    mkinitcpio_replace_binaries=$(echo "BINARIES=(/usr/lib/libgcc_s.so.1)"| sed -e 's/[\/&]/\\&/g')
     mkinitcpio_search_hooks="HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)"
     mkinitcpio_replace_hooks="HOOKS=(base udev autodetect modconf block sleep netconf dropbear encryptssh filesystems keyboard fsck)"
     root_mapper_path="/dev/mapper/root"
