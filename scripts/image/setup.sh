@@ -372,6 +372,16 @@ if [ "$change_hostname" == "y" ]
 fi
 info "Used hostname is: $target_hostname"
 
+case "$os" in
+  "arch"|"manjaro")
+    info "Populating keys..." &&
+    (
+    echo "yes | pacman-key --init"
+    echo "yes | pacman-key --populate archlinuxarm"
+    ) | chroot "$root_mount_path" /bin/bash || error
+  ;;
+esac
+
 question "Should the system be updated?(y/N)" && read -r update_system
 if [ "$update_system" == "y" ]
   then
@@ -379,8 +389,6 @@ if [ "$update_system" == "y" ]
     case "$os" in
       "arch"|"manjaro")
         (
-        echo "yes | pacman-key --init"
-        echo "yes | pacman-key --populate archlinuxarm"
         echo "pacman --noconfirm -Syyu"
         ) | chroot "$root_mount_path" /bin/bash || error
         ;;
