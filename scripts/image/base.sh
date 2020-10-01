@@ -47,8 +47,8 @@ make_working_folder(){
 mount_partitions(){
   if [ "$(blkid "$root_partition_path" -s TYPE -o value)" == "crypto_LUKS" ]
     then
-      encrypted_partition_uuid=$(blkid "$root_partition_path" -s UUID -o value) &&
-      root_mapper_name="arch-root-$encrypted_partition_uuid" &&
+      root_partition_uuid=$(blkid "$root_partition_path" -s UUID -o value) &&
+      root_mapper_name="arch-root-$root_partition_uuid" &&
       root_mapper_path="/dev/mapper/$root_mapper_name" &&
       info "Decrypting of $root_partition_path is neccessary..." &&
       sudo cryptsetup -v luksOpen "$root_partition_path" "$root_mapper_name" ||
