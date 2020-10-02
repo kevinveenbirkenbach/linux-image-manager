@@ -443,7 +443,7 @@ if [ "$encrypt_system" == "y" ]
     info "Content of $crypttab_path:$(cat "$crypttab_path")" &&
 
     boot_txt_path="$boot_mount_path""boot.txt" &&
-    cryptdevice_configuration="cryptdevice=UUID=$root_partition_uuid:$root_mapper_name root=$root_mapper_path"
+    cryptdevice_configuration="cryptdevice=UUID=$root_partition_uuid:$root_mapper_name root=$root_mapper_path" || error
     if [ -f "$boot_txt_path" ];
       then
         info "Configuring $boot_txt_path..." &&
@@ -459,8 +459,9 @@ if [ "$encrypt_system" == "y" ]
         cmdline_txt_path="$boot_mount_path""cmdline.txt" &&
         info "Configuring $cmdline_txt_path..." &&
         cmdline_search_string=$(echo "root=/dev/mmcblk0p2" | sed -e 's/[\/&]/\\&/g') &&
-        cmdline_replace_string=$("$cryptdevice_configuration rootfstype=ext4"| sed -e 's/[\/&]/\\&/g') &&
-        sed -i "s/$cmdline_search_string/$cmdline_replace_string/g" "$cmdline_txt_path" || error
+        cmdline_replace_string=$(echo "$cryptdevice_configuration rootfstype=ext4"| sed -e 's/[\/&]/\\&/g') &&
+        sed -i "s/$cmdline_search_string/$cmdline_replace_string/g" "$cmdline_txt_path"  &&
+        echo "Content of $boot_txt_path:$(cat "$boot_txt_path")" || error
       fi
 fi
 
@@ -471,9 +472,9 @@ if [ "$setup_wifi" = "y" ]
     question "Please type in the psk:" && read -r psk
     case "$os" in
       "retropie")
-        wifi_file="$boot_mount_path""wifikeyfile.txt"
-        echo "ssid=\"$ssid\"" > "$wifi_file"
-        echo "psk=\"$psk\"" >> "$wifi_file"
+        wifi_file="$boot_mount_path""wifikeyfile.txt" &&
+        echo "ssid=\"$ssid\"" > "$wifi_file" &&
+        echo "psk=\"$psk\"" >> "$wifi_file" || error
         ;;
       *)
         warning "Wifi setting for operation system \"$os\" is not supported yet. Skipped."
@@ -489,7 +490,7 @@ if [ "$os" = "retropie" ]
       then
         target_roms_path="$target_user_home_folder_path""/RetroPie/roms/" &&
         source_roms_path="$origin_user_home""Games/roms/" &&
-        info "Copy roms from $source_roms_path to $target_roms_path..."
+        info "Copy roms from $source_roms_path to $target_roms_path..." &&
         cp -v "$source_roms_path" "$target_roms_path" &&
         chown -vR 1000 "$target_roms_path" || error
     fi
