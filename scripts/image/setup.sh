@@ -407,14 +407,11 @@ fi
 if [ "$encrypt_system" == "y" ]
   then
     # Adapted this instruction for setting up encrypted systems @see https://gist.github.com/gea0/4fc2be0cb7a74d0e7cc4322aed710d38
-    info "Setting encryption variables..." &&
-    rescue_suffix=".$(date +%s).rescue" &&
 
     info "Setup encryption..." &&
     #Concerning mkinitcpio warning @see https://gist.github.com/imrvelj/c65cd5ca7f5505a65e59204f5a3f7a6d
     mkinitcpio_path="/etc/mkinitcpio.conf" &&
     info "Configuring $mkinitcpio_path..." &&
-    mkinitcpio_rescue_path="$mkinitcpio_path$rescue_suffix" &&
     mkinitcpio_search_modules="MODULES=()" &&
     mkinitcpio_replace_modules="MODULES=(g_cdc usb_f_acm usb_f_ecm smsc95xx g_ether)" &&
     mkinitcpio_search_binaries="BINARIES=()" &&
@@ -424,7 +421,6 @@ if [ "$encrypt_system" == "y" ]
     (
       echo "pacman --noconfirm -S --needed $(get_packages "server/luks") &&"
       echo "cp -v /home/$target_username/.ssh/authorized_keys /etc/dropbear/root_key &&"
-      echo "cp -v $mkinitcpio_path $mkinitcpio_rescue_path &&"
       echo "sed -i 's/$mkinitcpio_search_modules/$mkinitcpio_replace_modules/g' $mkinitcpio_path &&"
       echo "sed -i 's/$mkinitcpio_search_binaries/$mkinitcpio_replace_binaries/g' $mkinitcpio_path &&"
       echo "sed -i 's/$mkinitcpio_search_hooks/$mkinitcpio_replace_hooks/g' $mkinitcpio_path &&"
@@ -434,18 +430,14 @@ if [ "$encrypt_system" == "y" ]
 
     fstab_path="/etc/fstab" &&
     info "Generating $fstab_path..." &&
-    fstab_rescue_path="$fstab_path$rescue_suffix" &&
     (
-      echo "cp -v $fstab_path $fstab_rescue_path &&"
       echo "echo 'UUID=$root_partition_uuid  /               ext4    defaults,noatime  0       1' >> $fstab_path &&"
       echo "echo \"Content of $fstab_path:\$(cat \"$fstab_path\")\" &&"
     ) | chroot "$root_mount_path" /bin/bash &&
 
     crypttab_path="/etc/crypttab" &&
     info "Generating $crypttab_path..." &&
-    crypttab_rescue_path="$crypttab_path$rescue_suffix" &&
     (
-      echo "cp -v $crypttab_path $crypttab_rescue_path &&"
       echo "echo '$root_mapper_name UUID=$root_partition_uuid none luks' >> $crypttab_path &&"
       echo "echo \"Content of $crypttab_path:\$(cat \"$crypttab_path\")\" &&"
     ) | chroot "$root_mount_path" /bin/bash &&
@@ -453,12 +445,10 @@ if [ "$encrypt_system" == "y" ]
     #boot.txt just works with raspberry pi 3 @todo Needs to be implemented for arch raspbery pi 4
     boot_txt_path="/boot/boot.txt" &&
     info "Generating $boot_txt_path..." &&
-    boot_txt_rescue_path="$boot_txt_path$rescue_suffix" &&
     boot_txt_delete_line=$(echo "part uuid \${devtype} \${devnum}:2 uuid" | sed -e 's/[]\/$*.^[]/\\&/g') &&
     boot_txt_setenv_origin=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 root=PARTUUID=\${uuid} rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\"" | sed -e 's/[]\/$*.^[]/\\&/g') &&
     boot_txt_setenv_replace=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 ip=::::$target_hostname:eth0:dhcp cryptdevice=UUID=$root_partition_uuid:$root_mapper_name root=$root_mapper_path rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\""| sed -e 's/[\/&]/\\&/g') &&
     (
-      echo "cp -v $boot_txt_path $boot_txt_rescue_path &&"
       echo "sed -i 's/$boot_txt_delete_line//g' $boot_txt_path &&"
       echo "sed -i 's/$boot_txt_setenv_origin/$boot_txt_setenv_replace/g' $boot_txt_path &&"
       echo "echo \"Content of $boot_txt_path:\$(cat \"$boot_txt_path\")\" &&"
