@@ -428,30 +428,40 @@ if [ "$encrypt_system" == "y" ]
     sed -i "s/$mkinitcpio_search_modules/$mkinitcpio_replace_modules/g" "$mkinitcpio_path" &&
     sed -i "s/$mkinitcpio_search_binaries/$mkinitcpio_replace_binaries/g" "$mkinitcpio_path" &&
     sed -i "s/$mkinitcpio_search_hooks/$mkinitcpio_replace_hooks/g" "$mkinitcpio_path" &&
-    echo "Content of $mkinitcpio_path:$(cat "$mkinitcpio_path")" &&
+    info "Content of $mkinitcpio_path:$(cat "$mkinitcpio_path")" &&
     info "Generating mkinitcpio..." &&
     echo "mkinitcpio -vP || exit 1" | chroot "$root_mount_path" /bin/bash &&
 
     fstab_path="$root_mount_path""etc/fstab" &&
     info "Configuring $fstab_path..." &&
     echo "UUID=$root_partition_uuid  / ext4    defaults,noatime  0  1" >> "$fstab_path" &&
-    echo "Content of $fstab_path:$(cat "$fstab_path")" &&
+    info "Content of $fstab_path:$(cat "$fstab_path")" &&
 
     crypttab_path="$root_mount_path""etc/crypttab" &&
     info "Generating $crypttab_path..." &&
     echo "$root_mapper_name UUID=$root_partition_uuid none luks" >> "$crypttab_path" &&
-    echo "Content of $crypttab_path:$(cat "$crypttab_path")" &&
+    info "Content of $crypttab_path:$(cat "$crypttab_path")" &&
 
-    #boot.txt just works with raspberry pi 3 @todo Needs to be implemented for arch raspbery pi 4
-    boot_txt_path="$root_mount_path""boot/boot.txt" &&
-    info "Generating $boot_txt_path..." &&
-    boot_txt_delete_line=$(echo "part uuid \${devtype} \${devnum}:2 uuid" | sed -e 's/[]\/$*.^[]/\\&/g') &&
-    boot_txt_setenv_origin=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 root=PARTUUID=\${uuid} rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\"" | sed -e 's/[]\/$*.^[]/\\&/g') &&
-    boot_txt_setenv_replace=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 ip=::::$target_hostname:eth0:dhcp cryptdevice=UUID=$root_partition_uuid:$root_mapper_name root=$root_mapper_path rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\""| sed -e 's/[\/&]/\\&/g') &&
-    sed -i "s/$boot_txt_delete_line//g" "$boot_txt_path" &&
-    sed -i "s/$boot_txt_setenv_origin/$boot_txt_setenv_replace/g" "$boot_txt_path" &&
-    echo "Content of $boot_txt_path:$(cat "$boot_txt_path")" &&
-    echo "cd /boot/ && ./mkscr || exit 1" | chroot "$root_mount_path" /bin/bash || error
+    boot_txt_path="$boot_mount_path""boot.txt" &&
+    cryptdevice_configuration="cryptdevice=UUID=$root_partition_uuid:$root_mapper_name root=$root_mapper_path"
+    if [ -f "$boot_txt_path" ];
+      then
+        info "Configuring $boot_txt_path..." &&
+        boot_txt_delete_line=$(echo "part uuid \${devtype} \${devnum}:2 uuid" | sed -e 's/[]\/$*.^[]/\\&/g') &&
+        boot_txt_setenv_origin=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 root=PARTUUID=\${uuid} rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\"" | sed -e 's/[]\/$*.^[]/\\&/g') &&
+        boot_txt_setenv_replace=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 ip=::::$target_hostname:eth0:dhcp $cryptdevice_configuration rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\""| sed -e 's/[\/&]/\\&/g') &&
+        sed -i "s/$boot_txt_delete_line//g" "$boot_txt_path" &&
+        sed -i "s/$boot_txt_setenv_origin/$boot_txt_setenv_replace/g" "$boot_txt_path" &&
+        echo "Content of $boot_txt_path:$(cat "$boot_txt_path")" &&
+        info "Generating..." &&
+        echo "cd /boot/ && ./mkscr || exit 1" | chroot "$root_mount_path" /bin/bash || error
+      else
+        cmdline_txt_path="$boot_mount_path""cmdline.txt" &&
+        info "Configuring $cmdline_txt_path..." &&
+        cmdline_search_string=$(echo "root=/dev/mmcblk0p2" | sed -e 's/[\/&]/\\&/g') &&
+        cmdline_replace_string=$("$cryptdevice_configuration rootfstype=ext4"| sed -e 's/[\/&]/\\&/g') &&
+        sed -i "s/$cmdline_search_string/$cmdline_replace_string/g" "$cmdline_txt_path" || error
+      fi
 fi
 
 question "Do you want to setup Wifi on the device?(y/N)" && read -r setup_wifi
