@@ -472,7 +472,7 @@ if [ "$encrypt_system" == "y" ]
         cmdline_search_string=$(echo "root=/dev/mmcblk0p2" | sed -e 's/[\/&]/\\&/g') &&
         cmdline_replace_string=$(echo "$cryptdevice_configuration rootfstype=ext4"| sed -e 's/[\/&]/\\&/g') &&
         sed -i "s/$cmdline_search_string/$cmdline_replace_string/g" "$cmdline_txt_path"  &&
-        info "Content of $boot_txt_path:$(cat "$boot_txt_path")" || error
+        info "Content of $cmdline_txt_path:$(cat "$cmdline_txt_path")" || error
       fi
 fi
 
