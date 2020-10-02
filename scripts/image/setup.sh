@@ -96,14 +96,8 @@ case "$os" in
       "1")
         imagename="ArchLinuxARM-rpi-latest.tar.gz"
         ;;
-      "2")
-        imagename="ArchLinuxARM-rpi-2-latest.tar.gz"
-        ;;
-      "3")
-        imagename="ArchLinuxARM-rpi-3-latest.tar.gz"
-        ;;
-      "4")
-        imagename="ArchLinuxARM-rpi-4-latest.tar.gz"
+      "2"|"3"|"4")
+        imagename="ArchLinuxARM-rpi-$version-latest.tar.gz"
         ;;
       *)
         os_does_not_support_raspberry_version_error
