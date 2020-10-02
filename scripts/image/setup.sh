@@ -298,18 +298,18 @@ if mount | grep -q "$boot_partition_path"
     fi
 fi
 
-info "Define target paths..."
-target_home_path="$root_mount_path""home/";
-target_username=$(ls "$target_home_path");
-target_user_home_folder_path="$target_home_path$target_username/";
+info "Define target paths..." &&
+target_home_path="$root_mount_path""home/" &&
+target_username=$(ls "$target_home_path") &&
+target_user_home_folder_path="$target_home_path$target_username/" &&
 
-question "Should the ssh-key be copied to the image?(y/N)" && read -r copy_ssh_key
+target_user_ssh_folder_path="$target_user_home_folder_path"".ssh/" &&
+target_authorized_keys="$target_user_ssh_folder_path""authorized_keys" &&
+question "Should the ssh-key be copied to the image?(y/N)" && read -r copy_ssh_key || error
 if [ "$copy_ssh_key" == "y" ]
   then
-    info "Copy ssh key to target..."
-    target_user_ssh_folder_path="$target_user_home_folder_path"".ssh/"
-    target_authorized_keys="$target_user_ssh_folder_path""authorized_keys"
-    origin_user_rsa_pub="$origin_user_home"".ssh/id_rsa.pub";
+    info "Copy ssh key to target..." &&
+    origin_user_rsa_pub="$origin_user_home"".ssh/id_rsa.pub" || error
     if [ -f "$origin_user_rsa_pub" ]
       then
         mkdir -v "$target_user_ssh_folder_path" || warning "Folder \"$target_user_ssh_folder_path\" exists. Can't be created."
@@ -318,8 +318,7 @@ if [ "$copy_ssh_key" == "y" ]
         info "$target_authorized_keys contains the following: $target_authorized_keys_content" &&
         chown -vR 1000 "$target_user_ssh_folder_path" &&
         chmod -v 700 "$target_user_ssh_folder_path" &&
-        chmod -v 600 "$target_authorized_keys" ||
-        error
+        chmod -v 600 "$target_authorized_keys" || error
       else
         warning "The ssh key \"$origin_user_rsa_pub\" can't be copied to \"$target_authorized_keys\" because it doesn't exist."
     fi
