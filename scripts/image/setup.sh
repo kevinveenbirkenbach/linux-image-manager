@@ -433,13 +433,25 @@ if [ "$encrypt_system" == "y" ]
     echo "mkinitcpio -vP || exit 1" | chroot "$root_mount_path" /bin/bash &&
 
     fstab_path="$root_mount_path""etc/fstab" &&
-    info "Configuring $fstab_path..." &&
-    echo "UUID=$root_partition_uuid  / ext4    defaults,noatime  0  1" >> "$fstab_path" &&
+    fstab_insert_line="UUID=$root_partition_uuid  / ext4    defaults,noatime  0  1" &&
+    info "Configuring $fstab_path..." || error
+    if grep -q "$fstab_insert_line" "$fstab_path"
+      then
+        warning "$fstab_path contains allready $fstab_insert_line - Skipped."
+      else
+        echo "$fstab_insert_line" >> "$fstab_path" || error
+    fi
     info "Content of $fstab_path:$(cat "$fstab_path")" &&
 
     crypttab_path="$root_mount_path""etc/crypttab" &&
-    info "Generating $crypttab_path..." &&
-    echo "$root_mapper_name UUID=$root_partition_uuid none luks" >> "$crypttab_path" &&
+    crypttab_insert_line="$root_mapper_name UUID=$root_partition_uuid none luks" &&
+    info "Configuring $crypttab_path..." || error
+    if grep -q "$crypttab_insert_line" "$crypttab_path"
+      then
+        warning "$crypttab_path contains allready $crypttab_insert_line - Skipped."
+      else
+        echo "$crypttab_insert_line" >> "$crypttab_path" || error
+    fi
     info "Content of $crypttab_path:$(cat "$crypttab_path")" &&
 
     boot_txt_path="$boot_mount_path""boot.txt" &&
@@ -452,7 +464,7 @@ if [ "$encrypt_system" == "y" ]
         boot_txt_setenv_replace=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 ip=::::$target_hostname:eth0:dhcp $cryptdevice_configuration rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\""| sed -e 's/[\/&]/\\&/g') &&
         sed -i "s/$boot_txt_delete_line//g" "$boot_txt_path" &&
         sed -i "s/$boot_txt_setenv_origin/$boot_txt_setenv_replace/g" "$boot_txt_path" &&
-        echo "Content of $boot_txt_path:$(cat "$boot_txt_path")" &&
+        info "Content of $boot_txt_path:$(cat "$boot_txt_path")" &&
         info "Generating..." &&
         echo "cd /boot/ && ./mkscr || exit 1" | chroot "$root_mount_path" /bin/bash || error
       else
@@ -461,7 +473,7 @@ if [ "$encrypt_system" == "y" ]
         cmdline_search_string=$(echo "root=/dev/mmcblk0p2" | sed -e 's/[\/&]/\\&/g') &&
         cmdline_replace_string=$(echo "$cryptdevice_configuration rootfstype=ext4"| sed -e 's/[\/&]/\\&/g') &&
         sed -i "s/$cmdline_search_string/$cmdline_replace_string/g" "$cmdline_txt_path"  &&
-        echo "Content of $boot_txt_path:$(cat "$boot_txt_path")" || error
+        info "Content of $boot_txt_path:$(cat "$boot_txt_path")" || error
       fi
 fi
 
