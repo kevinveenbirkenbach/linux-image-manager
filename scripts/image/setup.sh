@@ -36,75 +36,24 @@ if mount | grep -q "$device_path"
     error "Device $device_path is allready mounted. Umount with \"umount $device_path*\"."
 fi
 
-info "Select which architecture type should be used..." &&
-echo "1) arm " &&
-echo "2) 64_bit" &&
-question "Please type in the architecture type:" &&
-read -r architecture ||
-error
-
-
-info "Select which operating system should be used..."
-info "Available systems:"
-if [ "$architecture" = "arm" ]
-  then
-    echo "1) arch"
-    echo "2) moode"
-    echo "3) retropie"
-fi
-if [ "$architecture" = "64_bit" ]
-  then
-    echo "1) manjaro"
-fi
-question "Please type in the os:" && read -r os
-
-info "Select which version should be used..."
-case "$architecture" in
-  "arm")
-    echo "Version for Raspberry Pi modell:"
-    echo "1) 1"
-    echo "2) 2"
-    echo "3) 3"
-    echo "4) 4"
-  ;;
-  "64_bit")
-    case "$os" in
-      "manjaro")
-        echo "1) architect"
-        echo "1) gnome"
-      ;;
-      *)
-        error "The os system \"$os\" is not supported yet for 64bit!"
-      ;;
-    esac
-  ;;
-  *)
-    error "The architecture \"$architecture\" is not supported yet!"
-  ;;
-esac
-question "Please type in the version:" && read -r version
-
-os_does_not_support_raspberry_version_error () {
-  error "$os for Raspberry Pi Version $version is not supported!";
-}
+question "Please type in which distribution should be used(e.g.:arch,moode,retropie,manjaro):" && read -r os || error
 
 case "$os" in
   "arch")
     question "Should the system be encrypted?(y/N)" && read -r encrypt_system
+    question "Please type in which Raspberry Pi will be used(e.g.:1,2,3,4,aarch64):" && read -r version
     base_download_url="http://os.archlinuxarm.org/os/";
     case "$version" in
       "1")
         imagename="ArchLinuxARM-rpi-latest.tar.gz"
         ;;
-      "2"|"3"|"4")
-        imagename="ArchLinuxARM-rpi-$version-latest.tar.gz"
-        ;;
       *)
-        os_does_not_support_raspberry_version_error
+        imagename="ArchLinuxARM-rpi-$version-latest.tar.gz"
         ;;
     esac
     ;;
   "manjaro")
+    question "Please type in the version(e.g.:architect,gnome):" && read -r version
     case "$version" in
       "architect")
         image_checksum="6b1c2fce12f244c1e32212767a9d3af2cf8263b2"
@@ -115,9 +64,6 @@ case "$os" in
         image_checksum="d16118207c546c18201703d80b6356b1522b47d0"
         base_download_url="https://osdn.net/frs/redir.php?m=dotsrc&f=/storage/g/m/ma/manjaro/gnome/20.0.1/";
         imagename="manjaro-gnome-20.0.1-200511-linux56.iso"
-        ;;
-      *)
-        os_does_not_support_raspberry_version_error
         ;;
     esac
     ;;
@@ -133,7 +79,6 @@ case "$os" in
         image_checksum="98b4205ad0248d378c6776e20c54e487"
         imagename="retropie-buster-4.6-rpi1_zero.img.gz"
         ;;
-
       "2" | "3")
         image_checksum="2e082ef5fc2d7cf7d910494cf0f7185b"
         imagename="retropie-buster-4.6-rpi2_rpi3.img.gz"
@@ -143,14 +88,8 @@ case "$os" in
         image_checksum="9154d998cba5219ddf23de46d8845f6c"
         imagename="retropie-buster-4.6-rpi4.img.gz"
         ;;
-      *)
-        os_does_not_support_raspberry_version_error
-        ;;
     esac
     ;;
-  *)
-    error "The operation system \"$os\" is not supported yet!"
-  ;;
 esac
 
 info "Generating os-image..."
