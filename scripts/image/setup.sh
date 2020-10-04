@@ -132,6 +132,9 @@ make_mount_folders
 
 set_partition_paths
 
+root_filesystem="btrfs" &&
+info "The following filesystem will be used if possible:$root_filesystem" || error
+
 question "Should the image be transfered to $device_path?(y/N)" && read -r transfer_image
 if [ "$transfer_image" = "y" ]
   then
@@ -181,7 +184,7 @@ if [ "$transfer_image" = "y" ]
         fi
 
         info "Format root partition..." &&
-        mkfs.ext4 "$root_mapper_path" || error
+        mkfs -t "$root_filesystem" "$root_mapper_path" || error
         mount_partitions;
 
         info "Root files will be transfered to device..." &&
@@ -368,7 +371,7 @@ if [ "$encrypt_system" == "y" ]
     info "Generating mkinitcpio..." &&
     echo "mkinitcpio -vP || exit 1" | chroot "$root_mount_path" /bin/bash &&
 
-    fstab_insert_line="UUID=$root_partition_uuid  / ext4    defaults,noatime  0  1" &&
+    fstab_insert_line="UUID=$root_partition_uuid  / $root_filesystem    defaults,noatime  0  1" &&
     info "Configuring $fstab_path..." || error
     if grep -q "$fstab_insert_line" "$fstab_path"
       then
@@ -406,7 +409,7 @@ if [ "$encrypt_system" == "y" ]
         cmdline_txt_path="$boot_mount_path""cmdline.txt" &&
         info "Configuring $cmdline_txt_path..." &&
         cmdline_search_string=$(echo "root=/dev/mmcblk0p2" | sed -e 's/[\/&]/\\&/g') &&
-        cmdline_replace_string=$(echo "$cryptdevice_configuration rootfstype=ext4"| sed -e 's/[\/&]/\\&/g') &&
+        cmdline_replace_string=$(echo "$cryptdevice_configuration rootfstype=$root_filesystem"| sed -e 's/[\/&]/\\&/g') &&
         sed -i "s/$cmdline_search_string/$cmdline_replace_string/g" "$cmdline_txt_path"  &&
         info "Content of $cmdline_txt_path:$(cat "$cmdline_txt_path")" || error
       fi
