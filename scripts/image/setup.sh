@@ -325,9 +325,7 @@ if [ "$update_system" == "y" ]
     info "Updating system..."
     case "$os" in
       "arch"|"manjaro")
-        (
-        echo "pacman --noconfirm -Syyu"
-        ) | chroot "$root_mount_path" /bin/bash || error
+        echo "pacman --noconfirm -Syyu" | chroot "$root_mount_path" /bin/bash || error
         ;;
       "moode"|"retropie")
         (
