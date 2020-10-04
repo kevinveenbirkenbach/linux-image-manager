@@ -248,8 +248,10 @@ if mount | grep -q "$boot_partition_path"
 fi
 
 fstab_path="$root_mount_path""etc/fstab" &&
+fstab_search_string=$(echo "/dev/mmcblk0p1"| sed -e 's/[\/&]/\\&/g') &&
+fstab_replace_string=$(echo "UUID=$boot_partition_uuid"| sed -e 's/[\/&]/\\&/g') &&
 info "Seeding UUID to $fstab_path to avoid path conflicts..." &&
-sed -i "s/mmcblk0p1/UUID=$boot_partition_uuid/g" "$fstab_path" &&
+sed -i "s/$fstab_search_string/$fstab_replace_string/g" "$fstab_path" &&
 info "Content of $fstab_path:$(cat "$fstab_path")" || error
 
 info "Define target paths..." &&
