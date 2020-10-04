@@ -6,6 +6,21 @@
 # @see https://wiki.polaire.nl/doku.php?id=archlinux-raspberry-encrypted
 source "$(dirname "$(readlink -f "${0}")")/base.sh" || (echo "Loading base.sh failed." && exit 1)
 
+install(){
+  info "Installing $1..."
+  case "$os" in
+    "arch"|"manjaro")
+      echo "pacman --noconfirm -S --needed $1" | chroot "$root_mount_path" /bin/bash || error
+      ;;
+    "moode"|"retropie")
+      echo "yes | apt install $1" | chroot "$root_mount_path" /bin/bash || error
+      ;;
+    *)
+      error "Package manager not supported."
+      ;;
+  esac
+}
+
 info "Setupscript for images started..."
 
 info "Checking if root..."
@@ -36,12 +51,11 @@ if mount | grep -q "$device_path"
     error "Device $device_path is allready mounted. Umount with \"umount $device_path*\"."
 fi
 
-question "Please type in which distribution should be used(e.g.:arch,moode,retropie,manjaro):" && read -r os || error
+question "Which distribution should be used(e.g.:arch,moode,retropie,manjaro):" && read -r os || error
 
 case "$os" in
   "arch")
-    question "Should the system be encrypted?(y/N)" && read -r encrypt_system
-    question "Please type in which Raspberry Pi will be used(e.g.:1,2,3,4,aarch64):" && read -r version
+    question "Which Raspberry Pi will be used(e.g.:1,2,3,4,aarch64):" && read -r version
     base_download_url="http://os.archlinuxarm.org/os/";
     if [ "$version" == "1" ]
       then
@@ -51,7 +65,7 @@ case "$os" in
     fi
     ;;
   "manjaro")
-    question "Please type in the version(e.g.:architect,gnome):" && read -r version
+    question "Which version(e.g.:architect,gnome) should be used:" && read -r version
     case "$version" in
       "architect")
         image_checksum="6b1c2fce12f244c1e32212767a9d3af2cf8263b2"
@@ -90,6 +104,8 @@ case "$os" in
     ;;
 esac
 
+question "Should the system be encrypted?(y/N)" && read -r encrypt_system
+
 info "Generating os-image..."
 download_url="$base_download_url$imagename"
 image_path="$image_folder$imagename"
@@ -111,8 +127,8 @@ if [ -f "$image_path" ]
 	then
     info "Image exist local. Download skipped."
   else
-		info "Image \"$imagename\" doesn't exist under local path \"$image_path\"."
-    info "Image \"$imagename\" gets downloaded from \"$download_url\"..."
+		info "Image \"$imagename\" doesn't exist under local path \"$image_path\"." &&
+    info "Image \"$imagename\" gets downloaded from \"$download_url\"..." &&
 		wget "$download_url" -O "$image_path" || error "Download from \"$download_url\" failed."
 fi
 
@@ -130,8 +146,7 @@ make_mount_folders
 
 set_partition_paths
 
-root_filesystem="btrfs" &&
-info "The following filesystem will be used if possible:$root_filesystem" || error
+question "Which filesystem should be used(e.g.:btrfs,ext4):" && read -r root_filesystem
 
 question "Should the image be transfered to $device_path?(y/N)" && read -r transfer_image
 if [ "$transfer_image" = "y" ]
@@ -339,13 +354,21 @@ if [ "$update_system" == "y" ]
     esac
 fi
 
+info "Installing software for filesystem $root_filesystem..."
+if [ "$root_filesystem" == "btrfs" ]
+  then
+    install "btrfs-progs"
+  else
+    info "Skipped."
+fi
+
 if [ "$encrypt_system" == "y" ]
   then
     # Adapted this instruction for setting up encrypted systems @see https://gist.github.com/gea0/4fc2be0cb7a74d0e7cc4322aed710d38
     info "Setup encryption..." &&
 
     info "Installing neccessary software..." &&
-    echo "pacman --noconfirm -S --needed $(get_packages "server/luks")" | chroot "$root_mount_path" /bin/bash &&
+    install "$(get_packages "server/luks")" &&
 
     dropbear_root_key_path="$root_mount_path""etc/dropbear/root_key" &&
     info "Adding $target_authorized_keys to dropbear..." &&
