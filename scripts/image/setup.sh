@@ -369,7 +369,7 @@ if [ "$encrypt_system" == "y" ]
     sed -i "s/$mkinitcpio_search_hooks/$mkinitcpio_replace_hooks/g" "$mkinitcpio_path" &&
     info "Content of $mkinitcpio_path:$(cat "$mkinitcpio_path")" &&
     info "Generating mkinitcpio..." &&
-    echo "mkinitcpio -vP || exit 1" | chroot "$root_mount_path" /bin/bash &&
+    echo "mkinitcpio -vP" | chroot "$root_mount_path" /bin/bash &&
 
     fstab_insert_line="UUID=$root_partition_uuid  / $root_filesystem    defaults,noatime  0  1" &&
     info "Configuring $fstab_path..." || error
