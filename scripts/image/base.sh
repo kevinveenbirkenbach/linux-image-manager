@@ -47,6 +47,7 @@ make_working_folder(){
 decrypt_root(){
   if [ "$(blkid "$root_partition_path" -s TYPE -o value)" == "crypto_LUKS" ]
     then
+      root_partition_uuid=$(blkid "$root_partition_path" -s UUID -o value) &&
       root_mapper_name="arch-root-$root_partition_uuid" &&
       root_mapper_path="/dev/mapper/$root_mapper_name" &&
       info "Decrypting of $root_partition_path is neccessary..." &&
