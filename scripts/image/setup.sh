@@ -197,7 +197,7 @@ if [ "$transfer_image" = "y" ]
         fi
 
         info "Format root partition..." &&
-        "mkfs.$root_filesystem" "$root_mapper_path" || error
+        "mkfs.$root_filesystem" -f "$root_mapper_path" || error
         mount_partitions;
 
         info "Root files will be transfered to device..." &&
