@@ -44,21 +44,13 @@ make_working_folder(){
   error
 }
 
-set_root_variables(){
-  info "Setting root variables..." &&
-  root_partition_uuid=$(blkid "$root_partition_path" -s UUID -o value) &&
-  boot_partition_uuid=$(blkid "$boot_partition_path" -s UUID -o value) &&
-  root_mapper_name="arch-root-$root_partition_uuid" &&
-  root_mapper_path="/dev/mapper/$root_mapper_name" || error
-}
-
 decrypt_root(){
   if [ "$(blkid "$root_partition_path" -s TYPE -o value)" == "crypto_LUKS" ]
     then
-      set_root_variables &&
+      root_mapper_name="arch-root-$root_partition_uuid" &&
+      root_mapper_path="/dev/mapper/$root_mapper_name" &&
       info "Decrypting of $root_partition_path is neccessary..." &&
-      sudo cryptsetup -v luksOpen "$root_partition_path" "$root_mapper_name" ||
-      error
+      sudo cryptsetup -v luksOpen "$root_partition_path" "$root_mapper_name" || error
   fi
 }
 
@@ -66,6 +58,9 @@ mount_partitions(){
   info "Mount boot and root partition..." &&
   mount -v "$boot_partition_path" "$boot_mount_path" &&
   mount -v "$root_mapper_path" "$root_mount_path" &&
+  info "Settind uuid variables..." &&
+  root_partition_uuid=$(blkid "$root_partition_path" -s UUID -o value) &&
+  boot_partition_uuid=$(blkid "$boot_partition_path" -s UUID -o value) &&
   info "The following mounts refering this setup exist:" && mount | grep "$working_folder_path" ||
   error
 }
