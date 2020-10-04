@@ -383,8 +383,9 @@ if [ "$encrypt_system" == "y" ]
     mkinitcpio_replace_modules="MODULES=(g_cdc usb_f_acm usb_f_ecm smsc95xx g_ether)" &&
     mkinitcpio_search_binaries="BINARIES=()" &&
     mkinitcpio_replace_binaries=$(echo "BINARIES=(/usr/lib/libgcc_s.so.1)"| sed -e 's/[\/&]/\\&/g') &&
+    mkinitcpio_encrypt_hooks="sleep netconf dropbear encryptssh" &&
     mkinitcpio_search_hooks="HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)" &&
-    mkinitcpio_replace_hooks="HOOKS=(base udev autodetect modconf block sleep netconf dropbear encryptssh filesystems keyboard fsck)" &&
+    mkinitcpio_replace_hooks="HOOKS=(base udev autodetect modconf block $mkinitcpio_encrypt_hooks filesystems keyboard fsck)" &&
     sed -i "s/$mkinitcpio_search_modules/$mkinitcpio_replace_modules/g" "$mkinitcpio_path" &&
     sed -i "s/$mkinitcpio_search_binaries/$mkinitcpio_replace_binaries/g" "$mkinitcpio_path" &&
     sed -i "s/$mkinitcpio_search_hooks/$mkinitcpio_replace_hooks/g" "$mkinitcpio_path" &&
