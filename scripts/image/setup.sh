@@ -231,11 +231,15 @@ if mount | grep -q "$boot_partition_path"
     fi
 fi
 
+fstab_path="$root_mount_path""etc/fstab" &&
+info "Seeding UUID to $fstab_path to avoid path conflicts..." &&
+sed -i "s/mmcblk0p1/UUID=$boot_partition_uuid/g" "$fstab_path" &&
+info "Content of $fstab_path:$(cat "$fstab_path")" || error
+
 info "Define target paths..." &&
 target_home_path="$root_mount_path""home/" &&
 target_username=$(ls "$target_home_path") &&
 target_user_home_folder_path="$target_home_path$target_username/" &&
-
 target_user_ssh_folder_path="$target_user_home_folder_path"".ssh/" &&
 target_authorized_keys="$target_user_ssh_folder_path""authorized_keys" &&
 question "Should the ssh-key be copied to the image?(y/N)" && read -r copy_ssh_key || error
@@ -364,7 +368,6 @@ if [ "$encrypt_system" == "y" ]
     info "Generating mkinitcpio..." &&
     echo "mkinitcpio -vP || exit 1" | chroot "$root_mount_path" /bin/bash &&
 
-    fstab_path="$root_mount_path""etc/fstab" &&
     fstab_insert_line="UUID=$root_partition_uuid  / ext4    defaults,noatime  0  1" &&
     info "Configuring $fstab_path..." || error
     if grep -q "$fstab_insert_line" "$fstab_path"

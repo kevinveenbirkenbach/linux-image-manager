@@ -47,6 +47,7 @@ make_working_folder(){
 set_root_variables(){
   info "Setting root variables..." &&
   root_partition_uuid=$(blkid "$root_partition_path" -s UUID -o value) &&
+  boot_partition_uuid=$(blkid "$boot_partition_uuid" -s UUID -o value) &&
   root_mapper_name="arch-root-$root_partition_uuid" &&
   root_mapper_path="/dev/mapper/$root_mapper_name" || error
 }
