@@ -43,14 +43,12 @@ case "$os" in
     question "Should the system be encrypted?(y/N)" && read -r encrypt_system
     question "Please type in which Raspberry Pi will be used(e.g.:1,2,3,4,aarch64):" && read -r version
     base_download_url="http://os.archlinuxarm.org/os/";
-    case "$version" in
-      "1")
+    if [ "$version" == "1" ]
+      then
         imagename="ArchLinuxARM-rpi-latest.tar.gz"
-        ;;
-      *)
+      else
         imagename="ArchLinuxARM-rpi-$version-latest.tar.gz"
-        ;;
-    esac
+    fi
     ;;
   "manjaro")
     question "Please type in the version(e.g.:architect,gnome):" && read -r version
