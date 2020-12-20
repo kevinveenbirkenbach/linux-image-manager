@@ -4,7 +4,7 @@
 # shellcheck disable=SC2154  # Referenced but not assigned
 # shellcheck disable=SC1090  # Can't follow non-constant source. Use a directive to specify location.
 # shellcheck disable=SC2001  # See if you can use ${variable//search/replace} instead
-source "$(dirname "$(readlink -f "${0}")")/../../base.sh" || (echo "Loading base.sh failed." && exit 1)
+source "$(dirname "$(readlink -f "${0}")")/../../../base.sh" || (echo "Loading base.sh failed." && exit 1)
 
 set_device_mount_partition_and_mapper_paths(){
   set_device_path &&
