@@ -1,4 +1,7 @@
 #!/bin/bash
+# shellcheck disable=SC1090  # Can't follow non-constant source. Use a directive to specify location.
+# shellcheck disable=SC2015  # Deactivating bool hint
+# shellcheck disable=SC2154  # Referenced but not assigned
 source "$(dirname "$(readlink -f "${0}")")/base.sh" || (echo "Loading base.sh failed." && exit 1)
 echo "Setups disk encryption"
 
@@ -23,25 +26,25 @@ info "Creating partition table..."
 error
 
 info "Encrypt $device_path..." &&
-sudo cryptsetup -v -y luksFormat $partition_path ||
+sudo cryptsetup -v -y luksFormat "$partition_path" ||
 error
 
 info "Unlock partition..." &&
-sudo cryptsetup luksOpen $partition_path $mapper_name ||
+sudo cryptsetup luksOpen "$partition_path" "$mapper_name" ||
 error
 
 info "Create btrfs file system..." &&
-sudo mkfs.btrfs $mapper_path || error
+sudo mkfs.btrfs "$mapper_path" || error
 
 info "Creating mount folder unter \"$mount_path\"..." &&
-sudo mkdir -p $mount_path || error
+sudo mkdir -p "$mount_path" || error
 
 info "Mount partition..." &&
-sudo mount $mapper_path $mount_path ||
+sudo mount "$mapper_path" "$mount_path" ||
 error
 
 info "Own partition by user..." &&
-sudo chown -R $USER:$USER $mount_path ||
+sudo chown -R "$USER":"$USER" "$mount_path" ||
 error
 
 success "Encryption successfull :)"

@@ -1,4 +1,9 @@
 #!/bin/bash
+# shellcheck disable=SC2015  # Deactivating bool hint
+# shellcheck disable=SC2034  # Unused variables
+# shellcheck disable=SC2154  # Referenced but not assigned
+# shellcheck disable=SC1090  # Can't follow non-constant source. Use a directive to specify location.
+# shellcheck disable=SC2001  # See if you can use ${variable//search/replace} instead
 source "$(dirname "$(readlink -f "${0}")")/../../base.sh" || (echo "Loading base.sh failed." && exit 1)
 
 set_device_mount_partition_and_mapper_paths(){
@@ -26,13 +31,13 @@ create_luks_key_and_update_cryptab(){
     then
       warning "File allready exist. Overwritting!"
   fi
-  sudo dd if=/dev/urandom of=$secret_key_path bs=512 count=8 &&
-  sudo cryptsetup -v luksAddKey $2 $secret_key_path &&
+  sudo dd if=/dev/urandom of="$secret_key_path" bs=512 count=8 &&
+  sudo cryptsetup -v luksAddKey "$2" "$secret_key_path" &&
   info "Opening and closing device to verify that that everything works fine..." &&
-  sudo cryptsetup -v luksOpen $2 $1 --key-file=$secret_key_path &&
-  sudo cryptsetup -v luksClose $1 &&
+  sudo cryptsetup -v luksOpen "$2" "$1" --key-file="$secret_key_path" &&
+  sudo cryptsetup -v luksClose "$1" &&
   info "Reading UUID..." &&
-  uuid_line=$(sudo cryptsetup luksDump $2 | grep "UUID") &&
+  uuid_line=$(sudo cryptsetup luksDump "$2" | grep "UUID") &&
   uuid=$(echo "${uuid_line/UUID:/""}"|sed -e "s/[[:space:]]\+//g") &&
   crypttab_path="/etc/crypttab" &&
   crypttab_entry="$1 UUID=$uuid $secret_key_path luks" &&
