@@ -61,6 +61,9 @@ create_luks_key_and_update_cryptab(){
 
 # @var $1 mapper_name
 # @var $2 mount_path
+#
+# If mount doesn't work adapt it manually to
+# @see https://gist.github.com/MaxXor/ba1665f47d56c24018a943bb114640d7
 update_fstab(){
   fstab_path="/etc/fstab"
   fstab_entry="$1 $2 btrfs   defaults   0       2"
