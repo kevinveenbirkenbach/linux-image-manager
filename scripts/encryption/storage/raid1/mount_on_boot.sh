@@ -1,6 +1,7 @@
 #!/bin/bash
 # shellcheck disable=SC1090  # Can't follow non-constant source. Use a directive to specify location.
 # shellcheck disable=SC2154  # Referenced but not assigned
+# shellcheck disable=SC2015 #Deactivate bool hint
 source "$(dirname "$(readlink -f "${0}")")/base.sh" || (echo "Loading base.sh failed." && exit 1)
 info "Automount raid1 encrypted storages..." &&
 set_raid1_devices_mount_partition_and_mapper_paths &&
