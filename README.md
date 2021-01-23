@@ -56,7 +56,9 @@ $HOME/Documents/certificates/ | Contains certificates to authenticate via [certi
 | $HOME/Documents/recovery_codes/ | Contains files with recovery_codes e.g. for [Two-factor authentication](https://en.wikipedia.org/wiki/Multi-factor_authentication). |
 | $HOME/Documents/identity/ | Contains files to prove the identity of the *Core System Owner* in physical live like passports. |
 | $HOME/Documents/passwords/ | Contains e.g the [KeePassXC](https://keepassxc.org/) database with all *Core System Owner* passwords. |
-| $HOME/Repositories/ | Contains all git repositories |
+| $HOME/Repositories/ | Contains all git repository providers. |
+| $HOME/Repositories/{{provider}} | Contains all git repositories of an provider. |
+| $HOME/Backups | Contains all backups. The sub-folders follow the standards of [Backup Manager](https://github.com/kevinveenbirkenbach/backup-manager) |
 | $HOME/Games/roms | Contains all roms |
 | $HOME/Images/ | contains os images|
 

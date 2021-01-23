@@ -15,9 +15,8 @@ declare -a BACKUP_LIST=("$HOME/.ssh/" \
   "$HOME/.local/share/rhythmbox/rhythmdb.xml" \
   "$HOME/.config/keepassxc/keepassxc.ini" \
   "$HOME/Documents/certificates/" \
-  "$HOME/Documents/recovery_codes/" \
+  "$HOME/Documents/security/" \
   "$HOME/Documents/identity/" \
-  "$HOME/Documents/passwords/" \
   "$HOME/Documents/health/" \
   "$HOME/Documents/licenses/");
 

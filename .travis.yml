@@ -1,2 +1,2 @@
 language: shell
-script: shellcheck ./scripts/*/*.sh
+script: shellcheck $(find . -type f -name '*.sh')

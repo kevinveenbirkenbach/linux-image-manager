@@ -10,3 +10,5 @@ eclipse-java
 ccls
 # office
 ttf-ms-fonts
+#cloud
+dropbox
