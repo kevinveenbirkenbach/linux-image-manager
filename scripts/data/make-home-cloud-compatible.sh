@@ -18,7 +18,7 @@ for folder in "${directories[@]}"; do
     else
       if [ -d "$cloud_directory" ]
         then
-          mv -v "$home_directory/"* "$cloud_directory/" &&
+          mv --backup -v "$home_directory/"* "$cloud_directory/" &&
           rmdir -v "$home_directory" &&
           ln -vs "$cloud_directory" "$home_directory" &&
           echo "Folder $home_directory is now syncronized with cloud." || exit 1
