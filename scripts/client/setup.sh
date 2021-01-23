@@ -107,12 +107,6 @@ if [ ! "$(pacman -Qi "virtualbox")" ] ; then
 	info "Keep in mind to install the guest additions in the virtualized system. See https://wiki.manjaro.org/index.php?title=VirtualBox"
 fi
 
-if [ "$XDG_SESSION_TYPE" == "x11" ]; then
-	info "Synchronizing xserver tools..." &&
-	install_yay_packages_if_needed xbindkeys &&
-	xbindkeys --poll-rc || error
-fi
-
 install_gnome_extension(){
 	info "Install GNOME extension \"$1\"..."
 	extension_folder="$HOME/.local/share/gnome-shell/extensions/$1/"
