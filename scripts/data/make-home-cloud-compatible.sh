@@ -24,7 +24,7 @@ for folder in "${directories[@]}"; do
           echo "Folder $home_directory is now syncronized with cloud." || exit 1
         else
           echo "Directory $home_directory skipped, because it doesn't exist here $cloud_directory." &&
-          echo "Please create $cloud_directory or syncronize the cloud folder!" && exit 1;
+          echo "Please create $cloud_directory or syncronize the cloud folder!";
       fi
   fi
 done
