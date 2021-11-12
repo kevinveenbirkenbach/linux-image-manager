@@ -14,13 +14,6 @@ The
 is an administration tool designed from and for Kevin Veen-Birkenbach.
 Licensed under GNU GENERAL PUBLIC LICENSE Version 3
 ```
-## Todo
-
-- Implement ssh configuration
-- Implement wifi automation
-- Install client software depentend on hardware
-- Use travis
-- Move repository folder
 
 ## Description
 This repository contains scripts to set up an working client system, maintain it and to save all important and configuration data on an USB stick. The data is stored encrypted with [EncFS](https://en.wikipedia.org/wiki/EncFS).
@@ -92,6 +85,14 @@ To backup a image execute:
 ```bash
   sudo bash ./scripts/image/backup.sh
 ```
+
+## Todo
+
+- Implement ssh configuration
+- Implement wifi automation
+- Install client software depentend on hardware
+- Use travis
+- Move repository folder
 
 ## License
 The ["GNU GENERAL PUBLIC LICENSE Version 3"](./LICENSE.txt) applies to this project.
