@@ -178,22 +178,6 @@ if [ "$DESKTOP_SESSION" == "gnome" ]; then
 
 fi
 
-info "Testing if computer has more then 4GB of memory to process games..." &&
-if [ "$(echo "( $(grep MemTotal /proc/meminfo | awk '{print $2}') / (1024 ^ 2) ) > 4" | bc -l)" = "1" ];
-	then
-		pacman_game_packages="$(get_packages "client/pacman/games")"
-		yay_game_packages="$(get_packages "client/yay/games")"
-		success "Ok" &&
-		info "Installing games..." &&
-		info "Installing yay packages [ $yay_game_packages ]..." &&
-		install_yay_packages_if_needed "$yay_game_packages" &&
-		info "Installing pacman packages [ $pacman_game_packages ]..." &&
-		sudo pacman -S --needed "$(get_packages "client/pacman/games")" || error "Syncronisation failed.";
-	else
-		warning "Not enough ressources." &&
-		info "Skipping game installation";
-fi
-
 info "Removing all software from user startup..."
 autostart_folder="$HOME/.config/autostart/"
 if [ "$(ls -A "$autostart_folder")" ]
