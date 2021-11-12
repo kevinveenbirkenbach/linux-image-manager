@@ -26,10 +26,6 @@ cp -rfv "$HOME_TEMPLATE_PATH/." "$HOME" || error "Copy templates failed."
 info "Update packages..." &&
 sudo pacman -Syyu || error "Package syncronisation failed."
 
-pacman_packages="$(get_packages "general" "client/pacman/general")"
-info "Synchronizing pacman packages [$pacman_packages]..." &&
-sudo pacman -S --needed $pacman_packages || error "Syncronisation failed."
-
 info "Synchronizing yay packages..." &&
 install_yay_packages_if_needed "$(get_packages "client/yay/general")";
 
