@@ -26,6 +26,9 @@ cp -rfv "$HOME_TEMPLATE_PATH/." "$HOME" || error "Copy templates failed."
 info "Update packages..." &&
 sudo pacman -Syyu || error "Package syncronisation failed."
 
+info "Install ansible..." &&
+sudo pacman -S ansible || error "Package syncronisation failed."
+
 info "Synchronizing yay packages..." &&
 install_yay_packages_if_needed "$(get_packages "client/yay/general")";
 
