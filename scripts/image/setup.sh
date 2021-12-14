@@ -166,8 +166,6 @@ if [ "$transfer_image" = "y" ]
     info "Starting image transfer..."
     if [ "$os" = "arch" ]
       then
-        info "Deleting partition tables..." &&
-        wipefs -a "$device_path" &&
         info "Creating partitions..." &&
         (	echo "o"       #Type o. This will clear out any partitions on the drive.
         	echo "p"       #Type p to list partitions. There should be no partitions left
