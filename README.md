@@ -1,12 +1,6 @@
 # Core System
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](./LICENSE.txt) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/6e66409513d7451b949afbf0373ba71f)](https://www.codacy.com/manual/kevinveenbirkenbach/core-system?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=kevinveenbirkenbach/core-system&amp;utm_campaign=Badge_Grade) [![Travis CI](https://travis-ci.org/kevinveenbirkenbach/core-system.svg?branch=master)](https://travis-ci.org/kevinveenbirkenbach/core-system)
 
-# DEPRECATED
-
-This Repo is refactored to:
-- https://github.com/kevinveenbirkenbach/client-playbook
-- https://github.com/kevinveenbirkenbach/analyze-script-collection
-
 ```
 The
   _____                _____           _                 
@@ -24,23 +18,6 @@ Licensed under GNU GENERAL PUBLIC LICENSE Version 3
 ## Description
 This repository contains scripts to set up an working client system, maintain it and to save all important and configuration data on an USB stick. The data is stored encrypted with [EncFS](https://en.wikipedia.org/wiki/EncFS).
 It's adapted to the needs of Kevin Veen-Birkenbach. Feel free to clone it and to adapt it to your needs. The goal is to never setup and configure a system manual again, or to care about loosing passwords and important data. Instead the whole process **SHOULD** be automatized.
-
-## Functions
-
-This repository contains the following scripts:
-
-| Order | Description |
-|---|---|
-| ```bash ./scripts/system-setup.sh``` | Setup the customized software on the system on which you execute it. |
-| ```bash ./scripts/image/backup.sh``` | Backup an device image |
-| ```bash ./scripts/data/import-data-from-system.sh``` | Import data from the host system.|
-| ```bash ./scripts/data/export-data-to-system.sh``` | Export data to the host system.|
-| ```bash ./scripts/encryption/data/unlock.sh``` | Unlock the stored data.|
-| ```bash ./scripts/encryption/data/lock.sh``` | Lock the stored data |
-| ```bash ./scripts/pull-local-repositories.sh``` | Pulls all local repositories branches |
-| ```bash ./scripts/pushs-local-repositories.sh``` | Pushs all local repositories branches |
-| ```encfsctl passwd .encrypted``` | Change the password of the encrypted folder. |
-
 
 ## System
 ### Client
