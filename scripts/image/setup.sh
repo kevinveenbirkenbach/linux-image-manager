@@ -73,9 +73,9 @@ case "$os" in
         imagename="manjaro-architect-20.0-200426-linux56.iso"
         ;;
       "gnome")
-        image_checksum="d16118207c546c18201703d80b6356b1522b47d0"
-        base_download_url="https://osdn.net/frs/redir.php?m=dotsrc&f=/storage/g/m/ma/manjaro/gnome/20.0.1/";
-        imagename="manjaro-gnome-20.0.1-200511-linux56.iso"
+        image_checksum="3ee5c59d21b1d78ec7fc655acc8f05c47237c6c0"
+        base_download_url="https://download.manjaro.org/gnome/21.2rc1/";
+        imagename="manjaro-gnome-21.2rc1-211211-linux515.iso"
         ;;
     esac
     ;;
