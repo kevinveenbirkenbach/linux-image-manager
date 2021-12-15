@@ -76,9 +76,9 @@ case "$os" in
         question "Which release(e.g.:20,21) should be used:" && read -r release
         case "$release" in
         "20")
-          image_checksum="d16118207c546c18201703d80b6356b1522b47d0"
-          base_download_url="https://osdn.net/frs/redir.php?m=dotsrc&f=/storage/g/m/ma/manjaro/gnome/20.0.1/"
-          imagename="manjaro-gnome-20.0.1-200511-linux56.iso"
+          image_checksum="2df3697908483550d4a473815b08c1377e6b6892"
+          base_download_url="https://osdn.net/projects/manjaro-archive/storage/gnome/20.0/"
+          imagename="manjaro-gnome-20.0-200426-linux56.iso"
           ;;
         "21")
           image_checksum="3ee5c59d21b1d78ec7fc655acc8f05c47237c6c0"
