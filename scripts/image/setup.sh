@@ -95,20 +95,20 @@ case "$os" in
     imagename="moode-r651-iso.zip";
     ;;
   "retropie")
-    base_download_url="https://github.com/RetroPie/RetroPie-Setup/releases/download/4.6/";
+    base_download_url="https://github.com/RetroPie/RetroPie-Setup/releases/download/4.8/";
     case "$version" in
       "1")
-        image_checksum="98b4205ad0248d378c6776e20c54e487"
-        imagename="retropie-buster-4.6-rpi1_zero.img.gz"
+        image_checksum="95a6f84453df36318830de7e8507170e"
+        imagename="retropie-buster-4.8-rpi1_zero.img.gz"
         ;;
       "2" | "3")
-        image_checksum="2e082ef5fc2d7cf7d910494cf0f7185b"
-        imagename="retropie-buster-4.6-rpi2_rpi3.img.gz"
+        image_checksum="224e64d8820fc64046ba3850f481c87e"
+        imagename="retropie-buster-4.8-rpi2_3_zero2w.img.gz"
         ;;
 
       "4")
-        image_checksum="9154d998cba5219ddf23de46d8845f6c"
-        imagename="retropie-buster-4.6-rpi4.img.gz"
+        image_checksum="b5daa6e7660a99c246966f3f09b4014b"
+        imagename="retropie-buster-4.8-rpi4_400.img.gz"
         ;;
     esac
     ;;
