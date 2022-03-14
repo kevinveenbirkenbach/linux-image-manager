@@ -95,6 +95,7 @@ case "$os" in
     imagename="moode-r651-iso.zip";
     ;;
   "retropie")
+    question "Which version(e.g.:1,2,3,4) should be used:" && read -r version
     base_download_url="https://github.com/RetroPie/RetroPie-Setup/releases/download/4.8/";
     case "$version" in
       "1")
