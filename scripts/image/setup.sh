@@ -453,23 +453,6 @@ if [ "$os" != "manjaro" ]
         fi
   fi
 
-  question "Do you want to setup Wifi on the device?(y/N)" && read -r setup_wifi
-  if [ "$setup_wifi" = "y" ]
-    then
-      question "Please type in the ssid:" && read -r ssid
-      question "Please type in the psk:" && read -r psk
-      case "$os" in
-        "retropie")
-          wifi_file="$boot_mount_path""wifikeyfile.txt" &&
-          echo "ssid=\"$ssid\"" > "$wifi_file" &&
-          echo "psk=\"$psk\"" >> "$wifi_file" || error
-          ;;
-        *)
-          warning "Wifi setting for operation system \"$os\" is not supported yet. Skipped."
-          ;;
-      esac
-  fi
-
   info "Running system specific procedures..."
   if [ "$os" = "retropie" ]
     then
