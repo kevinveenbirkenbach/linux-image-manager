@@ -274,20 +274,25 @@ if [ "$os" != "manjaro" ]
   question "Should the ssh-key be copied to the image?(y/N)" && read -r copy_ssh_key || error
   if [ "$copy_ssh_key" == "y" ]
     then
-      info "Copy ssh key to target..." &&
-      origin_user_rsa_pub="$origin_user_home"".ssh/id_rsa.pub" || error
-      if [ -f "$origin_user_rsa_pub" ]
-        then
-          mkdir -v "$target_user_ssh_folder_path" || warning "Folder \"$target_user_ssh_folder_path\" exists. Can't be created."
-          cat "$origin_user_rsa_pub" > "$target_authorized_keys" &&
-          target_authorized_keys_content=$(cat "$target_authorized_keys") &&
-          info "$target_authorized_keys contains the following: $target_authorized_keys_content" &&
-          chown -vR 1000 "$target_user_ssh_folder_path" &&
-          chmod -v 700 "$target_user_ssh_folder_path" &&
-          chmod -v 600 "$target_authorized_keys" || error
-        else
-          warning "The ssh key \"$origin_user_rsa_pub\" can't be copied to \"$target_authorized_keys\" because it doesn't exist."
-      fi
+      correct_ssh_key_path=false;
+      while [ "$correct_ssh_key_path" != true ]
+        do
+          question "Whats the absolut path to the ssh key:" && read -r origin_user_rsa_pub || error
+          if [ -f "$origin_user_rsa_pub" ]
+            then
+              correct_ssh_key_path=true;
+            else
+              warning "The ssh key \"$origin_user_rsa_pub\" can't be copied to \"$target_authorized_keys\" because it doesn't exist."
+          fi
+        done
+      info "Copy ssh key to target..."
+      mkdir -v "$target_user_ssh_folder_path" || warning "Folder \"$target_user_ssh_folder_path\" exists. Can't be created."
+      cat "$origin_user_rsa_pub" > "$target_authorized_keys" &&
+      target_authorized_keys_content=$(cat "$target_authorized_keys") &&
+      info "$target_authorized_keys contains the following: $target_authorized_keys_content" &&
+      chown -vR 1000 "$target_user_ssh_folder_path" &&
+      chmod -v 700 "$target_user_ssh_folder_path" &&
+      chmod -v 600 "$target_authorized_keys" || error
     else
       info "Skipped SSH-key copying.."
   fi
