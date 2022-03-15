@@ -157,7 +157,7 @@ make_mount_folders
 
 set_partition_paths
 
-question "Which filesystem should be used(e.g.:btrfs,ext4):" && read -r root_filesystem
+question "Which filesystem should be used? E.g.:btrfs,ext4... (none):" && read -r root_filesystem
 
 question "Should the image be transfered to $device_path?(y/N)" && read -r transfer_image
 if [ "$transfer_image" = "y" ]
@@ -473,14 +473,10 @@ if [ "$os" != "manjaro" ]
   info "Running system specific procedures..."
   if [ "$os" = "retropie" ]
     then
-      question "Should the roms be copied to the system?(y/N)" && read -r copy_roms
-      if [ "$copy_roms" == "y" ]
+      if [ "$copy_ssh_key" == "y" ]
         then
-          target_roms_path="$target_user_home_folder_path""/RetroPie/roms/" &&
-          source_roms_path="$origin_user_home""Games/roms/" &&
-          info "Copy roms from $source_roms_path to $target_roms_path..." &&
-          cp -v "$source_roms_path" "$target_roms_path" &&
-          chown -vR 1000 "$target_roms_path" || error
+          ssh_file="$boot_mount_path""ssh" &&
+          echo "" > "$ssh_file"
       fi
       question "Should the RetroFlag specific procedures be executed?(y/N)" && read -r setup_retroflag
       if [ "$setup_retroflag" == "y" ]
