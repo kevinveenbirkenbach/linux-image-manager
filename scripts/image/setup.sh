@@ -51,9 +51,13 @@ if mount | grep -q "$device_path"
     error "Device $device_path is allready mounted. Umount with \"umount $device_path*\"."
 fi
 
-question "Which distribution should be used(e.g.:arch,moode,retropie,manjaro):" && read -r os || error
+question "Which distribution should be used? E.g.:arch,moode,retropie,manjaro,torbox...:" && read -r os || error
 
 case "$os" in
+  "torbox")
+    base_download_url="https://www.torbox.ch/data/";
+    imagename="torbox-20220102-v050.gz"
+    image_checksum="0E1BA7FFD14AAAE5F0462C8293D95B62C3BF1D9E726E26977BD04772C55680D3"
   "arch")
     question "Which Raspberry Pi will be used(e.g.:1,2,3,4,aarch64):" && read -r version
     base_download_url="http://os.archlinuxarm.org/os/";
