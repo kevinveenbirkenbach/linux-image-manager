@@ -58,6 +58,7 @@ case "$os" in
     base_download_url="https://www.torbox.ch/data/";
     imagename="torbox-20220102-v050.gz"
     image_checksum="0E1BA7FFD14AAAE5F0462C8293D95B62C3BF1D9E726E26977BD04772C55680D3"
+    ;;
   "arch")
     question "Which Raspberry Pi will be used(e.g.:1,2,3,4,aarch64):" && read -r version
     base_download_url="http://os.archlinuxarm.org/os/";
@@ -152,6 +153,7 @@ if [[ -v image_checksum ]]
   then
     (info "Checking md5 checksum..." && echo "$image_checksum $image_path"| md5sum -c -) ||
     (info "Checking sha1 checksum..." && echo "$image_checksum $image_path"| sha1sum -c -) ||
+    (info "Checking sha256 checksum..." && echo "$image_checksum $image_path"| sha256sum -c -) ||
     error "Verification failed. HINT: Force the download of the image."
   else
     warning "Verification is not possible. No checksum is defined."
