@@ -45,7 +45,7 @@ create_luks_key_and_update_cryptab(){
   info "Adding crypttab entry..." || error
   if sudo grep -q "$crypttab_entry" "$crypttab_path";
     then
-      warning "File $crypttab_path contains allready a the following entry:" &&
+      warning "File $crypttab_path contains allready the following entry:" &&
       echo "$crypttab_entry" &&
       info "Skipped." ||
       error
