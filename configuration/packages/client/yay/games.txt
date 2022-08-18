@@ -1,3 +1,0 @@
-# flightgear
-flightgear-data-git
-flightgear-git
