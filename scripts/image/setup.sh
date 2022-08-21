@@ -8,7 +8,7 @@ source "$(dirname "$(readlink -f "${0}")")/base.sh" || (echo "Loading base.sh fa
 
 install(){
   info "Installing $1..."
-  case "$os" in
+  case "$distribution" in
     "arch"|"manjaro")
       echo "pacman --noconfirm -S --needed $1" | chroot "$root_mount_path" /bin/bash || error
       ;;
@@ -51,110 +51,121 @@ if mount | grep -q "$device_path"
     error "Device $device_path is allready mounted. Umount with \"umount $device_path*\"."
 fi
 
-question "Which distribution should be used? E.g.:arch,moode,retropie,manjaro,torbox...:" && read -r os || error
+question "Which operation system would you like to use [linux,windows,...]?" && read -r operation_system || error
 
-case "$os" in
-  "torbox")
-    base_download_url="https://www.torbox.ch/data/";
-    imagename="torbox-20220102-v050.gz"
-    image_checksum="0E1BA7FFD14AAAE5F0462C8293D95B62C3BF1D9E726E26977BD04772C55680D3"
-    ;;
-  "arch")
-    question "Which Raspberry Pi will be used(e.g.:1,2,3,4,aarch64):" && read -r version
-    base_download_url="http://os.archlinuxarm.org/os/";
-    if [ "$version" == "1" ]
-      then
-        imagename="ArchLinuxARM-rpi-latest.tar.gz"
-      else
-        imagename="ArchLinuxARM-rpi-$version-latest.tar.gz"
-    fi
-    ;;
-  "manjaro")
-    question "Which version(e.g.:architect,gnome) should be used:" && read -r version
-    case "$version" in
-      "architect")
-        image_checksum="6b1c2fce12f244c1e32212767a9d3af2cf8263b2"
-        base_download_url="https://osdn.net/frs/redir.php?m=dotsrc&f=%2Fstorage%2Fg%2Fm%2Fma%2Fmanjaro%2Farchitect%2F20.0%2F";
-        imagename="manjaro-architect-20.0-200426-linux56.iso"
+case "$operation_system" in
+  "linux")
+    question "Which distribution should be used [arch,moode,retropie,manjaro,torbox...]?" && read -r distribution || error
+
+    case "$distribution" in
+      "torbox")
+        base_download_url="https://www.torbox.ch/data/";
+        image_name="torbox-20220102-v050.gz"
+        image_checksum="0E1BA7FFD14AAAE5F0462C8293D95B62C3BF1D9E726E26977BD04772C55680D3"
         ;;
-      "gnome")
-        question "Which release(e.g.:20,21) should be used:" && read -r release
-        case "$release" in
-        "20")
-          image_checksum="2df3697908483550d4a473815b08c1377e6b6892"
-          base_download_url="https://osdn.net/projects/manjaro-archive/storage/gnome/20.0/"
-          imagename="manjaro-gnome-20.0-200426-linux56.iso"
-          ;;
-        "21")
-          base_download_url="https://download.manjaro.org/gnome/21.3.7/"
-          imagename="manjaro-gnome-21.3.7-220816-linux515.iso"
-          ;;
+      "arch")
+        question "Which Raspberry Pi will be used(e.g.:1,2,3,4,aarch64):" && read -r version
+        base_download_url="http://os.archlinuxarm.org/os/";
+        if [ "$version" == "1" ]
+          then
+            image_name="ArchLinuxARM-rpi-latest.tar.gz"
+          else
+            image_name="ArchLinuxARM-rpi-$version-latest.tar.gz"
+        fi
+        ;;
+      "manjaro")
+        question "Which version(e.g.:architect,gnome) should be used:" && read -r version
+        case "$version" in
+          "architect")
+            image_checksum="6b1c2fce12f244c1e32212767a9d3af2cf8263b2"
+            base_download_url="https://osdn.net/frs/redir.php?m=dotsrc&f=%2Fstorage%2Fg%2Fm%2Fma%2Fmanjaro%2Farchitect%2F20.0%2F";
+            image_name="manjaro-architect-20.0-200426-linux56.iso"
+            ;;
+          "gnome")
+            question "Which release(e.g.:20,21) should be used:" && read -r release
+            case "$release" in
+            "20")
+              image_checksum="2df3697908483550d4a473815b08c1377e6b6892"
+              base_download_url="https://osdn.net/projects/manjaro-archive/storage/gnome/20.0/"
+              image_name="manjaro-gnome-20.0-200426-linux56.iso"
+              ;;
+            "21")
+              base_download_url="https://download.manjaro.org/gnome/21.3.7/"
+              image_name="manjaro-gnome-21.3.7-220816-linux515.iso"
+              ;;
+            esac
+            ;;
+        esac
+        ;;
+      "moode")
+        image_checksum="185cbc9a4994534bb7a4bc2744c78197"
+        base_download_url="https://github.com/moode-player/moode/releases/download/r651prod/"
+        image_name="moode-r651-iso.zip";
+        ;;
+      "retropie")
+        question "Which version(e.g.:1,2,3,4) should be used:" && read -r version
+        base_download_url="https://github.com/RetroPie/RetroPie-Setup/releases/download/4.8/";
+        case "$version" in
+          "1")
+            image_checksum="95a6f84453df36318830de7e8507170e"
+            image_name="retropie-buster-4.8-rpi1_zero.img.gz"
+            ;;
+          "2" | "3")
+            image_checksum="224e64d8820fc64046ba3850f481c87e"
+            image_name="retropie-buster-4.8-rpi2_3_zero2w.img.gz"
+            ;;
+
+          "4")
+            image_checksum="b5daa6e7660a99c246966f3f09b4014b"
+            image_name="retropie-buster-4.8-rpi4_400.img.gz"
+            ;;
         esac
         ;;
     esac
-    ;;
-  "moode")
-    image_checksum="185cbc9a4994534bb7a4bc2744c78197"
-    base_download_url="https://github.com/moode-player/moode/releases/download/r651prod/"
-    imagename="moode-r651-iso.zip";
-    ;;
-  "retropie")
-    question "Which version(e.g.:1,2,3,4) should be used:" && read -r version
-    base_download_url="https://github.com/RetroPie/RetroPie-Setup/releases/download/4.8/";
-    case "$version" in
-      "1")
-        image_checksum="95a6f84453df36318830de7e8507170e"
-        imagename="retropie-buster-4.8-rpi1_zero.img.gz"
-        ;;
-      "2" | "3")
-        image_checksum="224e64d8820fc64046ba3850f481c87e"
-        imagename="retropie-buster-4.8-rpi2_3_zero2w.img.gz"
-        ;;
 
-      "4")
-        image_checksum="b5daa6e7660a99c246966f3f09b4014b"
-        imagename="retropie-buster-4.8-rpi4_400.img.gz"
-        ;;
-    esac
-    ;;
-esac
+    question "Should the system be encrypted?(y/N)" && read -r encrypt_system
 
-question "Should the system be encrypted?(y/N)" && read -r encrypt_system
+    info "Generating os-image..."
+    download_url="$base_download_url$image_name"
+    image_path="$image_folder$image_name"
 
-info "Generating os-image..."
-download_url="$base_download_url$imagename"
-image_path="$image_folder$imagename"
+    question "Should the image download be forced?(y/N)" && read -r force_image_download
+    if [ "$force_image_download" = "y" ]
+      then
+        if [ -f "$image_path" ]
+          then
+            info "Removing image $image_path." &&
+            rm "$image_path" || error "Removing image \"$image_path\" failed."
+          else
+            info "Forcing download wasn't neccessary. File $image_path doesn't exist."
+        fi
+    fi
 
-question "Should the image download be forced?(y/N)" && read -r force_image_download
-if [ "$force_image_download" = "y" ]
-  then
+    info "Start Download procedure..."
     if [ -f "$image_path" ]
       then
-        info "Removing image $image_path." &&
-        rm "$image_path" || error "Removing image \"$image_path\" failed."
+        info "Image exist local. Download skipped."
       else
-        info "Forcing download wasn't neccessary. File $image_path doesn't exist."
+        info "Image \"$image_name\" doesn't exist under local path \"$image_path\"." &&
+        info "Image \"$image_name\" gets downloaded from \"$download_url\"..." &&
+        wget "$download_url" -O "$image_path" || error "Download from \"$download_url\" failed."
     fi
-fi
-
-info "Start Download procedure..."
-if [ -f "$image_path" ]
-	then
-    info "Image exist local. Download skipped."
-  else
-		info "Image \"$imagename\" doesn't exist under local path \"$image_path\"." &&
-    info "Image \"$imagename\" gets downloaded from \"$download_url\"..." &&
-		wget "$download_url" -O "$image_path" || error "Download from \"$download_url\" failed."
-fi
-
+    ;;
+  "*")
+    info "Available images:"
+    ls -l "$image_folder"
+    question "Which image would you like to use?" && read -r image_name || error
+    image_path="$image_folder$image_name"
+  ;;
+esac
 
 if [ -z "$image_checksum" ]
   then
     sha1_download_url="$download_url.sha1"
-    info "Image Chechsum is not defined. Try to download image signature from $sha1_download_url"
+    info "Image Chechsum is not defined. Try to download image signature from $sha1_download_url."
     if wget -q --method=HEAD "$sha1_download_url";
       then
-        image_checksum="$(wget $sha1_download_url -q -O -)"
+        image_checksum="$(wget $sha1_download_url -q -O - | cut -d ' ' -f1 )"
         info "Defined image_checksum as $image_checksum"
       else
         warning "No checksum found under $sha1_download_url."
@@ -194,7 +205,7 @@ if [ "$transfer_image" = "y" ]
     overwritte_device_with_zeros
 
     info "Starting image transfer..."
-    if [ "$os" = "arch" ]
+    if [ "$distribution" = "arch" ]
       then
         info "Creating partitions..." &&
         (	echo "o"       #Type o. This will clear out any partitions on the drive.
@@ -255,13 +266,13 @@ if [ "$transfer_image" = "y" ]
           sync ||
           error
       else
-        error "Image transfer for operation system \"$os\" is not supported yet!";
+        error "Image transfer for operation system \"$distribution\" is not supported yet!";
       fi
   else
     info "Skipping image transfer..."
 fi
 
-if [ "$os" != "manjaro" ]
+if [ "$distribution" != "manjaro" ]
   then
   info "Start regular mounting procedure..."
   if mount | grep -q "$boot_partition_path"
@@ -361,7 +372,7 @@ if [ "$os" != "manjaro" ]
   fi
   info "Used hostname is: $target_hostname"
 
-  case "$os" in
+  case "$distribution" in
     "arch"|"manjaro")
       info "Populating keys..." &&
       (
@@ -375,7 +386,7 @@ if [ "$os" != "manjaro" ]
   if [ "$update_system" == "y" ]
     then
       info "Updating system..."
-      case "$os" in
+      case "$distribution" in
         "arch"|"manjaro")
           echo "pacman --noconfirm -Syyu" | chroot "$root_mount_path" /bin/bash || error
           ;;
@@ -386,7 +397,7 @@ if [ "$os" != "manjaro" ]
           ) | chroot "$root_mount_path" /bin/bash || error
           ;;
         *)
-          warning "System update for operation system \"$os\" is not supported yet. Skipped."
+          warning "System update for operation system \"$distribution\" is not supported yet. Skipped."
           ;;
       esac
   fi
@@ -473,7 +484,7 @@ if [ "$os" != "manjaro" ]
   fi
 
   info "Running system specific procedures..."
-  if [ "$os" = "retropie" ]
+  if [ "$distribution" = "retropie" ]
     then
       if [ "$copy_ssh_key" == "y" ]
         then
