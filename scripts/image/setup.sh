@@ -36,7 +36,7 @@ getent passwd "$origin_username" > /dev/null 2 || error "User $origin_username d
 origin_user_home="/home/$origin_username/"
 
 info "Image routine starts..."
-image_folder="$origin_user_home""Images/";
+image_folder="$origin_user_home""Software/Images/";
 info "The images will be stored in \"$image_folder\"."
 if [ ! -d "$image_folder" ]; then
   info "Folder \"$image_folder\" doesn't exist. It will be created now." &&
@@ -86,9 +86,8 @@ case "$os" in
           imagename="manjaro-gnome-20.0-200426-linux56.iso"
           ;;
         "21")
-          image_checksum="3ee5c59d21b1d78ec7fc655acc8f05c47237c6c0"
-          base_download_url="https://download.manjaro.org/gnome/21.2rc1/"
-          imagename="manjaro-gnome-21.2rc1-211211-linux515.iso"
+          base_download_url="https://download.manjaro.org/gnome/21.3.7/"
+          imagename="manjaro-gnome-21.3.7-220816-linux515.iso"
           ;;
         esac
         ;;
@@ -146,6 +145,20 @@ if [ -f "$image_path" ]
 		info "Image \"$imagename\" doesn't exist under local path \"$image_path\"." &&
     info "Image \"$imagename\" gets downloaded from \"$download_url\"..." &&
 		wget "$download_url" -O "$image_path" || error "Download from \"$download_url\" failed."
+fi
+
+
+if [ -z "$image_checksum" ]
+  then
+    sha1_download_url="$download_url.sha1"
+    info "Image Chechsum is not defined. Try to download image signature from $sha1_download_url"
+    if wget -q --method=HEAD "$sha1_download_url";
+      then
+        image_checksum="$(wget $sha1_download_url -q -O -)"
+        info "Defined image_checksum as $image_checksum"
+      else
+        warning "No checksum found under $sha1_download_url."
+      fi
 fi
 
 info "Verifying image..."
