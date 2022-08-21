@@ -151,7 +151,7 @@ case "$operation_system" in
         wget "$download_url" -O "$image_path" || error "Download from \"$download_url\" failed."
     fi
     ;;
-  "*")
+  *)
     info "Available images:"
     ls -l "$image_folder"
     question "Which image would you like to use?" && read -r image_name || error
