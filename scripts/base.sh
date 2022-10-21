@@ -78,9 +78,15 @@ set_device_path(){
     then
       error "$device_path is not valid device."
   fi
+  info "Device path set to: $device_path"
   # @see https://www.heise.de/ct/hotline/Optimale-Blockgroesse-fuer-dd-2056768.html
-  OPTIMAL_BLOCKSIZE=$(expr 64 \* "$(sudo cat /sys/block/"$device"/queue/physical_block_size)") &&
-  info "Device path set to: $device_path" &&
+  PHYSICAL_BLOCK_SIZE_PATH="/sys/block/$device/queue/physical_block_size"
+  if [ -f "$device_path" ]
+    then
+      OPTIMAL_BLOCKSIZE=$(expr 64 \* "$(sudo cat $PHYSICAL_BLOCK_SIZE_PATH)") || error
+    else
+      OPTIMAL_BLOCKSIZE="1KB"
+  fi
   info "Optimal blocksize set to: $OPTIMAL_BLOCKSIZE" ||
   error
 }
