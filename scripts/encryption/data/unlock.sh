@@ -12,6 +12,6 @@ if [ ! -d "$DECRYPTED_PATH" ]
     info "Creating directory $DECRYPTED_PATH..." &&
     mkdir "$DECRYPTED_PATH" || error
 fi
-info "Encrypting directory $DECRYPTED_PATH to $DECRYPTED_PATH..." &&
+info "Decrypting directory $DECRYPTED_PATH to $DECRYPTED_PATH..." &&
 encfs "$ENCRYPTED_PATH" "$DECRYPTED_PATH" || error
 echo "ATTENTION: DATA IS NOW DECRYPTED!"

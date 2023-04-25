@@ -1,5 +1,5 @@
 # Linux Image Manager
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](./LICENSE.txt) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/6e66409513d7451b949afbf0373ba71f)](https://www.codacy.com/manual/kevinveenbirkenbach/core-system?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=kevinveenbirkenbach/core-system&amp;utm_campaign=Badge_Grade) [![Travis CI](https://travis-ci.org/kevinveenbirkenbach/core-system.svg?branch=master)](https://travis-ci.org/kevinveenbirkenbach/core-system)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](./LICENSE.txt) 
 
 This repository contains some shell scripts to download and configure linux images and to transfer them to a storage.
 
