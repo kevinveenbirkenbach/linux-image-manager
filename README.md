@@ -3,13 +3,24 @@
 
 This repository contains some shell scripts to download and configure linux images and to transfer them to a storage.
 
+## Virtual Btrfs RAID1 Setup
+
+To setup a virtual btrfs encrypted raid 1 execute: 
+
+```bash
+  bash scripts/encryption/storage/raid1/setup.sh
+```
+
 ## Setup
+
 To install a Linux distribution execute:
 
 ```bash
   sudo bash ./scripts/image/setup.sh
 ```
+
 ## Chroot
+
 To chroot into a Linux distribution on a storage execute:
 
 ```bash
@@ -17,6 +28,7 @@ To chroot into a Linux distribution on a storage execute:
 ```
 
 ## Backup
+
 To backup a image execute:
 
 ```bash
@@ -24,4 +36,5 @@ To backup a image execute:
 ```
 
 ## License
+
 The ["GNU GENERAL PUBLIC LICENSE Version 3"](./LICENSE.txt) applies to this project.
