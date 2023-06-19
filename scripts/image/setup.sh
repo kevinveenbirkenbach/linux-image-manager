@@ -95,8 +95,8 @@ case "$operation_system" in
               image_name="manjaro-gnome-20.0-200426-linux56.iso"
               ;;
             "21")
-              base_download_url="https://download.manjaro.org/gnome/21.3.7/"
-              image_name="manjaro-gnome-21.3.7-220816-linux515.iso"
+              image_checksum="78b8fa6a5222bc10a2e767485e76f82f3c7b2b59f4a70501b4a9fb846c5ad94987cf8b8ed630a701a8a3386debc0a39fc7363a743df8f13f41d3d8324d74e227"
+              image_name="manjaro-gnome-22.1.3-230529-linux61.iso"
               ;;
             esac
             ;;

@@ -81,15 +81,19 @@ set_device_path(){
   info "Device path set to: $device_path"
   # @see https://www.heise.de/ct/hotline/Optimale-Blockgroesse-fuer-dd-2056768.html
   PHYSICAL_BLOCK_SIZE_PATH="/sys/block/$device/queue/physical_block_size"
-  if [ -f "$device_path" ]
-    then
-      OPTIMAL_BLOCKSIZE=$(expr 64 \* "$(sudo cat $PHYSICAL_BLOCK_SIZE_PATH)") || error
-    else
-      OPTIMAL_BLOCKSIZE="1KB"
+  if [ -f "$PHYSICAL_BLOCK_SIZE_PATH" ]; then
+      PHYSICAL_BLOCK_SIZE=$(sudo cat $PHYSICAL_BLOCK_SIZE_PATH)
+      if [ $? -eq 0 ]; then
+          OPTIMAL_BLOCKSIZE=$((64 * PHYSICAL_BLOCK_SIZE)) || error
+      else
+          echo "Unable to read $PHYSICAL_BLOCK_SIZE_PATH"
+          OPTIMAL_BLOCKSIZE="4K"
+      fi
+  else
+      OPTIMAL_BLOCKSIZE="4K"
   fi
-  info "Optimal blocksize set to: $OPTIMAL_BLOCKSIZE" ||
-  error
-}
+  info "Optimal blocksize set to: $OPTIMAL_BLOCKSIZE" || error
+
 
 overwritte_device_with_zeros(){
   question "Should $device_path be overwritten with zeros before copying?(y/N)" && read -r copy_zeros_to_device
