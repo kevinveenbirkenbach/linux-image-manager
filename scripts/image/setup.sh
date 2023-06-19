@@ -58,6 +58,11 @@ case "$operation_system" in
     question "Which distribution should be used [arch,moode,retropie,manjaro,torbox...]?" && read -r distribution || error
 
     case "$distribution" in
+      "android-x86")
+        base_download_url="https://www.fosshub.com/Android-x86.html?dwl=android-x86_64-9.0-r2.iso";
+        image_name="android-x86_64-9.0-r2.iso"
+        image_checksum="f7eb8fc56f29ad5432335dc054183acf086c539f3990f0b6e9ff58bd6df4604e"
+        ;;
       "torbox")
         base_download_url="https://www.torbox.ch/data/";
         image_name="torbox-20220102-v050.gz"
