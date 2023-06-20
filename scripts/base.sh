@@ -93,7 +93,7 @@ set_device_path(){
       OPTIMAL_BLOCKSIZE="4K"
   fi
   info "Optimal blocksize set to: $OPTIMAL_BLOCKSIZE" || error
-
+}
 
 overwritte_device_with_zeros(){
   question "Should $device_path be overwritten with zeros before copying?(y/N)" && read -r copy_zeros_to_device

@@ -95,7 +95,11 @@ case "$operation_system" in
               image_name="manjaro-gnome-20.0-200426-linux56.iso"
               ;;
             "21")
-              image_checksum="78b8fa6a5222bc10a2e767485e76f82f3c7b2b59f4a70501b4a9fb846c5ad94987cf8b8ed630a701a8a3386debc0a39fc7363a743df8f13f41d3d8324d74e227"
+              base_download_url="https://download.manjaro.org/gnome/21.3.7/"
+              image_name="manjaro-gnome-21.3.7-220816-linux515.iso"
+              ;;
+            "22")
+              base_download_url="https://download.manjaro.org/gnome/22.1.3/"
               image_name="manjaro-gnome-22.1.3-230529-linux61.iso"
               ;;
             esac
@@ -164,17 +168,18 @@ case "$operation_system" in
   ;;
 esac
 
-if [ -z "$image_checksum" ]
-  then
-    sha1_download_url="$download_url.sha1"
-    info "Image Chechsum is not defined. Try to download image signature from $sha1_download_url."
-    if wget -q --method=HEAD "$sha1_download_url";
-      then
-        image_checksum="$(wget $sha1_download_url -q -O - | cut -d ' ' -f1 )"
-        info "Defined image_checksum as $image_checksum"
-      else
-        warning "No checksum found under $sha1_download_url."
-      fi
+if [ -z "$image_checksum" ]; then
+    for ext in sha1 sha512; do
+        sha_download_url="$download_url.$ext"
+        info "Image Checksum is not defined. Try to download image signature from $sha_download_url."
+        if wget -q --method=HEAD "$sha_download_url"; then
+            image_checksum="$(wget $sha_download_url -q -O - | cut -d ' ' -f1)"
+            info "Defined image_checksum as $image_checksum"
+            break
+        else
+            warning "No checksum found under $sha_download_url."
+        fi
+    done
 fi
 
 info "Verifying image..."
