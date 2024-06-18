@@ -87,7 +87,7 @@ case "$operation_system" in
             image_name="manjaro-architect-20.0-200426-linux56.iso"
             ;;
           "gnome")
-            question "Which release(e.g.:20,21) should be used:" && read -r release
+            question "Which release(e.g.:20,21,raspberrypi) should be used:" && read -r release
             case "$release" in
             "20")
               image_checksum="2df3697908483550d4a473815b08c1377e6b6892"
@@ -101,6 +101,10 @@ case "$operation_system" in
             "22")
               base_download_url="https://download.manjaro.org/gnome/22.1.3/"
               image_name="manjaro-gnome-22.1.3-230529-linux61.iso"
+              ;;
+            "raspberrypi")
+              base_download_url="https://github.com/manjaro-arm/rpi4-images/releases/download/23.02/"
+              image_name="Manjaro-ARM-gnome-rpi4-23.02.img.xz"
               ;;
             esac
             ;;
