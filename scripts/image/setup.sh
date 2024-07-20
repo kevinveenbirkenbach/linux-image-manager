@@ -409,41 +409,35 @@ if [ "$distribution" != "manjaro" ]
 
   copy_resolve_conf
 
-  question "Should the password of the standart user \"$target_username\" be changed?(y/N)" && read -r change_password
-  if [ "$change_password" == "y" ]
-    then
+  question "Type in new password (leave empty to skip): " && read -r password_1
+
+  if [ -n "$password_1" ]; then
+    question "Repeat new password for \"$target_username\": " && read -r password_2
+    if [ "$password_1" = "$password_2" ]; then
       info "Changing passwords on target system..."
-      question "Type in new password: " && read -r password_1
-      question "Repeat new password\"$target_username\"" && read -r password_2
-      if [ "$password_1" = "$password_2" ]
-        then
-          (
-          echo "(
-                echo '$password_1'
-                echo '$password_1'
-                ) | passwd $target_username"
-          echo "(
-                echo '$password_1'
-                echo '$password_1'
-                ) | passwd"
-          ) | chroot "$root_mount_path" /bin/bash || error
-        else
-          error "Passwords didn't match."
-      fi
+      (
+        echo "$password_1" | chroot "$root_mount_path" passwd --stdin "$target_username"
+        echo "$password_1" | chroot "$root_mount_path" passwd --stdin
+      ) || error "Failed to change password."
     else
-      info "Skipped password change..."
+      error "Passwords didn't match."
+    fi
+  else
+    info "No password change requested, skipped password change..."
   fi
 
-  hostname_path="$root_mount_path""etc/hostname"
-  question "Should the hostname be changed?(y/N)" && read -r change_hostname
-  if [ "$change_hostname" == "y" ]
-    then
-      question "Type in the hostname:" && read -r target_hostname;
-      echo "$target_hostname" > "$hostname_path" || error
-    else
-      target_hostname=$(cat "$hostname_path")
-      info "Skipped hostname change..."
+
+  hostname_path="$root_mount_path/etc/hostname"
+
+  question "Type in the hostname (leave empty to skip): " && read -r target_hostname
+
+  if [ -n "$target_hostname" ]; then
+    echo "$target_hostname" > "$hostname_path" || error "Failed to set hostname."
+  else
+    target_hostname=$(cat "$hostname_path")
+    info "No hostname change requested, skipped hostname change..."
   fi
+
   info "Used hostname is: $target_hostname"
 
   case "$distribution" in
