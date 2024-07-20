@@ -69,12 +69,13 @@ case "$operation_system" in
         image_checksum="0E1BA7FFD14AAAE5F0462C8293D95B62C3BF1D9E726E26977BD04772C55680D3"
         ;;
       "arch")
-        question "Which Raspberry Pi will be used(e.g.:1,2,3,4,aarch64):" && read -r version
+        question "Which Raspberry Pi will be used (e.g.: 1, 2, 3, 4, aarch64):" && read -r version
         base_download_url="http://os.archlinuxarm.org/os/";
-        if [ "$version" == "1" ]
-          then
+        if [ "$version" == "1" ]; then
             image_name="ArchLinuxARM-rpi-latest.tar.gz"
-          else
+        elif [ "$version" == "4" ]; then
+            image_name="ArchLinuxARM-rpi-aarch64-latest.tar.gz"
+        else
             image_name="ArchLinuxARM-rpi-$version-latest.tar.gz"
         fi
         ;;
