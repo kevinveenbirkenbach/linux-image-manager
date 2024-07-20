@@ -71,13 +71,19 @@ case "$operation_system" in
       "arch")
         question "Which Raspberry Pi will be used (e.g.: 1, 2, 3, 4...):" && read -r version
         base_download_url="http://os.archlinuxarm.org/os/";
-        if [ "$version" == "1" ]; then
+        image_name="ArchLinuxARM-rpi-$version.tar.gz"
+        case "$version" in
+          "1")
             image_name="ArchLinuxARM-rpi-latest.tar.gz"
-        elif [ "$version" == "4" ]; then
+            ;;
+          "2" | "3")
+            image_name="ArchLinuxARM-rpi-armv7-latest.tar.gz"
+            ;;
+
+          "4")
             image_name="ArchLinuxARM-rpi-aarch64-latest.tar.gz"
-        else
-            image_name="ArchLinuxARM-rpi-$version-latest.tar.gz"
-        fi
+            ;;
+        esac
         ;;
       "manjaro")
         question "Which version(e.g.:architect,gnome) should be used:" && read -r version
