@@ -21,6 +21,32 @@ install(){
   esac
 }
 
+replace_in_file() {
+  # Assign the first function argument to the local variable search_string
+  local search_string=$1
+  # Assign the second function argument to the local variable replace_string
+  local replace_string=$2
+  # Assign the third function argument to the local variable file_path
+  local file_path=$3
+
+  # Create a temporary file and store its path in temp_file
+  temp_file=$(mktemp)
+
+  # Use sed to replace the search_string with replace_string in the file at file_path
+  # Write the output to the temporary file
+  sed "s/$search_string/$replace_string/g" "$file_path" > "$temp_file"
+
+  # Compare the original file with the temporary file
+  if cmp -s "$file_path" "$temp_file"; then
+    # If files are identical, remove the temporary file and signal an error
+    rm -f "$temp_file"
+    error "Error: Search string '$search_string' not found in $file_path."
+  else
+    # If files are different, move the temporary file to overwrite the original file
+    mv "$temp_file" "$file_path"
+  fi
+}
+
 info "Setupscript for images started..."
 
 info "Checking if root..."
@@ -416,9 +442,15 @@ if [ "$distribution" != "manjaro" ]
     if [ "$password_1" = "$password_2" ]; then
       info "Changing passwords on target system..."
       (
-        echo "$password_1" | chroot "$root_mount_path" passwd --stdin "$target_username"
-        echo "$password_1" | chroot "$root_mount_path" passwd --stdin
-      ) || error "Failed to change password."
+        echo "(
+              echo '$password_1'
+              echo '$password_1'
+              ) | passwd $target_username"
+        echo "(
+              echo '$password_1'
+              echo '$password_1'
+        ) | passwd"
+      ) | chroot "$root_mount_path" /bin/bash || error "Failed to change password."
     else
       error "Passwords didn't match."
     fi
@@ -500,9 +532,9 @@ if [ "$distribution" != "manjaro" ]
       mkinitcpio_encrypt_hooks="sleep netconf dropbear encryptssh" &&
       mkinitcpio_search_hooks="HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)" &&
       mkinitcpio_replace_hooks="HOOKS=(base udev autodetect modconf block $mkinitcpio_encrypt_hooks filesystems keyboard fsck)" &&
-      sed -i "s/$mkinitcpio_search_modules/$mkinitcpio_replace_modules/g" "$mkinitcpio_path" &&
-      sed -i "s/$mkinitcpio_search_binaries/$mkinitcpio_replace_binaries/g" "$mkinitcpio_path" &&
-      sed -i "s/$mkinitcpio_search_hooks/$mkinitcpio_replace_hooks/g" "$mkinitcpio_path" &&
+      replace_in_file "$mkinitcpio_search_modules" "$mkinitcpio_replace_modules" "$mkinitcpio_path" &&
+      replace_in_file "$mkinitcpio_search_binaries" "$mkinitcpio_replace_binaries" "$mkinitcpio_path" &&
+      replace_in_file "$mkinitcpio_search_hooks" "$mkinitcpio_replace_hooks" "$mkinitcpio_path" &&
       info "Content of $mkinitcpio_path:$(cat "$mkinitcpio_path")" &&
       info "Generating mkinitcpio..." &&
       echo "mkinitcpio -vP" | chroot "$root_mount_path" /bin/bash &&
@@ -536,8 +568,8 @@ if [ "$distribution" != "manjaro" ]
           boot_txt_delete_line=$(echo "part uuid \${devtype} \${devnum}:2 uuid" | sed -e 's/[]\/$*.^[]/\\&/g') &&
           boot_txt_setenv_origin=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 root=PARTUUID=\${uuid} rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\"" | sed -e 's/[]\/$*.^[]/\\&/g') &&
           boot_txt_setenv_replace=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 ip=::::$target_hostname:eth0:dhcp $cryptdevice_configuration rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\""| sed -e 's/[\/&]/\\&/g') &&
-          sed -i "s/$boot_txt_delete_line//g" "$boot_txt_path" &&
-          sed -i "s/$boot_txt_setenv_origin/$boot_txt_setenv_replace/g" "$boot_txt_path" &&
+          replace_in_file "$boot_txt_delete_line" "" "$boot_txt_path" &&
+          replace_in_file "$boot_txt_setenv_origin" "$boot_txt_setenv_replace" "$boot_txt_path" &&
           info "Content of $boot_txt_path:$(cat "$boot_txt_path")" &&
           info "Generating..." &&
           echo "cd /boot/ && ./mkscr || exit 1" | chroot "$root_mount_path" /bin/bash || error
@@ -546,7 +578,7 @@ if [ "$distribution" != "manjaro" ]
           info "Configuring $cmdline_txt_path..." &&
           cmdline_search_string=$(echo "root=/dev/mmcblk0p2" | sed -e 's/[\/&]/\\&/g') &&
           cmdline_replace_string=$(echo "$cryptdevice_configuration rootfstype=$root_filesystem"| sed -e 's/[\/&]/\\&/g') &&
-          sed -i "s/$cmdline_search_string/$cmdline_replace_string/g" "$cmdline_txt_path"  &&
+          replace_in_file "$cmdline_search_string" "$cmdline_replace_string" "$cmdline_txt_path" &&
           info "Content of $cmdline_txt_path:$(cat "$cmdline_txt_path")" || error
         fi
   fi
