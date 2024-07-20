@@ -173,7 +173,7 @@ case "$operation_system" in
 esac
 
 if [ -z "$image_checksum" ]; then
-    for ext in sha1 sha512; do
+    for ext in sha1 sha512 md5; do
         sha_download_url="$download_url.$ext"
         info "Image Checksum is not defined. Try to download image signature from $sha_download_url."
         if wget -q --method=HEAD "$sha_download_url"; then
