@@ -7,7 +7,7 @@ echo "Setups disk encryption"
 
 set_device_mount_partition_and_mapper_paths
 
-overwritte_device_with_zeros
+overwrite_device
 
 info "Creating new GPT partition table..."
 (	echo "g"	# create a new empty GPT partition table

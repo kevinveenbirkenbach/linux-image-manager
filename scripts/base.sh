@@ -95,15 +95,28 @@ set_device_path(){
   info "Optimal blocksize set to: $OPTIMAL_BLOCKSIZE" || error
 }
 
-overwritte_device_with_zeros(){
-  question "Should $device_path be overwritten with zeros before copying?(y/N)" && read -r copy_zeros_to_device
-  if [ "$copy_zeros_to_device" = "y" ]
-    then
-      info "Overwritting..." &&
-      dd if=/dev/zero of="$device_path" bs="$OPTIMAL_BLOCKSIZE" status=progress || error "Overwritting $device_path failed."
-    else
-      info "Skipping Overwritting..."
-  fi
+overwrite_device() {
+  question "Should $device_path be overwritten with zeros before copying? (y/N/block count)" && read -r copy_zeros_to_device
+  case "$copy_zeros_to_device" in
+    y)
+      info "Overwriting entire device..." &&
+      dd if=/dev/zero of="$device_path" bs="$OPTIMAL_BLOCKSIZE" status=progress || error "Overwriting $device_path failed."
+      ;;
+    N)
+      info "Skipping Overwriting..."
+      ;;
+    ''|*[!0-9]*)
+      error "Invalid input."
+      ;;
+    *)
+      if [[ "$copy_zeros_to_device" =~ ^[0-9]+$ ]]; then
+        info "Overwriting $copy_zeros_to_device blocks..." &&
+        dd if=/dev/zero of="$device_path" bs="$OPTIMAL_BLOCKSIZE" count="$copy_zeros_to_device" status=progress || error "Overwriting $device_path failed."
+      else
+        error "Invalid input. Block count must be a number."
+      fi
+      ;;
+  esac
 }
 
 get_packages(){

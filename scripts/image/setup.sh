@@ -263,7 +263,7 @@ if [ "$transfer_image" = "y" ]
         info "Skipping partition table deletion..."
     fi
 
-    overwritte_device_with_zeros
+    overwrite_device
 
     info "Starting image transfer..."
     if [ "$distribution" = "arch" ]
