@@ -172,6 +172,8 @@ case "$operation_system" in
   ;;
 esac
 
+info "Verifying image..."
+info "Verifying checksum..."
 if [ -z "$image_checksum" ]; then
     for ext in sha1 sha512 md5; do
         sha_download_url="$download_url.$ext"
@@ -186,7 +188,6 @@ if [ -z "$image_checksum" ]; then
     done
 fi
 
-info "Verifying image..."
 if [[ -v image_checksum ]]
   then
     (info "Checking md5 checksum..." && echo "$image_checksum $image_path"| md5sum -c -) ||
@@ -196,6 +197,45 @@ if [[ -v image_checksum ]]
   else
     warning "Verification is not possible. No checksum is defined."
 fi
+
+info "Verifying signature..."
+signature_download_url="$download_url.sig"
+info "Try to download image signature from $signature_download_url."
+
+if wget -q --method=HEAD "$signature_download_url"; then
+    signature_name="${image_name}.sig"
+    signature_path="${image_folder}${signature_name}"
+
+    info "Download the signature file"
+    if wget -q -O "$signature_path" "$signature_download_url"; then
+        info "Extract the key ID from the signature file"
+        key_id=$(gpg --status-fd 1 --verify "$signature_path" "$image_path" 2>&1 | grep 'NO_PUBKEY' | awk '{print $NF}')
+        
+        if [ -n "$key_id" ]; then
+            info "Check if the key is already in the keyring"
+            if gpg --list-keys "$key_id" > /dev/null 2>&1; then
+                info "Key $key_id already in keyring."
+            else
+                info "Import the public key"
+                gpg --keyserver keyserver.ubuntu.com --recv-keys "$key_id"
+            fi
+
+            info "Verify the signature again after importing the key"
+            if gpg --verify "$signature_path" "$image_path"; then
+                info "Signature verification succeeded."
+            else
+                warning "Signature verification failed."
+            fi
+        else
+            warning "No public key found in the signature file."
+        fi
+    else
+        warning "Failed to download the signature file."
+    fi
+else
+    warning "No signature found under $signature_download_url."
+fi
+
 
 make_mount_folders
 
