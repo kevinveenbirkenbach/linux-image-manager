@@ -261,23 +261,36 @@ if [ "$transfer_image" = "y" ]
     info "Starting image transfer..."
     if [ "$distribution" = "arch" ]
       then
+
+        # Default size of the boot partition
+        default_boot_size="+300M"
+
+        # Prompt to adjust the boot partition size
+        question "What size should the boot partition be? (Default: $default_boot_size):" && read -r boot_size
+        boot_size=${boot_size:-$default_boot_size}
+
+        # Use the provided size or the default size
+        info "The boot partition will be set to $boot_size."
+
+        # Partitioning with the specified size
         info "Creating partitions..." &&
-        (	echo "o"       #Type o. This will clear out any partitions on the drive.
-        	echo "p"       #Type p to list partitions. There should be no partitions left
-        	echo "n"       #Type n,
-        	echo "p"       #then p for primary,
-        	echo "1"       #1 for the first partition on the drive,
-        	echo ""        #Default start sector
-        	echo "+300M"   #then type +300M for the last sector.
-        	echo "t"       #Type t,
-        	echo "c"       #then c to set the first partition to type W95 FAT32 (LBA).
-        	echo "n"       #Type n,
-        	echo "p"       #then p for primary,
-        	echo "2"       #2 for the second partition on the drive,
-        	echo ""        #Default start sector
-        	echo ""        #Default end sector
-        	echo "w"       #Write the partition table and exit by typing w.
-        )| fdisk "$device_path" || error
+        (
+          echo "o"       # Type o. This will clear out any partitions on the drive.
+          echo "p"       # Type p to list partitions. There should be no partitions left
+          echo "n"       # Type n,
+          echo "p"       # then p for primary,
+          echo "1"       # 1 for the first partition on the drive,
+          echo ""        # Default start sector
+          echo "$boot_size"  # Size of the boot partition
+          echo "t"       # Type t,
+          echo "c"       # then c to set the first partition to type W95 FAT32 (LBA).
+          echo "n"       # Type n,
+          echo "p"       # then p for primary,
+          echo "2"       # 2 for the second partition on the drive,
+          echo ""        # Default start sector
+          echo ""        # Default end sector
+          echo "w"       # Write the partition table and exit by typing w.
+        ) | fdisk "$device_path" || error
 
         info "Format boot partition..." &&
         mkfs.vfat "$boot_partition_path" || error
