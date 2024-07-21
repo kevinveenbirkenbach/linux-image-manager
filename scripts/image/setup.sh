@@ -530,8 +530,8 @@ if [ "$distribution" != "manjaro" ]
       mkinitcpio_search_binaries="BINARIES=()" &&
       mkinitcpio_replace_binaries=$(echo "BINARIES=(/usr/lib/libgcc_s.so.1)"| sed -e 's/[\/&]/\\&/g') &&
       mkinitcpio_encrypt_hooks="sleep netconf dropbear encryptssh" &&
-      mkinitcpio_search_hooks="HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)" &&
-      mkinitcpio_replace_hooks="HOOKS=(base udev autodetect modconf block $mkinitcpio_encrypt_hooks filesystems keyboard fsck)" &&
+      mkinitcpio_search_hooks="HOOKS=(base udev autodetect modconf kms keyboard keymap consolefont block filesystems fsck)" &&
+      mkinitcpio_replace_hooks="HOOKS=(base udev autodetect modconf kms keyboard keymap consolefont block $mkinitcpio_encrypt_hooks block filesystems fsck)" &&
       replace_in_file "$mkinitcpio_search_modules" "$mkinitcpio_replace_modules" "$mkinitcpio_path" &&
       replace_in_file "$mkinitcpio_search_binaries" "$mkinitcpio_replace_binaries" "$mkinitcpio_path" &&
       replace_in_file "$mkinitcpio_search_hooks" "$mkinitcpio_replace_hooks" "$mkinitcpio_path" &&
