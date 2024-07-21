@@ -539,7 +539,6 @@ if [ "$distribution" != "manjaro" ]
           warning "Version $version isn't supported."
           ;;
       esac
-      ;;
 
       mkinitcpio_replace_modules="MODULES=(g_cdc usb_f_acm usb_f_ecm $mkinitcpio_additional_modules g_ether)" || error
 
