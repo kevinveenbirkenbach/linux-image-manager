@@ -35,6 +35,12 @@ Additional you can unmount the device with a command like
 umount -f /dev/sd*;
 ```
 
+### Verification
+To verify that the unmounting was successfull, check the result of
+```bash
+mount
+```
+
 ## Chroot
 
 To chroot into a Linux distribution on a storage execute:

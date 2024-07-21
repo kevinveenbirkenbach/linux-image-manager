@@ -95,19 +95,17 @@ case "$operation_system" in
         image_checksum="0E1BA7FFD14AAAE5F0462C8293D95B62C3BF1D9E726E26977BD04772C55680D3"
         ;;
       "arch")
-        question "Which Raspberry Pi will be used (e.g.: 1, 2, 3, 4...):" && read -r version
+        question "Which Raspberry Pi will be used (e.g.: 1, 2, 3b, 3b+, 4...):" && read -r version
         base_download_url="http://os.archlinuxarm.org/os/";
-        image_name="ArchLinuxARM-rpi-$version.tar.gz"
         case "$version" in
-          "1")
-            image_name="ArchLinuxARM-rpi-latest.tar.gz"
-            ;;
-          "2" | "3")
+          "1" | "2")
             image_name="ArchLinuxARM-rpi-armv7-latest.tar.gz"
             ;;
-
-          "4")
+           "3b" | "3b+" | "4" )
             image_name="ArchLinuxARM-rpi-aarch64-latest.tar.gz"
+            ;;
+          *)
+            error "Version $version isn't supported."
             ;;
         esac
         ;;
@@ -506,7 +504,9 @@ if [ "$distribution" != "manjaro" ]
 
   if [ "$encrypt_system" == "y" ]
     then
-      # Adapted this instruction for setting up encrypted systems @see https://gist.github.com/gea0/4fc2be0cb7a74d0e7cc4322aed710d38
+      # Adapted this instruction for setting up encrypted systems 
+      # @see https://gist.github.com/gea0/4fc2be0cb7a74d0e7cc4322aed710d38
+      # @see https://gist.github.com/EnigmaCurry/2f9bed46073da8e38057fe78a61e7994
       info "Setup encryption..." &&
 
       info "Installing neccessary software..." &&
@@ -516,11 +516,34 @@ if [ "$distribution" != "manjaro" ]
       info "Adding $target_authorized_keys to dropbear..." &&
       cp -v "$target_authorized_keys" "$dropbear_root_key_path" &&
 
-      #Concerning mkinitcpio warning @see https://gist.github.com/imrvelj/c65cd5ca7f5505a65e59204f5a3f7a6d
+      # Concerning mkinitcpio warning 
+      # @see https://gist.github.com/imrvelj/c65cd5ca7f5505a65e59204f5a3f7a6d
       mkinitcpio_path="$root_mount_path""etc/mkinitcpio.conf" &&
       info "Configuring $mkinitcpio_path..." &&
-      mkinitcpio_search_modules="MODULES=()" &&
-      mkinitcpio_replace_modules="MODULES=(g_cdc usb_f_acm usb_f_ecm smsc95xx g_ether)" &&
+      mkinitcpio_search_modules="MODULES=()" || error
+
+      # Concerning which moduls to load 
+      # @see https://raspberrypi.stackexchange.com/questions/67051/raspberry-pi-3-with-archarm-and-encrypted-disk-will-not-boot-how-can-be-identif
+
+      case "$version" in
+        "1" | "2")
+          mkinitcpio_additional_modules=""
+          ;;
+          "3b")
+          mkinitcpio_additional_modules="smsc95xx"
+          ;;
+          "3b+" | "4")
+          mkinitcpio_additional_modules="lan78xx"
+          ;;
+        *)
+          warning "Version $version isn't supported."
+          ;;
+      esac
+      ;;
+
+      mkinitcpio_replace_modules="MODULES=(g_cdc usb_f_acm usb_f_ecm $mkinitcpio_additional_modules g_ether)" || error
+
+      
       mkinitcpio_search_binaries="BINARIES=()" &&
       mkinitcpio_replace_binaries=$(echo "BINARIES=(/usr/lib/libgcc_s.so.1)"| sed -e 's/[\/&]/\\&/g') &&
       mkinitcpio_encrypt_hooks="sleep netconf dropbear encryptssh" &&
@@ -563,7 +586,9 @@ if [ "$distribution" != "manjaro" ]
           info "Configuring $boot_txt_path..." &&
           boot_txt_delete_line=$(echo "part uuid \${devtype} \${devnum}:2 uuid" | sed -e 's/[]\/$*.^[]/\\&/g') &&
           boot_txt_setenv_origin=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 root=PARTUUID=\${uuid} rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\"" | sed -e 's/[]\/$*.^[]/\\&/g') &&
-          boot_txt_setenv_replace=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 ip=::::$target_hostname:eth0:dhcp $cryptdevice_configuration rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\""| sed -e 's/[\/&]/\\&/g') &&
+          # Concerning issues with network adapter names;
+          # @see https://forum.iobroker.net/topic/40542/raspberry-pi4-kein-eth0-mehr/16
+          boot_txt_setenv_replace=$(echo "setenv bootargs earlyprintk console=ttyS1,115200 console=tty0 ip=::::$target_hostname:eth0:dhcp $cryptdevice_configuration rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\" net.ifnames=0 biosdevname=0"| sed -e 's/[\/&]/\\&/g') &&
           replace_in_file "$boot_txt_delete_line" "" "$boot_txt_path" &&
           replace_in_file "$boot_txt_setenv_origin" "$boot_txt_setenv_replace" "$boot_txt_path" &&
           info "Content of $boot_txt_path:$(cat "$boot_txt_path")" &&
