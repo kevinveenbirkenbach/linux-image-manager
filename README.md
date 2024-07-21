@@ -25,7 +25,7 @@ To cleanup the image setup execute:
 ```bash
 fuser -k /dev/mapper/linux-image-manager-*; 
 umount -f /dev/mapper/linux-image-manager-*; 
-fuser -k /tmp/mapper/linux-image-manager-*; 
+fuser -k /tmp/linux-image-manager-*; 
 umount -f /tmp/linux-image-manager-*;
 ```
 
