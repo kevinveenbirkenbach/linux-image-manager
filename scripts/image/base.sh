@@ -38,7 +38,7 @@ make_mount_folders(){
 }
 
 make_working_folder(){
-  working_folder_path="/tmp/raspberry-pi-tools-$(date +%s)/" &&
+  working_folder_path="/tmp/linux-image-manager-$(date +%s)/" &&
   info "Create temporary working folder in $working_folder_path" &&
   mkdir -v "$working_folder_path" ||
   error
@@ -48,7 +48,7 @@ decrypt_root(){
   if [ "$(blkid "$root_partition_path" -s TYPE -o value)" == "crypto_LUKS" ]
     then
       root_partition_uuid=$(blkid "$root_partition_path" -s UUID -o value) &&
-      root_mapper_name="arch-root-$root_partition_uuid" &&
+      root_mapper_name="linux-image-manager-$root_partition_uuid" &&
       root_mapper_path="/dev/mapper/$root_mapper_name" &&
       info "Decrypting of $root_partition_path is neccessary..." &&
       sudo cryptsetup -v luksOpen "$root_partition_path" "$root_mapper_name" || error

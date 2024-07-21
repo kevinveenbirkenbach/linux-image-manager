@@ -401,30 +401,24 @@ if [ "$distribution" != "manjaro" ]
   target_user_home_folder_path="$target_home_path$target_username/" &&
   target_user_ssh_folder_path="$target_user_home_folder_path"".ssh/" &&
   target_authorized_keys="$target_user_ssh_folder_path""authorized_keys" &&
-  question "Should the ssh-key be copied to the image?(y/N)" && read -r copy_ssh_key || error
-  if [ "$copy_ssh_key" == "y" ]
+  question "Enter the path to the SSH key to be added to the image (default: none):" && read -r origin_user_rsa_pub || error
+  if [ -z "$origin_user_rsa_pub" ]
     then
-      correct_ssh_key_path=false;
-      while [ "$correct_ssh_key_path" != true ]
-        do
-          question "Whats the absolut path to the ssh key:" && read -r origin_user_rsa_pub || error
-          if [ -f "$origin_user_rsa_pub" ]
-            then
-              correct_ssh_key_path=true;
-            else
-              warning "The ssh key \"$origin_user_rsa_pub\" can't be copied to \"$target_authorized_keys\" because it doesn't exist."
-          fi
-        done
-      info "Copy ssh key to target..."
-      mkdir -v "$target_user_ssh_folder_path" || warning "Folder \"$target_user_ssh_folder_path\" exists. Can't be created."
-      cat "$origin_user_rsa_pub" > "$target_authorized_keys" &&
-      target_authorized_keys_content=$(cat "$target_authorized_keys") &&
-      info "$target_authorized_keys contains the following: $target_authorized_keys_content" &&
-      chown -vR 1000 "$target_user_ssh_folder_path" &&
-      chmod -v 700 "$target_user_ssh_folder_path" &&
-      chmod -v 600 "$target_authorized_keys" || error
-    else
       info "Skipped SSH-key copying.."
+    else  
+        if [ -f "$origin_user_rsa_pub" ]
+          then
+            info "Copy ssh key to target..."
+            mkdir -v "$target_user_ssh_folder_path" || warning "Folder \"$target_user_ssh_folder_path\" exists. Can't be created."
+            cat "$origin_user_rsa_pub" > "$target_authorized_keys" &&
+            target_authorized_keys_content=$(cat "$target_authorized_keys") &&
+            info "$target_authorized_keys contains the following: $target_authorized_keys_content" &&
+            chown -vR 1000 "$target_user_ssh_folder_path" &&
+            chmod -v 700 "$target_user_ssh_folder_path" &&
+            chmod -v 600 "$target_authorized_keys" || error
+          else
+            error "The ssh key \"$origin_user_rsa_pub\" can't be copied to \"$target_authorized_keys\" because it doesn't exist."
+        fi  
   fi
 
   info "Start chroot procedures..."
@@ -530,8 +524,10 @@ if [ "$distribution" != "manjaro" ]
       mkinitcpio_search_binaries="BINARIES=()" &&
       mkinitcpio_replace_binaries=$(echo "BINARIES=(/usr/lib/libgcc_s.so.1)"| sed -e 's/[\/&]/\\&/g') &&
       mkinitcpio_encrypt_hooks="sleep netconf dropbear encryptssh" &&
-      mkinitcpio_search_hooks="HOOKS=(base udev autodetect modconf kms keyboard keymap consolefont block filesystems fsck)" &&
-      mkinitcpio_replace_hooks="HOOKS=(base udev autodetect modconf kms keyboard keymap consolefont block $mkinitcpio_encrypt_hooks block filesystems fsck)" &&
+      mkinitcpio_hooks_prefix="base udev autodetect microcode modconf kms keyboard keymap consolefont block"
+      mkinitcpio_hooks_suffix="filesystems fsck"
+      mkinitcpio_search_hooks="HOOKS=($mkinitcpio_hooks_prefix $mkinitcpio_hooks_suffix)" &&
+      mkinitcpio_replace_hooks="HOOKS=($mkinitcpio_hooks_prefix $mkinitcpio_encrypt_hooks $mkinitcpio_hooks_suffix)" &&
       replace_in_file "$mkinitcpio_search_modules" "$mkinitcpio_replace_modules" "$mkinitcpio_path" &&
       replace_in_file "$mkinitcpio_search_binaries" "$mkinitcpio_replace_binaries" "$mkinitcpio_path" &&
       replace_in_file "$mkinitcpio_search_hooks" "$mkinitcpio_replace_hooks" "$mkinitcpio_path" &&
@@ -586,7 +582,7 @@ if [ "$distribution" != "manjaro" ]
   info "Running system specific procedures..."
   if [ "$distribution" = "retropie" ]
     then
-      if [ "$copy_ssh_key" == "y" ]
+      if [ -n "$origin_user_rsa_pub" ]
         then
           ssh_file="$boot_mount_path""ssh" &&
           echo "" > "$ssh_file"

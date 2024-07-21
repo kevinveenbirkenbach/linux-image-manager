@@ -102,7 +102,7 @@ overwrite_device() {
       info "Overwriting entire device..." &&
       dd if=/dev/zero of="$device_path" bs="$OPTIMAL_BLOCKSIZE" status=progress || error "Overwriting $device_path failed."
       ;;
-    N)
+    N|'')
       info "Skipping Overwriting..."
       ;;
     ''|*[!0-9]*)
