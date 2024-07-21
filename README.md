@@ -19,6 +19,22 @@ To install a Linux distribution execute:
   sudo bash ./scripts/image/setup.sh
 ```
 
+### Cleanup
+
+To cleanup the image setup execute:
+```bash
+fuser -k /dev/mapper/linux-image-manager-*; 
+umount -f /dev/mapper/linux-image-manager-*; 
+fuser -k /tmp/mapper/linux-image-manager-*; 
+umount -f /tmp/linux-image-manager-*;
+```
+
+Additional you can unmount the device with a command like
+
+```bash
+umount -f /dev/sd*;
+```
+
 ## Chroot
 
 To chroot into a Linux distribution on a storage execute:
