@@ -587,7 +587,7 @@ if [ "$distribution" != "manjaro" ]
           boot_txt_setenv_origin=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 root=PARTUUID=\${uuid} rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\"" | sed -e 's/[]\/$*.^[]/\\&/g') &&
           # Concerning issues with network adapter names;
           # @see https://forum.iobroker.net/topic/40542/raspberry-pi4-kein-eth0-mehr/16
-          boot_txt_setenv_replace=$(echo "setenv bootargs earlyprintk console=ttyS1,115200 console=tty0 ip=::::$target_hostname:eth0:dhcp $cryptdevice_configuration rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\" net.ifnames=0 biosdevname=0"| sed -e 's/[\/&]/\\&/g') &&
+          boot_txt_setenv_replace=$(echo "setenv bootargs console=ttyS1,115200 console=tty0 ip=::::$target_hostname:eth0:dhcp $cryptdevice_configuration rw rootwait smsc95xx.macaddr=\"\${usbethaddr}\" net.ifnames=0 biosdevname=0"| sed -e 's/[\/&]/\\&/g') &&
           replace_in_file "$boot_txt_delete_line" "" "$boot_txt_path" &&
           replace_in_file "$boot_txt_setenv_origin" "$boot_txt_setenv_replace" "$boot_txt_path" &&
           info "Content of $boot_txt_path:$(cat "$boot_txt_path")" &&
