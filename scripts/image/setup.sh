@@ -77,8 +77,6 @@ if mount | grep -q "$device_path"
     error "Device $device_path is allready mounted. Umount with \"umount $device_path*\"."
 fi
 
-question "Which platform would you like to use [livestick, raspberrypi,...]?" && read -r platform || error
-
 question "Which operation system would you like to use [linux,windows,...]?" && read -r operation_system || error
 
 case "$operation_system" in
@@ -402,7 +400,8 @@ if [ "$transfer_image" = "y" ]
     info "Skipping image transfer..."
 fi
 
-if [ "$platform" == "raspberrypi" ]
+# Execute Raspberry Pi specific procedures
+if [ -n "$raspberry_pi_version" ]
   then
   info "Start regular mounting procedure..."
   if mount | grep -q "$boot_partition_path"
