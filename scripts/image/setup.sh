@@ -98,11 +98,21 @@ case "$operation_system" in
         question "Which Raspberry Pi will be used (e.g.: 1, 2, 3b, 3b+, 4...):" && read -r version
         base_download_url="http://os.archlinuxarm.org/os/";
         case "$version" in
-          "1" | "2")
+          "1")
             image_name="ArchLinuxARM-rpi-armv7-latest.tar.gz"
+            luks_memory_cost="64000"
             ;;
-           "3b" | "3b+" | "4" )
+          "2")
+            image_name="ArchLinuxARM-rpi-armv7-latest.tar.gz"
+            luks_memory_cost="128000"
+            ;;
+           "3b" | "3b+")
             image_name="ArchLinuxARM-rpi-aarch64-latest.tar.gz"
+            luks_memory_cost="128000"
+            ;;
+            "4" )
+            image_name="ArchLinuxARM-rpi-aarch64-latest.tar.gz"
+            luks_memory_cost="256000"
             ;;
           *)
             error "Version $version isn't supported."
