@@ -338,8 +338,15 @@ if [ "$transfer_image" = "y" ]
 
         if [ "$encrypt_system" == "y" ]
           then
-            info "Formating $root_partition_path with LUKS..." &&
-            sudo cryptsetup -v luksFormat -c aes-xts-plain64 -s 512 -h sha512 --use-random -i 1000 "$root_partition_path" &&
+              # Check if luks_memory_cost is defined and set the luksAddKey command accordingly
+              # @see https://chatgpt.com/share/008ea5f1-670c-467c-8320-1ca67f25ac9a
+              if [ -n "$luks_memory_cost" ]; then
+                info "Formating $root_partition_path with LUKS with --pbkdf-memory set to $luks_memory_cost" &&
+                sudo cryptsetup -v luksFormat -c aes-xts-plain64 -s 512 -h sha512 --use-random -i 1000 --pbkdf-memory "$luks_memory_cost" "$root_partition_path" || error
+              else
+                info "Formating $root_partition_path with LUKS" &&
+                sudo cryptsetup -v luksFormat -c aes-xts-plain64 -s 512 -h sha512 --use-random -i 1000 "$root_partition_path" || error
+              fi
             decrypt_root || error
         fi
 
@@ -404,11 +411,35 @@ if [ "$distribution" != "manjaro" ]
   info "Content of $fstab_path:$(cat "$fstab_path")" || error
 
   info "Define target paths..." &&
+  administrator_username="administrator"
   target_home_path="$root_mount_path""home/" &&
-  target_username=$(ls "$target_home_path") &&
+  default_username=$(ls "$target_home_path") &&
+
+  question "Should the $default_username be renamed to $administrator_username? (y/N):" && read -r rename_decision
+  if [ "$rename_decision" == "y" ]; 
+    then
+      variable_old_username="$default_username" &&
+      target_username="$administrator_username" &&
+      info "Rename home directory from $target_home_path$variable_old_username to $target_home_path$target_username..." &&
+      mv -v "$target_home_path$variable_old_username" "$target_home_path$target_username" || error "Failed to rename home directory" 
+    else
+      target_username="$default_username"
+  fi
+
   target_user_home_folder_path="$target_home_path$target_username/" &&
   target_user_ssh_folder_path="$target_user_home_folder_path"".ssh/" &&
   target_authorized_keys="$target_user_ssh_folder_path""authorized_keys" &&
+
+  # Activate later. Here was a bug
+  question "Should the $target_username have sudo rights? (y/N):" && read -r sudo_decision
+  if [ "$sudo_decision" == "y" ]; then
+    sudo_config_dir="$root_mount_path""etc/sudoers.d/"
+    sudo_config_file="$sudo_config_dir$target_username"
+    mkdir -vp $sudo_config_dir
+    echo "$target_username ALL=(ALL:ALL) ALL" > "$sudo_config_file" || error "Failed to create sudoers file for $target_username"
+    chmod 440 "$sudo_config_file" || error "Failed to set permissions on sudoers file for $target_username"
+  fi
+
   question "Enter the path to the SSH key to be added to the image (default: none):" && read -r origin_user_rsa_pub || error
   if [ -z "$origin_user_rsa_pub" ]
     then
@@ -421,9 +452,9 @@ if [ "$distribution" != "manjaro" ]
             cat "$origin_user_rsa_pub" > "$target_authorized_keys" &&
             target_authorized_keys_content=$(cat "$target_authorized_keys") &&
             info "$target_authorized_keys contains the following: $target_authorized_keys_content" &&
-            chown -vR 1000 "$target_user_ssh_folder_path" &&
+            info "Set permissions with chmod..." &&
             chmod -v 700 "$target_user_ssh_folder_path" &&
-            chmod -v 600 "$target_authorized_keys" || error
+            chmod -v 600 "$target_authorized_keys" || error "Failed to set ownership and permissions on ssh folder"
           else
             error "The ssh key \"$origin_user_rsa_pub\" can't be copied to \"$target_authorized_keys\" because it doesn't exist."
         fi  
@@ -437,7 +468,23 @@ if [ "$distribution" != "manjaro" ]
 
   copy_resolve_conf
 
-  question "Type in new password (leave empty to skip): " && read -r password_1
+  chroot_user_home_path="/home/$target_username/"
+  chroot_user_ssh_folder_path="$chroot_user_home_path.ssh"
+  if [ "$rename_decision" == "y" ]; then
+    info "Delete old user and create new user" &&
+    (
+    echo "userdel -r $variable_old_username"
+    echo "useradd -m -d $chroot_user_home_path -s /bin/bash $target_username"
+    echo "chown -R $target_username:$target_username $chroot_user_home_path"
+    ) | chroot "$root_mount_path" /bin/bash || error "Failed to delete old user and create new user"
+  fi
+
+  if [ -n "$origin_user_rsa_pub" ]
+    then
+      info "Chroot to set ownership..." &&
+      ( echo "chown -vR $target_username:$target_username $chroot_user_ssh_folder_path" ) | chroot "$root_mount_path" /bin/bash || error
+  fi  
+  question "Type in new password for user root  and $target_username (leave empty to skip): " && read -r password_1
 
   if [ -n "$password_1" ]; then
     question "Repeat new password for \"$target_username\": " && read -r password_2

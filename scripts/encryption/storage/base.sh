@@ -33,16 +33,6 @@ create_luks_key_and_update_cryptab(){
   fi
   sudo dd if=/dev/urandom of="$secret_key_path" bs=512 count=8 &&
   
-  # Check if luks_memory_cost is defined and set the luksAddKey command accordingly
-  # @see https://chatgpt.com/share/008ea5f1-670c-467c-8320-1ca67f25ac9a
-  if [ -n "$luks_memory_cost" ]; then
-    info "Adding key with --pbkdf-memory set to $luks_memory_cost" &&
-    sudo cryptsetup -v luksAddKey "$2" "$secret_key_path" --pbkdf-memory "$luks_memory_cost" &&
-  else
-    info "Adding key without --pbkdf-memory parameter" &&
-    sudo cryptsetup -v luksAddKey "$2" "$secret_key_path" &&
-  fi
-  
   info "Opening and closing device to verify that everything works fine..." &&
   sudo cryptsetup -v luksClose "$1" || info "No need to luksClose $1." &&
   sudo cryptsetup -v luksOpen "$2" "$1" --key-file="$secret_key_path" &&
