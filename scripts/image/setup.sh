@@ -95,9 +95,9 @@ case "$operation_system" in
         image_checksum="0E1BA7FFD14AAAE5F0462C8293D95B62C3BF1D9E726E26977BD04772C55680D3"
         ;;
       "arch")
-        question "Which Raspberry Pi will be used (e.g.: 1, 2, 3b, 3b+, 4...):" && read -r version
+        question "Which Raspberry Pi will be used (e.g.: 1, 2, 3b, 3b+, 4...):" && read -r raspberry_pi_version
         base_download_url="http://os.archlinuxarm.org/os/";
-        case "$version" in
+        case "$raspberry_pi_version" in
           "1")
             image_name="ArchLinuxARM-rpi-armv7-latest.tar.gz"
             luks_memory_cost="64000"
@@ -115,13 +115,13 @@ case "$operation_system" in
             luks_memory_cost="256000"
             ;;
           *)
-            error "Version $version isn't supported."
+            error "Version $raspberry_pi_version isn't supported."
             ;;
         esac
         ;;
       "manjaro")
-        question "Which version(e.g.:architect,gnome) should be used:" && read -r version
-        case "$version" in
+        question "Which version(e.g.:architect,gnome) should be used:" && read -r gnome_version
+        case "$gnome_version" in
           "architect")
             image_checksum="6b1c2fce12f244c1e32212767a9d3af2cf8263b2"
             base_download_url="https://osdn.net/frs/redir.php?m=dotsrc&f=%2Fstorage%2Fg%2Fm%2Fma%2Fmanjaro%2Farchitect%2F20.0%2F";
@@ -144,8 +144,11 @@ case "$operation_system" in
               image_name="manjaro-gnome-22.1.3-230529-linux61.iso"
               ;;
             "raspberrypi")
+              # at the moment just optimized for raspberry pi 4
               base_download_url="https://github.com/manjaro-arm/rpi4-images/releases/download/23.02/"
               image_name="Manjaro-ARM-gnome-rpi4-23.02.img.xz"
+              luks_memory_cost="256000"
+              raspberry_pi_version=4
               ;;
             esac
             ;;
@@ -157,9 +160,9 @@ case "$operation_system" in
         image_name="moode-r651-iso.zip";
         ;;
       "retropie")
-        question "Which version(e.g.:1,2,3,4) should be used:" && read -r version
+        question "Which version(e.g.:1,2,3,4) should be used:" && read -r raspberry_pi_version
         base_download_url="https://github.com/RetroPie/RetroPie-Setup/releases/download/4.8/";
-        case "$version" in
+        case "$raspberry_pi_version" in
           "1")
             image_checksum="95a6f84453df36318830de7e8507170e"
             image_name="retropie-buster-4.8-rpi1_zero.img.gz"
@@ -582,7 +585,7 @@ if [ "$distribution" != "manjaro" ]
       # Concerning which moduls to load 
       # @see https://raspberrypi.stackexchange.com/questions/67051/raspberry-pi-3-with-archarm-and-encrypted-disk-will-not-boot-how-can-be-identif
 
-      case "$version" in
+      case "$raspberry_pi_version" in
         "1" | "2")
           mkinitcpio_additional_modules=""
           ;;
@@ -593,7 +596,7 @@ if [ "$distribution" != "manjaro" ]
           mkinitcpio_additional_modules="lan78xx"
           ;;
         *)
-          warning "Version $version isn't supported."
+          warning "Version $raspberry_pi_version isn't supported."
           ;;
       esac
 
