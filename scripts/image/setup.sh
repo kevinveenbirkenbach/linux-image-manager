@@ -88,14 +88,17 @@ case "$operation_system" in
         base_download_url="https://www.fosshub.com/Android-x86.html?dwl=android-x86_64-9.0-r2.iso";
         image_name="android-x86_64-9.0-r2.iso"
         image_checksum="f7eb8fc56f29ad5432335dc054183acf086c539f3990f0b6e9ff58bd6df4604e"
+        boot_size="+500M"
         ;;
       "torbox")
         base_download_url="https://www.torbox.ch/data/";
         image_name="torbox-20220102-v050.gz"
         image_checksum="0E1BA7FFD14AAAE5F0462C8293D95B62C3BF1D9E726E26977BD04772C55680D3"
+        boot_size="+200M"
         ;;
       "arch")
         question "Which Raspberry Pi will be used (e.g.: 1, 2, 3b, 3b+, 4...):" && read -r raspberry_pi_version
+        boot_size="+500M"
         base_download_url="http://os.archlinuxarm.org/os/";
         case "$raspberry_pi_version" in
           "1")
@@ -121,6 +124,7 @@ case "$operation_system" in
         ;;
       "manjaro")
         question "Which version(e.g.:architect,gnome) should be used:" && read -r gnome_version
+        boot_size="+500M"
         case "$gnome_version" in
           "architect")
             image_checksum="6b1c2fce12f244c1e32212767a9d3af2cf8263b2"
@@ -148,18 +152,23 @@ case "$operation_system" in
               base_download_url="https://github.com/manjaro-arm/rpi4-images/releases/download/23.02/"
               image_name="Manjaro-ARM-gnome-rpi4-23.02.img.xz"
               luks_memory_cost="256000"
-              raspberry_pi_version=4
+              raspberry_pi_version="4"
+              ;;
+            *)
+              error "Gnome Version $gnome_version isn't supported."
               ;;
             esac
             ;;
         esac
         ;;
       "moode")
+        boot_size="+200M"
         image_checksum="185cbc9a4994534bb7a4bc2744c78197"
         base_download_url="https://github.com/moode-player/moode/releases/download/r651prod/"
         image_name="moode-r651-iso.zip";
         ;;
       "retropie")
+        boot_size="+500M"
         question "Which version(e.g.:1,2,3,4) should be used:" && read -r raspberry_pi_version
         base_download_url="https://github.com/RetroPie/RetroPie-Setup/releases/download/4.8/";
         case "$raspberry_pi_version" in
@@ -305,13 +314,8 @@ if [ "$transfer_image" = "y" ]
     info "Starting image transfer..."
     if [ "$distribution" = "arch" ]
       then
-
-        # Default size of the boot partition
-        default_boot_size="+300M"
-
-        # Prompt to adjust the boot partition size
-        question "What size should the boot partition be? (Default: $default_boot_size):" && read -r boot_size
-        boot_size=${boot_size:-$default_boot_size}
+        # Set default size of the boot partition
+        boot_size=${boot_size:-"+500M"}
 
         # Use the provided size or the default size
         info "The boot partition will be set to $boot_size."
@@ -381,6 +385,12 @@ if [ "$transfer_image" = "y" ]
         then
           info "Transfering .iso file..." &&
           sudo dd if="$image_path" of="$device_path" bs="$OPTIMAL_BLOCKSIZE" conv=fsync status=progress &&
+          sync ||
+          error
+      elif [ "${image_path: -3}" = ".xz" ]
+        then
+          info "Transferring .xz file..." &&
+          unxz -c "$image_path" | sudo dd of="$device_path" bs="$OPTIMAL_BLOCKSIZE" conv=fsync status=progress &&
           sync ||
           error
       else
