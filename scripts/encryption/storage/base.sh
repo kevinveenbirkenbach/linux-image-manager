@@ -34,7 +34,7 @@ create_luks_key_and_update_cryptab(){
   sudo dd if=/dev/urandom of="$secret_key_path" bs=512 count=8 &&
   
   info "Opening and closing device to verify that everything works fine..." &&
-  sudo cryptsetup -v luksClose "$1" || info "No need to luksClose $1." &&
+  sudo cryptsetup -v luksClose "$1" || info "No need to luksClose $1. Device isn't open." &&
   sudo cryptsetup -v luksOpen "$2" "$1" --key-file="$secret_key_path" &&
   sudo cryptsetup -v luksClose "$1" &&
   info "Reading UUID..." &&
