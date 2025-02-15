@@ -35,6 +35,7 @@ create_luks_key_and_update_cryptab(){
   
   info "Opening and closing device to verify that everything works fine..." &&
   sudo cryptsetup -v luksClose "$1" || info "No need to luksClose $1. Device isn't open." &&
+  sudo cryptsetup luksAddKey $2 $secret_key_path &&
   sudo cryptsetup -v luksOpen "$2" "$1" --key-file="$secret_key_path" &&
   sudo cryptsetup -v luksClose "$1" &&
   info "Reading UUID..." &&
