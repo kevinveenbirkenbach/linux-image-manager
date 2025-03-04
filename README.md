@@ -1,62 +1,68 @@
-# Linux Image Manager
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](./LICENSE.txt) 
+# Linux Image Manager🖥️🛠️
 
-This repository contains some shell scripts to download and configure linux images and to transfer them to a storage.
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](./LICENSE.txt) [![GitHub stars](https://img.shields.io/github/stars/kevinveenbirkenbach/linux-image-manager.svg?style=social)](https://github.com/kevinveenbirkenbach/linux-image-manager/stargazers)
 
-## Virtual Btrfs RAID1 Setup
+Linux Image Manager(lim) is a powerful collection of shell scripts for downloading, configuring, and managing Linux images. Whether you're setting up encrypted storage, configuring a virtual Btrfs RAID1, performing backups, or chrooting into an image, this tool makes Linux image administration simple and efficient. 🚀
 
-To setup a virtual btrfs encrypted raid 1 execute: 
+## Features ✨
 
-```bash
-  bash scripts/encryption/storage/raid1/setup.sh
-```
+- **Image Download & Setup:** Automatically download and prepare Linux distributions.
+- **Encrypted Storage:** Configure LUKS encryption for secure image management.
+- **Virtual RAID1:** Easily set up virtual Btrfs RAID1 for data redundancy.
+- **Chroot Environment:** Seamlessly chroot into your Linux image for system maintenance.
+- **Backup & Restore:** Comprehensive backup and restore options for system images.
+- **Automated Procedures:** Simplify partitioning, formatting, mounting, and more.
 
-## Setup
+## Installation 📦
 
-To install a Linux distribution execute:
-
-```bash
-  sudo bash ./scripts/image/setup.sh
-```
-
-### Cleanup
-
-To cleanup the image setup execute:
-```bash
-fuser -k /dev/mapper/linux-image-manager-*; 
-umount -f /dev/mapper/linux-image-manager-*; 
-fuser -k /tmp/linux-image-manager-*; 
-umount -f /tmp/linux-image-manager-*;
-```
-
-Additional you can unmount the device with a command like
+Install Linux Image Manager quickly with [Kevin's Package Manager](https://github.com/kevinveenbirkenbach/package-manager) under the alias `lim`. Just run:
 
 ```bash
-umount -f /dev/sd*;
+package-manager install lim
 ```
 
-### Verification
-To verify that the unmounting was successfull, check the result of
+This command makes Linux Image Manager globally available as `lim` in your terminal. 🔧
+
+## Usage ⚙️
+
+Linux Image Manager comes with a variety of scripts tailored for different tasks. Here are a few examples:
+
+### Virtual Btrfs RAID1 Setup
 ```bash
-mount
+lim raid1/setup.sh
 ```
 
-## Chroot
-
-To chroot into a Linux distribution on a storage execute:
-
+### Linux Image Setup
 ```bash
-  sudo bash ./scripts/image/chroot.sh
+lim image/setup.sh
 ```
 
-## Backup
-
-To backup a image execute:
-
+### Chroot into Linux Image
 ```bash
-  sudo bash ./scripts/image/backup.sh
+lim image/chroot.sh
 ```
 
-## License
+### Backup Image
+```bash
+lim image/backup.sh
+```
 
-The ["GNU GENERAL PUBLIC LICENSE Version 3"](./LICENSE.txt) applies to this project.
+Explore the `scripts/` directory for more functionalities and detailed usage instructions.
+
+## Configuration & Customization 🔧
+
+Customize your environment in the `configuration/` folder:
+- **General Packages:** Common packages for all setup scripts.
+- **Server LUKS Packages:** Packages needed for setting up LUKS encryption on servers.
+
+## License 📜
+
+This project is licensed under the GNU General Public License Version 3. See the [LICENSE.txt](./LICENSE.txt) file for details.
+
+## Contact & Support 💬
+
+- **Author:** Kevin Veen-Birkenbach  
+- **Email:** [kevin@veen.world](mailto:kevin@veen.world)  
+- **Website:** [https://www.veen.world/](https://www.veen.world/)
+
+Feel free to contribute, report issues, or get in touch. Happy Linux managing! 😊
