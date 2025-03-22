@@ -25,6 +25,6 @@ question "Please confirm by pushing \"Enter\". To cancel use \"Ctrl + Alt + C\""
 read -r bestaetigung && echo "$bestaetigung";
 
 info "Imagetransfer starts. This can take a while..." &&
-dd if="$device_path" of="$ofi" bs=1M status=progress || error "\"dd\" failed.";
+dd if="$device_path" of="$ofi" bs=1M status=progress && sync || error "\"dd\" failed.";
 
 success "Imagetransfer successfull." && exit 0;

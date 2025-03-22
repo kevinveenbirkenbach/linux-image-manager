@@ -31,7 +31,7 @@ create_luks_key_and_update_cryptab(){
     then
       warning "File already exists. Overwriting!"
   fi
-  sudo dd if=/dev/urandom of="$secret_key_path" bs=512 count=8 &&
+  sudo dd if=/dev/urandom of="$secret_key_path" bs=512 count=8 && sync &&
   
   info "Opening and closing device to verify that everything works fine..." &&
   sudo cryptsetup -v luksClose "$1" || info "No need to luksClose $1. Device isn't open." &&

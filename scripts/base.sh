@@ -95,12 +95,32 @@ set_device_path(){
   info "Optimal blocksize set to: $OPTIMAL_BLOCKSIZE" || error
 }
 
+print_partition_table_info() {
+  echo "##########################################################################################"
+  echo "Note on Partition Table Deletion:"
+  echo "---------------------------------------------"
+  echo "• MBR (Master Boot Record):"
+  echo "  - Typically occupies the first sector (512 bytes), i.e., 1 block."
+  echo ""
+  echo "• GPT (GUID Partition Table):"
+  echo "  - Uses a protective MBR (1 block), a GPT header (1 block),"
+  echo "    and usually a partition entry array that takes up about 32 blocks."
+  echo "  - Total: approximately 34 blocks (assuming a 512-byte block size)."
+  echo ""
+  echo "Recommendation: For deleting a GPT partition table, use a block size of 512 bytes"
+  echo "                and overwrite at least 34 blocks to ensure the entire table is cleared."
+  echo "##########################################################################################"
+}
+
 overwrite_device() {
+  # Call the function to display the information.
+  print_partition_table_info
+
   question "Should $device_path be overwritten with zeros before copying? (y/N/block count)" && read -r copy_zeros_to_device
   case "$copy_zeros_to_device" in
     y)
       info "Overwriting entire device..." &&
-      dd if=/dev/zero of="$device_path" bs="$OPTIMAL_BLOCKSIZE" status=progress || error "Overwriting $device_path failed."
+      dd if=/dev/zero of="$device_path" bs="$OPTIMAL_BLOCKSIZE" status=progress && sync || error "Overwriting $device_path failed."
       ;;
     N|'')
       info "Skipping Overwriting..."
@@ -111,7 +131,7 @@ overwrite_device() {
     *)
       if [[ "$copy_zeros_to_device" =~ ^[0-9]+$ ]]; then
         info "Overwriting $copy_zeros_to_device blocks..." &&
-        dd if=/dev/zero of="$device_path" bs="$OPTIMAL_BLOCKSIZE" count="$copy_zeros_to_device" status=progress || error "Overwriting $device_path failed."
+        dd if=/dev/zero of="$device_path" bs="$OPTIMAL_BLOCKSIZE" count="$copy_zeros_to_device" status=progress && sync || error "Overwriting $device_path failed."
       else
         error "Invalid input. Block count must be a number."
       fi
