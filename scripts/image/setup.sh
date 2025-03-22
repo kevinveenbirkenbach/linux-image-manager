@@ -245,18 +245,28 @@ if [ -z "$image_checksum" ]; then
     done
 fi
 
-if [[ -v image_checksum ]]
-  then
-    (info "Checking md5 checksum..." && echo "$image_checksum $image_path"| md5sum -c -) ||
-    (info "Checking sha1 checksum..." && echo "$image_checksum $image_path"| sha1sum -c -) ||
-    (info "Checking sha256 checksum..." && echo "$image_checksum $image_path"| sha256sum -c -) ||
-    error "Verification failed. HINT: Force the download of the image."
-  else
-    warning "Verification is not possible. No checksum is defined."
+if [[ -v image_checksum ]]; then
+  info "A checksum is defined for the image."
+  info "Checksums verify file integrity to ensure that the file was not corrupted during download."
+  info "The script will try verifying the integrity using MD5, then SHA1, and finally SHA256 if needed."
+  
+  info "Trying MD5 checksum verification..."
+  (info "Checking md5 checksum..." && echo "$image_checksum $image_path" | md5sum -c -) ||
+  (warning "MD5 verification failed. This may indicate data corruption." &&
+   info "Trying SHA1 checksum verification for a secondary integrity check..." &&
+   info "Checking sha1 checksum..." && echo "$image_checksum $image_path" | sha1sum -c -) ||
+  (warning "SHA1 verification failed. Attempting SHA256 verification for thoroughness." &&
+   info "SHA256 provides a more robust check and is used as a final integrity measure." &&
+   info "Checking sha256 checksum..." && echo "$image_checksum $image_path" | sha256sum -c -) ||
+  error "Verification failed. HINT: Force the download of the image."
+else
+  warning "No checksum is defined. Skipping checksum verification."
 fi
 
-info "Verifying signature..."
+info "Note: Checksums verify integrity but do not confirm authenticity."
+info "Proceeding to signature verification, which ensures the file comes from a trusted source."
 signature_download_url="$download_url.sig"
+info "Attempting to download the image signature from: $signature_download_url"
 info "Try to download image signature from $signature_download_url."
 
 if wget -q --method=HEAD "$signature_download_url"; then
@@ -388,7 +398,7 @@ if [ "$transfer_image" = "y" ]
       elif [ "${image_path: -4}" = ".iso" ]
         then
           info "Transfering .iso file..." &&
-          sudo dd if="$image_path" of="$device_path" bs="$OPTIMAL_BLOCKSIZE" conv=fsync status=progress &&
+          pv "$image_path" | sudo dd of="$device_path" bs="$OPTIMAL_BLOCKSIZE" conv=fsync &&
           sync ||
           error
       elif [ "${image_path: -3}" = ".xz" ]

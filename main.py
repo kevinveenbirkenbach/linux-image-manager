@@ -2,21 +2,23 @@
 import subprocess
 import os
 import argparse
+import sys
 
 def run_script(script_path, extra_args):
     if not os.path.exists(script_path):
         print(f"[ERROR] Script not found at {script_path}")
         exit(1)
-    command = ["sudo","bash", script_path] + extra_args
+    command = ["sudo", "bash", script_path] + extra_args
     print(f"[INFO] Running command: {' '.join(command)}")
-    result = subprocess.run(command)
+    # Pass the parent's stdout and stderr so that progress output shows in real time.
+    result = subprocess.run(command, stdout=sys.stdout, stderr=sys.stderr)
     if result.returncode != 0:
         print(f"[ERROR] Script exited with code {result.returncode}")
         exit(result.returncode)
     print("[SUCCESS] Script executed successfully.")
 
 def main():
-    # Use os.path.realpath to get the actual path of this file regardless of symlinks
+    # Use os.path.realpath to get the actual path of this file regardless of symlinks.
     repo_root = os.path.dirname(os.path.realpath(__file__))
 
     # Define available scripts along with their descriptions.
@@ -100,9 +102,17 @@ def main():
         print("[INFO] No extra parameters provided.")
 
     if not args.auto_confirm:
-        input("Press Enter to execute the script or Ctrl+C to cancel...")
+        try:
+            input("Press Enter to execute the script or Ctrl+C to cancel...")
+        except KeyboardInterrupt:
+            print("\n[ERROR] Execution aborted by user.")
+            exit(1)
 
     run_script(script_info["path"], args.extra)
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n[ERROR] Execution aborted by user.")
+        exit(1)
