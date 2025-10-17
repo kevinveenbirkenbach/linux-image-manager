@@ -150,7 +150,11 @@ case "$operation_system" in
             "24")
               base_download_url="https://download.manjaro.org/gnome/24.2.1/"
               image_name="manjaro-gnome-24.2.1-241216-linux612.iso"
-              ;;  
+              ;;
+            "25")
+              base_download_url="https://download.manjaro.org/gnome/25.0.10/"
+              image_name="manjaro-gnome-25.0.10-251013-linux612.iso"
+              ;;
             "raspberrypi")
               # at the moment just optimized for raspberry pi 4
               base_download_url="https://github.com/manjaro-arm/rpi4-images/releases/download/23.02/"
