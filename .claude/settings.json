@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "defaultMode": "dontAsk",
+    "deny": [
+      "Bash(git push)",
+      "Bash(git push:*)",
+      "Bash(git commit)",
+      "Bash(git commit:*)",
+      "Bash(git -C * push)",
+      "Bash(git -C * push:*)",
+      "Bash(git -C * commit)",
+      "Bash(git -C * commit:*)"
+    ]
+  },
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true,
+    "allowUnsandboxedCommands": false
+  }
+}
