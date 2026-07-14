@@ -1,0 +1,4 @@
+git@github.com:kevinveenbirkenbach/linux-image-manager.git
+ssh://git@code.infinito.nexus:2201/kevinveenbirkenbach/linux-image-manager.git
+ssh://git@git.veen.world:2201/kevinveenbirkenbach/linux-image-manager.git
+https://pypi.org/project/linux-image-manager/
