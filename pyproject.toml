@@ -1,10 +1,34 @@
+[build-system]
+# 77+ for PEP 639 SPDX `license = "..."` + `license-files`.
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "linux-image-manager"
-version = "2.0.0"
-description = "Linux Image Manager — manages Linux images and encrypted storage"
+version = "1.0.0"
+description = "CLI (`lim`) for downloading, verifying and flashing Linux images, LUKS/Btrfs encrypted storage (single drive and RAID1), image backups and chroot maintenance"
+readme = "README.md"
 requires-python = ">=3.10"
-license = { file = "LICENSE.txt" }
+authors = [{ name = "Kevin Veen-Birkenbach", email = "kevin@veen.world" }]
+maintainers = [{ name = "Kevin Veen-Birkenbach", email = "kevin@veen.world" }]
+license = "GPL-3.0-only"
+license-files = ["LICENSE.txt"]
+urls = { Homepage = "https://veen.world", Repository = "https://github.com/kevinveenbirkenbach/linux-image-manager" }
+classifiers = [
+  "Environment :: Console",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+]
 dependencies = ["PyYAML>=6"]
+
+[project.scripts]
+lim = "lim.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["lim*"]
+
+[tool.setuptools.package-data]
+lim = ["distributions.yml", "configuration/packages/**/*.txt"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

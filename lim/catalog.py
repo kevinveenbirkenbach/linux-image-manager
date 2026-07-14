@@ -1,4 +1,4 @@
-"""Read-only access to the image catalog (distributions.yml in the repo root)."""
+"""Read-only access to the image catalog (distributions.yml in the package)."""
 
 from functools import cache
 
@@ -6,7 +6,7 @@ import yaml
 
 from lim import config
 
-CATALOG_PATH = config.REPOSITORY_PATH / "distributions.yml"
+CATALOG_PATH = config.CATALOG_PATH
 
 
 @cache

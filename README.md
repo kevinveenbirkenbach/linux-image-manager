@@ -82,7 +82,6 @@ lim --type chroot
 
 ```
 main.py               # entry point (the `lim` alias)
-distributions.yml     # single point of truth for the image catalog
 lim/
   cli.py              # argument parsing and command dispatch
   catalog.py          # read-only access to distributions.yml
@@ -92,14 +91,15 @@ lim/
   storage/            # single drive and RAID1 encryption setups
   image/              # image setup, backup, chroot, verification
   data/               # encfs lock/unlock and data import/export
-configuration/        # package collections used during image setup
+  distributions.yml   # single point of truth for the image catalog
+  configuration/      # package collections used during image setup
 tests/unit/           # unit tests (all external commands mocked)
 tests/lint/           # architecture guards (e.g. max file length)
 ```
 
 ## Configuration & Customization 🔧
 
-Customize your environment in the `configuration/` folder:
+Customize your environment in the `lim/configuration/` folder:
 - **General Packages:** Contains common packages for all setup scripts.
 - **Server LUKS Packages:** Contains packages needed for setting up LUKS encryption on servers.
 
