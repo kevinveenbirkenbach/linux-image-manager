@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.0] - 2026-07-14
+
+Initial PyPI release 🥳
+
 ## [2.0.0] - 2026-07-14
 
 All bash scripts were ported to the *lim/* Python package with a unified CLI, a mocked test suite, and CI.

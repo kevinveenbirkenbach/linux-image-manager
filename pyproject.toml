@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "linux-image-manager"
-version = "1.0.0"
+version = "2.1.0"
 description = "CLI (`lim`) for downloading, verifying and flashing Linux images, LUKS/Btrfs encrypted storage (single drive and RAID1), image backups and chroot maintenance"
 readme = "README.md"
 requires-python = ">=3.10"
