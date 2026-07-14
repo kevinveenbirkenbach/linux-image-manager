@@ -7,14 +7,14 @@
   "permissions": {
     "defaultMode": "dontAsk",
     "ask": [
-      "Bash(git push)",
-      "Bash(git push:*)",
       "Bash(git commit)",
       "Bash(git commit:*)",
-      "Bash(git -C * push)",
-      "Bash(git -C * push:*)",
-      "Bash(git -C * commit)",
-      "Bash(git -C * commit:*)"
+      "Bash(git * commit)",
+      "Bash(git * commit:*)",
+      "Bash(git push)",
+      "Bash(git push:*)",
+      "Bash(git * push)",
+      "Bash(git * push:*)"
     ]
   },
   "sandbox": {
