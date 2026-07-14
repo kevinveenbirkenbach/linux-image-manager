@@ -2,3 +2,6 @@ decrypted/
 .encrypted/
 *package-lock.json
 log.txt
+__pycache__/
+*.pyc
+.pytest_cache/

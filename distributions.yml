@@ -1,0 +1,67 @@
+# Single point of truth for the downloadable image catalog.
+# Consumed by lim/catalog.py.
+
+# Image and LUKS --pbkdf-memory cost per Raspberry Pi version.
+arch_rpi_images:
+  "1":
+    image: ArchLinuxARM-rpi-armv7-latest.tar.gz
+    luks_memory_cost: "64000"
+  "2":
+    image: ArchLinuxARM-rpi-armv7-latest.tar.gz
+    luks_memory_cost: "128000"
+  "3b":
+    image: ArchLinuxARM-rpi-aarch64-latest.tar.gz
+    luks_memory_cost: "128000"
+  "3b+":
+    image: ArchLinuxARM-rpi-aarch64-latest.tar.gz
+    luks_memory_cost: "128000"
+  "4":
+    image: ArchLinuxARM-rpi-aarch64-latest.tar.gz
+    luks_memory_cost: "256000"
+
+manjaro_gnome_releases:
+  "20":
+    checksum: 2df3697908483550d4a473815b08c1377e6b6892
+    url: https://osdn.net/projects/manjaro-archive/storage/gnome/20.0/
+    image: manjaro-gnome-20.0-200426-linux56.iso
+  "21":
+    url: https://download.manjaro.org/gnome/21.3.7/
+    image: manjaro-gnome-21.3.7-220816-linux515.iso
+  "22":
+    url: https://download.manjaro.org/gnome/22.1.3/
+    image: manjaro-gnome-22.1.3-230529-linux61.iso
+  "24":
+    url: https://download.manjaro.org/gnome/24.2.1/
+    image: manjaro-gnome-24.2.1-241216-linux612.iso
+  "25":
+    url: https://download.manjaro.org/gnome/25.0.10/
+    image: manjaro-gnome-25.0.10-251013-linux612.iso
+  # At the moment just optimized for Raspberry Pi 4.
+  raspberrypi:
+    url: https://github.com/manjaro-arm/rpi4-images/releases/download/23.02/
+    image: Manjaro-ARM-gnome-rpi4-23.02.img.xz
+    luks_memory_cost: "256000"
+    raspberry_pi_version: "4"
+
+retropie_images:
+  "1":
+    checksum: 95a6f84453df36318830de7e8507170e
+    image: retropie-buster-4.8-rpi1_zero.img.gz
+  "2":
+    checksum: 224e64d8820fc64046ba3850f481c87e
+    image: retropie-buster-4.8-rpi2_3_zero2w.img.gz
+  "3":
+    checksum: 224e64d8820fc64046ba3850f481c87e
+    image: retropie-buster-4.8-rpi2_3_zero2w.img.gz
+  "4":
+    checksum: b5daa6e7660a99c246966f3f09b4014b
+    image: retropie-buster-4.8-rpi4_400.img.gz
+
+# Extra kernel modules the initramfs needs for early network access,
+# see https://raspberrypi.stackexchange.com/questions/67051
+mkinitcpio_modules_by_rpi:
+  "1": ""
+  "2": ""
+  "3b": smsc95xx
+  "3b+": lan78xx
+  "4": lan78xx

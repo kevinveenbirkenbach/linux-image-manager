@@ -1,0 +1,41 @@
+[project]
+name = "lim"
+version = "1.0.0"
+description = "Linux Image Manager — manages Linux images and encrypted storage"
+requires-python = ">=3.10"
+license = { file = "LICENSE.txt" }
+dependencies = ["PyYAML>=6"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    # This tool's UI is print/prompt based and its purpose is orchestrating
+    # system commands — these rules contradict the design:
+    "T201",    # print used as console UI
+    "S603",    # subprocess without shell is exactly what runner.py wraps
+    "S607",    # system tools are resolved via PATH on purpose
+    # Style choices:
+    "D203",    # conflicts with D211 (blank line before class docstring)
+    "D213",    # conflicts with D212 (multi-line docstring summary position)
+    "D1",      # docstrings are not required on every symbol
+    "COM812",  # trailing commas are handled by the formatter
+    "TRY003",  # exception messages are written inline
+    "EM101",   # literal exception messages are fine
+    "EM102",   # f-string exception messages are fine
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    "S101",    # pytest asserts
+    "ANN",     # test signatures need no annotations
+    "PLR2004", # literal expectations in assertions
+    "ARG",     # fixtures are injected even when unused
+    "SLF001",  # tests may exercise internal helpers directly
+]

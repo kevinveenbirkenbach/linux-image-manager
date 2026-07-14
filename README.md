@@ -4,17 +4,16 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](./LICENSE.txt) [![GitHub stars](https://img.shields.io/github/stars/kevinveenbirkenbach/linux-image-manager.svg?style=social)](https://github.com/kevinveenbirkenbach/linux-image-manager/stargazers)
 
-Linux Image Manager (lim) is a powerful collection of shell scripts for downloading, configuring, and managing Linux images. Whether you're setting up encrypted storage, configuring a virtual Btrfs RAID1, performing backups, or chrooting into an image, this tool makes Linux image administration simple and efficient. 🚀
-
-> **Note:** In this project, `lim` is an alias for the **main.py** wrapper script which orchestrates the execution of the various shell scripts.
+Linux Image Manager (lim) is a Python tool for downloading, configuring, and managing Linux images. Whether you're setting up encrypted storage, configuring a virtual Btrfs RAID1, performing backups, or chrooting into an image, this tool makes Linux image administration simple and efficient. 🚀
 
 ## Features ✨
 
-- **Image Download & Setup:** Automatically download and prepare Linux distributions.
+- **Image Download & Setup:** Automatically download, verify (checksum + GPG signature) and prepare Linux distributions.
 - **Encrypted Storage:** Configure LUKS encryption for secure image management.
 - **Virtual RAID1:** Easily set up virtual Btrfs RAID1 for data redundancy.
 - **Backup & Restore:** Create image backups from devices using dd.
 - **Chroot Environment:** Easily enter a chroot shell to maintain or modify Linux images.
+- **Data Import/Export:** Sync personal data into an encfs-encrypted store and back.
 - **Automated Procedures:** Simplify partitioning, formatting, mounting, and more.
 
 ## Installation 📦
@@ -25,96 +24,78 @@ Install Linux Image Manager quickly using [Kevin's Package Manager](https://gith
 package-manager install lim
 ```
 
-This command makes Linux Image Manager globally available as `lim` in your terminal. The `lim` alias points to the **main.py** wrapper script.
+This command makes Linux Image Manager globally available as `lim` in your terminal. The `lim` alias points to the **main.py** entry point.
+
+There are no Python dependencies beyond the standard library. The commands call the usual system tools (`cryptsetup`, `fdisk`, `dd`, `rsync`, `wget`, `gpg`, `encfs`, `pv`, `bsdtar`, ...), so those need to be installed for the command you use.
 
 ## Usage ⚙️
 
-The **main.py** wrapper provides a unified interface to run the different shell scripts included in this project. It supports various script types and allows you to pass additional parameters. The built-in `--help` option displays detailed usage information.
+`lim` provides a unified interface for all image and storage operations. Commands that need root privileges re-execute themselves with `sudo` automatically. The built-in `--help` option displays detailed usage information.
 
-### Available Script Types
+### Available Command Types
 
-- **Image Setup (`--type image`):**  
-  Executes the Linux image setup located at `scripts/image/setup.sh`. This setup:
-  - Creates partitions and formats them.
-  - Transfers the Linux image file to the device.
-  - Configures boot and root partitions.
-
-- **Single Drive Encryption Setup (`--type single`):**  
-  Executes the single-drive encryption setup from `scripts/encryption/storage/single_drive/setup.sh`. This setup:
-  - Sets up disk encryption using LUKS on one drive.
-  - Configures a Btrfs file system for secure storage.
-
-- **RAID1 Encryption Setup (`--type raid1`):**  
-  Executes the RAID1 encryption setup found at `scripts/encryption/storage/raid1/setup.sh`. This setup:
-  - Configures a virtual RAID1 with two drives.
-  - Uses LUKS encryption and a Btrfs RAID1 file system for redundancy.
-
-- **Backup Image Setup (`--type backup`):**  
-  Executes the backup image setup located at `scripts/image/backup.sh`. This setup:
-  - Creates an image backup from a memory device to a file.
-  - Uses `dd` to transfer the image from the specified device to an image file.
-
-- **Chroot Environment Setup (`--type chroot`):**  
-  Executes the chroot setup from `scripts/image/chroot.sh`. This setup:
-  - Mounts partitions and configures the chroot environment for a Linux image.
-  - Provides a shell within the Linux image for system maintenance.
+| `--type`      | Description                                                                 |
+|---------------|-----------------------------------------------------------------------------|
+| `image`       | Download, verify and transfer a Linux image to a device, incl. optional LUKS encryption and Raspberry Pi configuration. |
+| `single`      | Set up LUKS encryption with Btrfs on a single drive.                        |
+| `raid1`       | Set up an encrypted virtual Btrfs RAID1 across two drives.                  |
+| `backup`      | Create an image backup from a memory device using dd.                      |
+| `chroot`      | Mount an image and open a shell inside it.                                  |
+| `mount`       | Unlock and mount an encrypted drive.                                        |
+| `umount`      | Unmount an encrypted drive and close the mapper.                            |
+| `single-boot` | Register a single encrypted drive for automount on boot (keyfile, crypttab, fstab). |
+| `raid1-boot`  | Register an encrypted RAID1 for automount on boot.                          |
+| `unlock`      | Decrypt the encfs data store.                                               |
+| `lock`        | Lock the encfs data store.                                                  |
+| `import`      | Import personal data from the system into the encrypted store.              |
+| `export`      | Export personal data from the encrypted store back to the system.           |
 
 ### Command-Line Options
 
-- **`--type`**  
-  **(Required)** Choose the type of script to execute. Options include: `image`, `single`, `raid1`, `backup`, and `chroot`.
-
-- **`--extra`**  
-  **(Optional)** Pass any extra parameters directly to the selected shell script.
-
-- **`--auto-confirm`**  
-  **(Optional)** Automatically bypass the confirmation prompt before executing the selected script.
-
-- **`--help`**  
-  **(Optional)** Displays detailed help information about the command-line options and usage of the wrapper. Simply run:
-  ```bash
-  lim --help
-  ```
-  to view the complete help message.
+- **`--type`** *(required)*: Choose the command to execute (see table above).
+- **`--auto-confirm`** *(optional)*: Bypass the confirmation prompt before execution.
+- **`--help`** *(optional)*: Display detailed help information.
 
 ### Example Commands
 
-- **Display Help:**  
-  ```bash
-  lim --help
-  ```
+```bash
+# Display help
+lim --help
 
-- **Show Information About the Image Setup:**  
-  ```bash
-  lim --type image --info
-  ```
+# Execute the Linux image setup
+lim --type image
 
-- **Execute the Linux Image Setup (with extra parameters):**  
-  ```bash
-  lim --type image --extra --some-option value
-  ```
+# Run the single drive encryption setup without a confirmation prompt
+lim --type single --auto-confirm
 
-- **Run the Single Drive Encryption Setup without a confirmation prompt:**  
-  ```bash
-  lim --type single --auto-confirm
-  ```
+# Set up an encrypted RAID1
+lim --type raid1
 
-- **Execute the RAID1 Encryption Setup:**  
-  ```bash
-  lim --type raid1
-  ```
+# Back up a memory device to an image file
+lim --type backup
 
-- **Perform a Backup of an Image:**  
-  ```bash
-  lim --type backup
-  ```
+# Enter a chroot environment for a Linux image
+lim --type chroot
+```
 
-- **Enter a Chroot Environment for a Linux Image:**  
-  ```bash
-  lim --type chroot
-  ```
+## Project Structure 🗂️
 
-For additional details on each script and further configuration options, please refer to the `scripts/` and `configuration/` directories.
+```
+main.py               # entry point (the `lim` alias)
+distributions.yml     # single point of truth for the image catalog
+lim/
+  cli.py              # argument parsing and command dispatch
+  catalog.py          # read-only access to distributions.yml
+  device.py           # block device selection, dd, blkid helpers
+  luks.py             # LUKS keyfiles, crypttab/fstab bookkeeping
+  runner.py           # subprocess wrapper used by all modules
+  storage/            # single drive and RAID1 encryption setups
+  image/              # image setup, backup, chroot, verification
+  data/               # encfs lock/unlock and data import/export
+configuration/        # package collections used during image setup
+tests/unit/           # unit tests (all external commands mocked)
+tests/lint/           # architecture guards (e.g. max file length)
+```
 
 ## Configuration & Customization 🔧
 
@@ -122,15 +103,22 @@ Customize your environment in the `configuration/` folder:
 - **General Packages:** Contains common packages for all setup scripts.
 - **Server LUKS Packages:** Contains packages needed for setting up LUKS encryption on servers.
 
+## Development & Tests 🧪
+
+The test suite mocks all external commands, so it runs safely on any machine:
+
+```bash
+pytest
+```
+
 ## License 📜
 
 This project is licensed under the GNU General Public License Version 3. See the [LICENSE.txt](./LICENSE.txt) file for details.
 
 ## Contact & Support 💬
 
-- **Author:** Kevin Veen-Birkenbach  
-- **Email:** [kevin@veen.world](mailto:kevin@veen.world)  
+- **Author:** Kevin Veen-Birkenbach
+- **Email:** [kevin@veen.world](mailto:kevin@veen.world)
 - **Website:** [https://www.veen.world/](https://www.veen.world/)
 
 Feel free to contribute, report issues, or get in touch. Happy Linux managing! 😊
-```
