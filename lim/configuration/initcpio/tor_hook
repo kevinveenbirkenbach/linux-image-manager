@@ -1,0 +1,47 @@
+#!/usr/bin/ash
+# mkinitcpio runtime hook: start Tor so the dropbear unlock shell is
+# reachable as an onion service while encryptssh waits for the passphrase.
+# Installed to /etc/initcpio/hooks/tor by linux-image-manager.
+
+# netconf's ipconfig drops its DHCP lease data (incl. DNS) into
+# /tmp/net-*.conf; busybox's resolver only reads /etc/resolv.conf.
+_tor_write_resolv_conf() {
+    [ -s /etc/resolv.conf ] && return 0
+    local conf dns
+    for conf in /tmp/net-*.conf; do
+        [ -f "$conf" ] || continue
+        # Extract ONLY the DNS fields with sed; never source these files —
+        # they hold attacker-controllable DHCP option strings (hostname,
+        # domain, rootpath), and sourcing would run them as root pre-boot.
+        for dns in $(sed -n 's/^IPV4DNS[01]=//p' "$conf"); do
+            [ -n "$dns" ] && [ "$dns" != "0.0.0.0" ] \
+                && echo "nameserver $dns" >> /etc/resolv.conf
+        done
+    done
+    [ -s /etc/resolv.conf ]
+}
+
+run_hook() {
+    # Tor rejects consensus documents when the clock is far off; boards
+    # without an RTC boot in 1970, so sync before starting Tor. Bounded:
+    # a failed sync must never block the boot.
+    msg "tor: syncing clock via NTP..."
+    # Best-effort DNS; a tor_ntp IP literal needs none, so never gate on it.
+    _tor_write_resolv_conf || msg "tor: no DNS from DHCP (fine if tor_ntp is an IP)"
+    /usr/local/bin/busybox timeout 30 \
+        /usr/local/bin/busybox ntpd -n -q -p "${tor_ntp:-pool.ntp.org}" \
+        || msg "tor: NTP sync failed, keeping current clock"
+
+    msg "tor: starting onion service for remote unlock..."
+    mkdir -p /var/lib/tor
+    chmod 0700 /var/lib/tor /etc/tor/onion
+    chmod 0600 /etc/tor/onion/hs_ed25519_secret_key
+    tor -f /etc/tor/torrc --RunAsDaemon 1 --Log "notice file /tmp/tor.log" \
+        || msg "tor: failed to start, unlock stays reachable via direct IP"
+}
+
+run_cleanuphook() {
+    # Nothing from the initramfs may keep running after the pivot.
+    /usr/local/bin/busybox killall tor 2>/dev/null
+    return 0
+}

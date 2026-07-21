@@ -28,7 +28,11 @@ lim = "lim.cli:main"
 include = ["lim*"]
 
 [tool.setuptools.package-data]
-lim = ["distributions.yml", "configuration/packages/**/*.txt"]
+lim = [
+  "distributions.yml",
+  "configuration/packages/**/*.txt",
+  "configuration/initcpio/*",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -17,6 +17,7 @@ class ImagePlan:
     luks_memory_cost: str | None = None
     raspberry_pi_version: str | None = None
     encrypt_system: bool = False
+    tor_unlock: bool = False
     root_filesystem: str = ""
     image_folder: Path = field(default_factory=Path)
 
