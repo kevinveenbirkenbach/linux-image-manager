@@ -18,5 +18,22 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      # tor lets the deterministic offline onion-keygen test run (it validates
+      # the real production keygen path); that test needs no network.
+      - run: sudo apt-get update && sudo apt-get install -y tor
       - run: pip install pytest pyyaml
       - run: make test
+
+  tor-network-e2e:
+    # The live onion round-trip depends on the public Tor network, so it is
+    # informational (continue-on-error) rather than a blocking merge gate.
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: sudo apt-get update && sudo apt-get install -y tor
+      - run: pip install pytest pyyaml
+      - run: LIM_E2E_TOR=1 make test-tor PYTHON=python
