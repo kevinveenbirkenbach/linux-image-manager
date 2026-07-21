@@ -27,9 +27,17 @@ import pytest
 from lim.image import tor as tor_module
 from tests.e2e import tor_harness
 
-pytestmark = pytest.mark.skipif(
-    os.environ.get("LIM_E2E_TOR") != "1" or shutil.which("tor") is None,
-    reason="needs LIM_E2E_TOR=1 and the tor binary (live network, slow).",
+# The offline checks only need the tor binary (no network) and are
+# deterministic, so they run in CI whenever tor is installed. Only the live
+# onion round-trip needs the public Tor network, so it stays opt-in behind
+# LIM_E2E_TOR=1 to keep an external, occasionally-flaky dependency out of the
+# blocking gate.
+_needs_tor = pytest.mark.skipif(
+    shutil.which("tor") is None, reason="needs the tor binary"
+)
+_needs_tor_network = pytest.mark.skipif(
+    shutil.which("tor") is None or os.environ.get("LIM_E2E_TOR") != "1",
+    reason="needs the tor binary and LIM_E2E_TOR=1 (live Tor network, slow)",
 )
 
 PASSPHRASE = b"correct horse battery staple"
@@ -51,6 +59,7 @@ def test_offline_keygen_matches_production_flags():
     assert "--SocksPort 0" in script
 
 
+@_needs_tor
 def test_onion_keygen_is_deterministic_and_offline(workdir):
     """Keys generate without network and the .onion address is stable."""
     address = tor_harness.generate_onion_keys(
@@ -62,6 +71,7 @@ def test_onion_keygen_is_deterministic_and_offline(workdir):
         assert (workdir / "onion" / name).is_file()
 
 
+@_needs_tor_network
 def test_unlock_passphrase_travels_over_onion(workdir):
     """Full rootless round-trip: client -> Tor -> onion -> dropbear stand-in."""
     onion_dir = workdir / "onion"
