@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.2.0] - 2026-07-21
+
+- Optional remote LUKS unlock via a Tor onion service in the initramfs.
+  Encrypted image setups can bake *tor* into the initramfs (mkinitcpio hooks
+  ordered *netconf tor dropbear encryptssh*), generate the v3 onion keys
+  offline in the image chroot, and print the stable *.onion* address. Unlock
+  with *torsocks ssh root@<onion-address>*. Useful behind NAT/CGNAT or a
+  dynamic IP, where the direct *ssh root@<ip>* unlock cannot reach the host.
+- End-to-end tests: a rootless one (*LIM_E2E_TOR=1*) that round-trips a
+  passphrase through a real Tor onion service, and a full virtualized one
+  (*LIM_E2E_QEMU=1*) that builds a LUKS image, boots it in QEMU, and unlocks
+  the root over Tor. The offline onion keygen runs in CI; *make test-tor* /
+  *make test-qemu* / *make test-all* run the opt-in stages.
+
 ## [2.1.0] - 2026-07-14
 
 Initial PyPI release 🥳
