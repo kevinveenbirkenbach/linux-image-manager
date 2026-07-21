@@ -1,0 +1,3 @@
+# Packages for the Tor onion unlock service in the initramfs
+tor
+busybox  # full applet set: ntpd for clock sync on RTC-less boards

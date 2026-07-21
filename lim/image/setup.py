@@ -49,6 +49,10 @@ def _choose_and_verify_image(plan: ImagePlan) -> None:
     if plan.operation_system == "linux":
         choosers.choose_linux_image(plan)
         plan.encrypt_system = ui.confirm("Should the system be encrypted?")
+        if plan.encrypt_system:
+            plan.tor_unlock = ui.confirm(
+                "Should the system be remotely unlockable via a Tor onion service?"
+            )
         ui.info("Generating os-image...")
         transfer.download_image(plan)
     else:

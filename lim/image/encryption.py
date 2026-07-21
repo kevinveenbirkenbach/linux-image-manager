@@ -9,6 +9,7 @@ from pathlib import Path
 from lim import catalog, fsutil, packages, runner, ui
 from lim.image.plan import ImagePlan
 from lim.image.session import ImageSession, chroot_bash, install_packages
+from lim.image.tor import configure_tor_unlock
 
 MKINITCPIO_HOOKS_PREFIX = (
     "base udev autodetect microcode modconf kms keyboard keymap consolefont block"
@@ -32,9 +33,10 @@ def _configure_mkinitcpio(plan: ImagePlan, root: Path) -> None:
     fsutil.replace_in_file(
         "BINARIES=()", "BINARIES=(/usr/lib/libgcc_s.so.1)", mkinitcpio_path
     )
+    tor_hook = "tor " if plan.tor_unlock else ""
     fsutil.replace_in_file(
         f"HOOKS=({MKINITCPIO_HOOKS_PREFIX} {MKINITCPIO_HOOKS_SUFFIX})",
-        f"HOOKS=({MKINITCPIO_HOOKS_PREFIX} sleep netconf dropbear encryptssh "
+        f"HOOKS=({MKINITCPIO_HOOKS_PREFIX} sleep netconf {tor_hook}dropbear encryptssh "
         f"{MKINITCPIO_HOOKS_SUFFIX})",
         mkinitcpio_path,
     )
@@ -90,9 +92,15 @@ def _configure_bootloader(plan: ImagePlan, session: ImageSession, root: Path) ->
     else:
         cmdline_txt_path = session.boot_mount_path / "cmdline.txt"
         ui.info(f"Configuring {cmdline_txt_path}...")
+        # Firmware-boot boards (e.g. RPi4 cmdline.txt) need the same early
+        # networking as the boot.txt branch, or the initramfs netconf hook
+        # brings up no interface and remote unlock (dropbear + tor) is
+        # unreachable — the onion never even publishes.
+        hostname = (root / "etc/hostname").read_text().strip()
         fsutil.replace_in_file(
             "root=/dev/mmcblk0p2",
-            f"{cryptdevice} rootfstype={plan.root_filesystem}",
+            f"{cryptdevice} rootfstype={plan.root_filesystem} "
+            f"ip=::::{hostname}:eth0:dhcp net.ifnames=0 biosdevname=0",
             cmdline_txt_path,
         )
         ui.info(f"Content of {cmdline_txt_path}:{cmdline_txt_path.read_text()}")
@@ -111,6 +119,10 @@ def configure_encryption(
     dropbear_root_key_path = root / "etc/dropbear/root_key"
     ui.info(f"Adding {authorized_keys} to dropbear...")
     runner.run(["cp", "-v", str(authorized_keys), str(dropbear_root_key_path)], sudo=True)
+
+    if plan.tor_unlock:
+        # Hook files and onion keys must exist before mkinitcpio bakes the image.
+        configure_tor_unlock(plan, root)
 
     _configure_mkinitcpio(plan, root)
     _register_encrypted_root(plan, session, root)

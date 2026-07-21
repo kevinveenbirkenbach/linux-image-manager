@@ -1,0 +1,37 @@
+#!/bin/bash
+# mkinitcpio install hook: Tor onion service for remote LUKS unlock.
+# Installed to /etc/initcpio/install/tor by linux-image-manager.
+
+build() {
+    add_binary /usr/bin/tor
+    # Full busybox for the ntpd applet: boards without an RTC (e.g. most
+    # Raspberry Pis) wake up in 1970, which Tor's consensus checks reject.
+    # A different target path keeps mkinitcpio's own busybox untouched.
+    add_binary /usr/bin/busybox /usr/local/bin/busybox
+    # glibc resolves the NTP server hostname via getaddrinfo(), which dlopen()s
+    # these NSS modules at runtime — add_binary only follows NEEDED libs, so
+    # without them DNS silently fails, ntpd never syncs, and the clock stays
+    # at 1970. glibc's built-in default (no nsswitch.conf) is "dns ... files".
+    add_binary /usr/lib/libnss_dns.so.2
+    add_binary /usr/lib/libnss_files.so.2
+    add_file /etc/tor/initramfs-torrc /etc/tor/torrc
+    add_file /etc/tor/initramfs-onion/hostname /etc/tor/onion/hostname
+    add_file /etc/tor/initramfs-onion/hs_ed25519_public_key /etc/tor/onion/hs_ed25519_public_key
+    add_file /etc/tor/initramfs-onion/hs_ed25519_secret_key /etc/tor/onion/hs_ed25519_secret_key
+    add_runscript
+}
+
+help() {
+    cat <<HELPEOF
+Starts a Tor onion service in early userspace so the dropbear unlock
+shell stays reachable under the .onion address baked into the image,
+even behind NAT or a dynamic IP.
+
+Place it between netconf and dropbear:
+  HOOKS=(... netconf tor dropbear encryptssh ...)
+
+Optional kernel parameter:
+  tor_ntp=<server>  NTP server used to set the clock before Tor starts
+                    (default: pool.ntp.org)
+HELPEOF
+}

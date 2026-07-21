@@ -1,0 +1,7 @@
+# Tor configuration for the initramfs onion unlock service.
+# Baked into the initramfs as /etc/tor/torrc by the "tor" mkinitcpio hook;
+# the onion keys come from /etc/tor/initramfs-onion on the system.
+DataDirectory /var/lib/tor
+HiddenServiceDir /etc/tor/onion
+HiddenServicePort 22 127.0.0.1:22
+SocksPort 0
