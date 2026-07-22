@@ -3,7 +3,7 @@
 It reproduces the operator-visible half of the decryption process that the
 "tor" mkinitcpio hook drives at boot:
 
-  1. generate the v3 onion keys offline (as lim.image.tor does in the chroot),
+  1. generate the v3 onion keys offline (as lim.image.initramfs.keygen does in the chroot),
   2. start a real Tor onion service from a torrc mirroring the baked-in one,
      forwarding the virtual port 22 to a local dropbear stand-in,
   3. connect to the .onion address through Tor and deliver the passphrase,
@@ -24,7 +24,7 @@ import time
 
 import pytest
 
-from lim.image import tor as tor_module
+from lim.image.initramfs import keygen
 from tests.e2e import tor_harness
 
 # The offline checks only need the tor binary (no network) and are
@@ -32,9 +32,7 @@ from tests.e2e import tor_harness
 # onion round-trip needs the public Tor network, so it stays opt-in behind
 # LIM_E2E_TOR=1 to keep an external, occasionally-flaky dependency out of the
 # blocking gate.
-_needs_tor = pytest.mark.skipif(
-    shutil.which("tor") is None, reason="needs the tor binary"
-)
+_needs_tor = pytest.mark.skipif(shutil.which("tor") is None, reason="needs the tor binary")
 _needs_tor_network = pytest.mark.skipif(
     shutil.which("tor") is None or os.environ.get("LIM_E2E_TOR") != "1",
     reason="needs the tor binary and LIM_E2E_TOR=1 (live Tor network, slow)",
@@ -52,7 +50,7 @@ def workdir(tmp_path):
 
 def test_offline_keygen_matches_production_flags():
     """Guard: the harness keygen mirrors the flags production actually runs."""
-    script = tor_module._KEYGEN_SCRIPT
+    script = keygen._KEYGEN_SCRIPT
     assert "--DisableNetwork 1" in script
     assert "HiddenServicePort" in script
     assert "22 127.0.0.1:22" in script
@@ -62,9 +60,7 @@ def test_offline_keygen_matches_production_flags():
 @_needs_tor
 def test_onion_keygen_is_deterministic_and_offline(workdir):
     """Keys generate without network and the .onion address is stable."""
-    address = tor_harness.generate_onion_keys(
-        workdir / "onion", workdir / "data"
-    )
+    address = tor_harness.generate_onion_keys(workdir / "onion", workdir / "data")
     assert address.endswith(".onion")
     assert len(address) == len("v" * 56) + len(".onion")  # v3 = 56 base32 chars
     for name in ("hs_ed25519_secret_key", "hs_ed25519_public_key", "hostname"):

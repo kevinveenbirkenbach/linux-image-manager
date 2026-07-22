@@ -1,0 +1,19 @@
+#!/bin/sh
+# initramfs-tools cleanup hook: stop Tor before the pivot to the real root.
+# Installed to /etc/initramfs-tools/scripts/init-bottom/tor by lim.
+# Nothing from the initramfs may keep running once run-init replaces it.
+PREREQ=""
+prereqs() { echo "$PREREQ"; }
+case "$1" in
+    prereqs) prereqs; exit 0 ;;
+esac
+
+# pidof/killall may be absent; scan /proc for the tor binary (no extra tools).
+for pid in $(ls /proc 2>/dev/null); do
+    case "$pid" in
+        *[!0-9]*) continue ;;
+    esac
+    [ "$(readlink "/proc/$pid/exe" 2>/dev/null)" = "/usr/bin/tor" ] \
+        && kill "$pid" 2>/dev/null
+done
+exit 0

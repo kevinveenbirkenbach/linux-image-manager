@@ -1,0 +1,35 @@
+#!/bin/sh
+# initramfs-tools build hook: bake the Tor onion service into the initramfs.
+# Installed to /etc/initramfs-tools/hooks/tor by linux-image-manager.
+PREREQ="dropbear"
+prereqs() { echo "$PREREQ"; }
+case "$1" in
+    prereqs) prereqs; exit 0 ;;
+esac
+
+. /usr/share/initramfs-tools/hook-functions
+
+copy_exec /usr/bin/tor /usr/bin
+
+# glibc resolves the NTP server hostname via getaddrinfo(), which dlopen()s
+# these NSS modules at runtime; without them DNS silently fails and the clock
+# (RTC-less boards) stays at 1970, so Tor rejects the consensus.
+for nss in /usr/lib/*/libnss_dns.so.2 /usr/lib/*/libnss_files.so.2 \
+           /lib/*/libnss_dns.so.2 /lib/*/libnss_files.so.2; do
+    [ -e "$nss" ] && copy_exec "$nss"
+done
+
+# Full busybox for the ntpd applet (the initramfs busybox may lack it); a
+# distinct path keeps the initramfs's own busybox untouched.
+for bb in /bin/busybox /usr/bin/busybox; do
+    [ -x "$bb" ] && { copy_exec "$bb" /usr/local/bin/busybox; break; }
+done
+
+# Onion keys + torrc, staged on the system by lim.
+mkdir -p "${DESTDIR}/etc/tor/onion"
+for key in hostname hs_ed25519_public_key hs_ed25519_secret_key; do
+    cp -a "/etc/tor/initramfs-onion/${key}" "${DESTDIR}/etc/tor/onion/${key}"
+done
+chmod 0700 "${DESTDIR}/etc/tor/onion"
+chmod 0600 "${DESTDIR}/etc/tor/onion/hs_ed25519_secret_key"
+cp -a /etc/tor/initramfs-torrc "${DESTDIR}/etc/tor/torrc"

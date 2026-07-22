@@ -32,6 +32,7 @@ lim = [
   "distributions.yml",
   "configuration/packages/**/*.txt",
   "configuration/initcpio/*",
+  "configuration/initramfs-tools/*",
 ]
 
 [tool.pytest.ini_options]
