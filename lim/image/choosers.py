@@ -44,9 +44,7 @@ def choose_manjaro(plan: ImagePlan) -> None:
 def choose_moode(plan: ImagePlan) -> None:
     plan.boot_size = "+200M"
     plan.image_checksum = "185cbc9a4994534bb7a4bc2744c78197"
-    plan.base_download_url = (
-        "https://github.com/moode-player/moode/releases/download/r651prod/"
-    )
+    plan.base_download_url = "https://github.com/moode-player/moode/releases/download/r651prod/"
     plan.image_name = "moode-r651-iso.zip"
 
 
@@ -57,9 +55,7 @@ def choose_retropie(plan: ImagePlan) -> None:
     if entry is None:
         raise LimError(f"Version {version} isn't supported.")
     plan.raspberry_pi_version = version
-    plan.base_download_url = (
-        "https://github.com/RetroPie/RetroPie-Setup/releases/download/4.8/"
-    )
+    plan.base_download_url = "https://github.com/RetroPie/RetroPie-Setup/releases/download/4.8/"
     plan.image_checksum = entry["checksum"]
     plan.image_name = entry["image"]
 
@@ -67,9 +63,7 @@ def choose_retropie(plan: ImagePlan) -> None:
 def choose_torbox(plan: ImagePlan) -> None:
     plan.base_download_url = "https://www.torbox.ch/data/"
     plan.image_name = "torbox-20220102-v050.gz"
-    plan.image_checksum = (
-        "0E1BA7FFD14AAAE5F0462C8293D95B62C3BF1D9E726E26977BD04772C55680D3"
-    )
+    plan.image_checksum = "0E1BA7FFD14AAAE5F0462C8293D95B62C3BF1D9E726E26977BD04772C55680D3"
     plan.boot_size = "+200M"
 
 
@@ -78,9 +72,7 @@ def choose_android_x86(plan: ImagePlan) -> None:
         "https://www.fosshub.com/Android-x86.html?dwl=android-x86_64-9.0-r2.iso"
     )
     plan.image_name = "android-x86_64-9.0-r2.iso"
-    plan.image_checksum = (
-        "f7eb8fc56f29ad5432335dc054183acf086c539f3990f0b6e9ff58bd6df4604e"
-    )
+    plan.image_checksum = "f7eb8fc56f29ad5432335dc054183acf086c539f3990f0b6e9ff58bd6df4604e"
     plan.boot_size = "+500M"
 
 

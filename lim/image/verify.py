@@ -24,8 +24,7 @@ def resolve_checksum(download_url: str) -> str | None:
     for extension in ("sha1", "sha512", "md5"):
         checksum_url = f"{download_url}.{extension}"
         ui.info(
-            "Image Checksum is not defined. "
-            f"Try to download image signature from {checksum_url}."
+            f"Image Checksum is not defined. Try to download image signature from {checksum_url}."
         )
         if url_exists(checksum_url):
             content = runner.output(["wget", checksum_url, "-q", "-O", "-"])
@@ -62,8 +61,7 @@ def verify_signature(download_url: str, image_path: str | Path, image_folder: Pa
     """Best-effort GPG signature verification of the downloaded image."""
     ui.info("Note: Checksums verify integrity but do not confirm authenticity.")
     ui.info(
-        "Proceeding to signature verification, "
-        "which ensures the file comes from a trusted source."
+        "Proceeding to signature verification, which ensures the file comes from a trusted source."
     )
     signature_url = f"{download_url}.sig"
     ui.info(f"Attempting to download the image signature from: {signature_url}")

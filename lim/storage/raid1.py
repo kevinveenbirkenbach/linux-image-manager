@@ -25,9 +25,7 @@ def setup() -> None:
     runner.run(["cryptsetup", "luksFormat", second.device.path], sudo=True)
 
     runner.run(["cryptsetup", "luksOpen", first.device.path, first.mapper_name], sudo=True)
-    runner.run(
-        ["cryptsetup", "luksOpen", second.device.path, second.mapper_name], sudo=True
-    )
+    runner.run(["cryptsetup", "luksOpen", second.device.path, second.mapper_name], sudo=True)
     runner.run(["cryptsetup", "status", first.mapper_path], sudo=True)
     runner.run(["cryptsetup", "status", second.mapper_path], sudo=True)
 

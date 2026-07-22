@@ -36,8 +36,7 @@ def _select_unmounted_device() -> device_module.Device:
     device = device_module.select_device()
     if device_module.is_mounted(device.path):
         raise LimError(
-            f'Device {device.path} is allready mounted. '
-            f'Umount with "umount {device.path}*".'
+            f'Device {device.path} is allready mounted. Umount with "umount {device.path}*".'
         )
     return device
 
@@ -83,9 +82,7 @@ def run_setup() -> None:
         session.make_working_folder()
         session.make_mount_folders()
 
-        plan.root_filesystem = ui.ask(
-            "Which filesystem should be used? E.g.:btrfs,ext4... (none):"
-        )
+        plan.root_filesystem = ui.ask("Which filesystem should be used? E.g.:btrfs,ext4... (none):")
 
         if ui.confirm(f"Should the image be transfered to {device.path}?"):
             transfer.transfer_image(plan, session)

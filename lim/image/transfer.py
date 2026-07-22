@@ -15,10 +15,7 @@ def download_image(plan: ImagePlan) -> None:
             ui.info(f"Removing image {plan.image_path}.")
             plan.image_path.unlink()
         else:
-            ui.info(
-                "Forcing download wasn't neccessary. "
-                f"File {plan.image_path} doesn't exist."
-            )
+            ui.info(f"Forcing download wasn't neccessary. File {plan.image_path} doesn't exist.")
 
     ui.info("Start Download procedure...")
     if plan.image_path.is_file():
@@ -35,13 +32,13 @@ def download_image(plan: ImagePlan) -> None:
 def arch_partition_input(boot_size: str) -> str:
     """Fdisk answers: FAT32 boot partition of boot_size plus root partition."""
     return (
-        "o\n"          # clear out any partitions on the drive
-        "p\n"          # list partitions (should be empty)
+        "o\n"  # clear out any partitions on the drive
+        "p\n"  # list partitions (should be empty)
         "n\np\n1\n\n"  # new primary partition 1, default start sector
         f"{boot_size}\n"
-        "t\nc\n"       # set partition 1 to type W95 FAT32 (LBA)
+        "t\nc\n"  # set partition 1 to type W95 FAT32 (LBA)
         "n\np\n2\n\n\n"  # new primary partition 2 over the remaining space
-        "w\n"          # write partition table
+        "w\n"  # write partition table
     )
 
 
@@ -61,9 +58,18 @@ def decompress_command(image_path: Path) -> list[str]:
 
 def _luks_format_root(plan: ImagePlan, session: ImageSession) -> None:
     luks_format = [
-        "cryptsetup", "-v", "luksFormat",
-        "-c", "aes-xts-plain64", "-s", "512", "-h", "sha512",
-        "--use-random", "-i", "1000",
+        "cryptsetup",
+        "-v",
+        "luksFormat",
+        "-c",
+        "aes-xts-plain64",
+        "-s",
+        "512",
+        "-h",
+        "sha512",
+        "--use-random",
+        "-i",
+        "1000",
     ]
     if plan.luks_memory_cost:
         ui.info(

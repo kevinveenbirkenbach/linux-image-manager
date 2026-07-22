@@ -50,8 +50,7 @@ def run(
         return subprocess.CompletedProcess(cmd, COMMAND_NOT_FOUND)
     if check and result.returncode != 0:
         raise LimError(
-            error_msg
-            or f"Command failed with code {result.returncode}: {shlex.join(cmd)}"
+            error_msg or f"Command failed with code {result.returncode}: {shlex.join(cmd)}"
         )
     return result
 
@@ -98,8 +97,7 @@ def pipeline(
 ) -> None:
     """Run commands as a shell-style pipeline (cmd1 | cmd2 | ...)."""
     prepared = [
-        _with_sudo(cmd, sudo=sudo_last and index == len(cmds) - 1)
-        for index, cmd in enumerate(cmds)
+        _with_sudo(cmd, sudo=sudo_last and index == len(cmds) - 1) for index, cmd in enumerate(cmds)
     ]
     pretty = " | ".join(shlex.join(cmd) for cmd in prepared)
     ui.info(f"Running: {pretty}")

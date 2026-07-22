@@ -13,7 +13,7 @@ import threading
 import time
 from pathlib import Path
 
-# Matches lim.image.tor._KEYGEN_SCRIPT: an empty -f torrc keeps the host's
+# Matches lim.image.initramfs.keygen._KEYGEN_SCRIPT: an empty -f torrc keeps the host's
 # /etc/tor/torrc out of the run, --DisableNetwork 1 makes the keys appear
 # without ever touching the network.
 KEYGEN_TIMEOUT = 30
@@ -30,7 +30,7 @@ def free_port() -> int:
 def generate_onion_keys(onion_dir: Path, data_dir: Path) -> str:
     """Create v3 onion keys offline; return the .onion hostname.
 
-    Mirrors lim.image.tor._KEYGEN_SCRIPT, run directly on the host instead
+    Mirrors lim.image.initramfs.keygen._KEYGEN_SCRIPT, run directly on the host instead
     of inside the image chroot (the tor invocation is identical).
     """
     onion_dir.mkdir(parents=True, exist_ok=True)
@@ -39,11 +39,23 @@ def generate_onion_keys(onion_dir: Path, data_dir: Path) -> str:
     empty_torrc.write_text("")
     process = subprocess.Popen(
         [
-            "tor", "-f", str(empty_torrc), "--DisableNetwork", "1",
-            "--DataDirectory", str(data_dir),
-            "--HiddenServiceDir", str(onion_dir),
-            "--HiddenServicePort", "22 127.0.0.1:22",
-            "--SocksPort", "0", "--RunAsDaemon", "0", "--Log", "notice stderr",
+            "tor",
+            "-f",
+            str(empty_torrc),
+            "--DisableNetwork",
+            "1",
+            "--DataDirectory",
+            str(data_dir),
+            "--HiddenServiceDir",
+            str(onion_dir),
+            "--HiddenServicePort",
+            "22 127.0.0.1:22",
+            "--SocksPort",
+            "0",
+            "--RunAsDaemon",
+            "0",
+            "--Log",
+            "notice stderr",
         ],
         stderr=subprocess.DEVNULL,
     )
@@ -62,9 +74,7 @@ def generate_onion_keys(onion_dir: Path, data_dir: Path) -> str:
     return hostname.read_text().strip()
 
 
-def start_onion_service(
-    torrc_path: Path, socks_port: int, log_path: Path
-) -> subprocess.Popen:
+def start_onion_service(torrc_path: Path, socks_port: int, log_path: Path) -> subprocess.Popen:
     """Start Tor with the given torrc (service side) plus a SOCKS port.
 
     The torrc carries the HiddenServiceDir/HiddenServicePort just like the
@@ -73,9 +83,13 @@ def start_onion_service(
     """
     return subprocess.Popen(
         [
-            "tor", "-f", str(torrc_path),
-            "--SocksPort", str(socks_port),
-            "--Log", f"notice file {log_path}",
+            "tor",
+            "-f",
+            str(torrc_path),
+            "--SocksPort",
+            str(socks_port),
+            "--Log",
+            f"notice file {log_path}",
         ],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
@@ -98,11 +112,7 @@ def _socks5_handshake(sock: socket.socket, onion_host: str, onion_port: int) -> 
     if sock.recv(2) != b"\x05\x00":
         raise RuntimeError("SOCKS5 handshake rejected.")
     host = onion_host.encode()
-    request = (
-        b"\x05\x01\x00\x03"
-        + bytes([len(host)]) + host
-        + struct.pack(">H", onion_port)
-    )
+    request = b"\x05\x01\x00\x03" + bytes([len(host)]) + host + struct.pack(">H", onion_port)
     sock.settimeout(ONION_CONNECT_TIMEOUT)
     sock.sendall(request)
     header = sock.recv(4)

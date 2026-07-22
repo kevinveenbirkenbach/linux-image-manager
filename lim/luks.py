@@ -40,14 +40,10 @@ def create_luks_key_and_update_crypttab(
     runner.sync_disks()
 
     ui.info("Opening and closing device to verify that everything works fine...")
-    closed = runner.run(
-        ["cryptsetup", "-v", "luksClose", mapper_name], sudo=True, check=False
-    )
+    closed = runner.run(["cryptsetup", "-v", "luksClose", mapper_name], sudo=True, check=False)
     if closed.returncode != 0:
         ui.info(f"No need to luksClose {mapper_name}. Device isn't open.")
-    runner.run(
-        ["cryptsetup", "luksAddKey", partition_path, str(secret_key_path)], sudo=True
-    )
+    runner.run(["cryptsetup", "luksAddKey", partition_path, str(secret_key_path)], sudo=True)
     runner.run(
         [
             "cryptsetup",
@@ -70,9 +66,7 @@ def create_luks_key_and_update_crypttab(
     print(crypttab_path.read_text())
 
 
-def update_fstab(
-    mapper_path: str, mount_path: str, *, fstab_path: Path = FSTAB_PATH
-) -> None:
+def update_fstab(mapper_path: str, mount_path: str, *, fstab_path: Path = FSTAB_PATH) -> None:
     entry = f"{mapper_path} {mount_path} btrfs   defaults   0       2"
     ui.info("Adding fstab entry...")
     fsutil.ensure_line_in_file(entry, fstab_path)
