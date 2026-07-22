@@ -27,7 +27,8 @@ CPU architecture.
 
 | Stage | File | Privilege |
 |---|---|---|
-| Build encrypted image | `build_image.sh` | **root** (loop, cryptsetup, chroot) |
+| Build encrypted image (Arch) | `build_image.sh` | **root** (loop, cryptsetup, chroot) |
+| Build encrypted image (Debian) | `build_image_debian.sh` | **root** (debootstrap, loop, cryptsetup, chroot) |
 | Tor network | `tor_net.py` | rootless |
 | Boot + unlock | `boot_unlock.py` | rootless (QEMU user-mode net) |
 | Orchestration | `harness.py` | mixed (uses `sudo` for the build only) |
@@ -53,17 +54,40 @@ and then `chown`s the artifacts back so rootless QEMU can read them.
 - Network access to the public Tor network, **or** `chutney` for a private one
 - `/dev/kvm` recommended (TCG works but is slow; aarch64-on-x86 is always TCG)
 
+For the Debian build (`LIM_E2E_OS=debian`), additionally: `debootstrap` and
+network access to a Debian mirror. The guest uses the initramfs-tools backend
+(cryptsetup-initramfs + dropbear-initramfs), so the unlock SSH session runs
+`cryptroot-unlock` instead of Arch's login-time encryptssh prompt.
+
+## Unlock transport: direct vs Tor
+
+`LIM_E2E_TRANSPORT` (default `direct`) selects how the passphrase reaches the
+guest's dropbear:
+
+- **direct** — QEMU forwards a host port to the guest's dropbear (`:22`) and the
+  passphrase is delivered over a plain SSH. Deterministic; it verifies the whole
+  LUKS-unlock stack (cryptsetup-initramfs + dropbear-initramfs + cryptroot-unlock
+  + LUKS + boot). This is what CI/`make` runs.
+- **tor** — the full onion path: the guest publishes its onion and the host
+  reaches it through Tor. Representative of production but **flaky over public
+  Tor inside QEMU** (fresh guest Tor + user-mode net make the onion rendezvous
+  unreliable), so it is opt-in. The onion transport itself is covered
+  deterministically by the rootless `test_tor_unlock_e2e.py`.
+
 ## Running
 
 ```bash
-# Public Tor network (simplest; non-deterministic, needs internet):
+# Arch (mkinitcpio), direct transport (deterministic, default):
 LIM_E2E_QEMU=1 pytest tests/e2e/test_qemu_unlock_e2e.py -v -s
 
-# Private, offline, deterministic Tor network via chutney:
-git clone https://gitlab.torproject.org/tpo/core/chutney
-CHUTNEY_PATH=$PWD/chutney LIM_E2E_QEMU=1 \
-  pytest tests/e2e/test_qemu_unlock_e2e.py -v -s
+# Debian (initramfs-tools) via debootstrap, direct transport:
+LIM_E2E_QEMU=1 LIM_E2E_OS=debian pytest tests/e2e/test_qemu_unlock_e2e.py -v -s
+
+# Full onion transport (opt-in, flaky over public Tor):
+LIM_E2E_QEMU=1 LIM_E2E_TRANSPORT=tor pytest tests/e2e/test_qemu_unlock_e2e.py -v -s
 ```
+
+`make test-qemu` / `make test-qemu-debian` wrap the direct-transport runs.
 
 Environment knobs: `LIM_E2E_ARCH` (`x86_64` default, or `aarch64`),
 `CHUTNEY_PATH` (enables the private network), `CHUTNEY_PATH` unset → public.

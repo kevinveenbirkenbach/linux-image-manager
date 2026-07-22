@@ -3,6 +3,7 @@ name: tests
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   lint:
@@ -37,3 +38,18 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y tor
       - run: pip install pytest pyyaml
       - run: LIM_E2E_TOR=1 make test-tor PYTHON=python
+
+  qemu-e2e-debian:
+    # Full build -> boot -> LUKS-unlock in QEMU, deterministic via the direct
+    # transport (debootstrap works on Ubuntu; no Tor). Heavy (root, loop,
+    # cryptsetup, and TCG when the runner has no /dev/kvm).
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: sudo apt-get update && sudo apt-get install -y qemu-system-x86 debootstrap cryptsetup
+      - run: pip install pytest pyyaml
+      - run: make test-qemu-debian PYTHON=python
