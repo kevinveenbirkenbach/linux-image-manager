@@ -1,0 +1,16 @@
+# Tor configuration for the initramfs onion unlock service (initramfs-tools).
+# Baked into the initramfs as /etc/tor/torrc by the "tor" hook; the onion keys
+# come from /etc/tor/initramfs-onion on the system.
+DataDirectory /var/lib/tor
+HiddenServiceDir /etc/tor/onion
+HiddenServicePort 22 127.0.0.1:22
+SocksPort 0
+# Single-hop, non-anonymous onion service. A boot-unlock onion needs
+# reachability (behind NAT / a dynamic IP), NOT server-location anonymity, so
+# it can skip the multi-hop, vanguards-restricted circuits that a fresh Tor
+# with a limited relay view fails to build ("Giving up on launching a
+# rendezvous circuit"). Single-hop builds trivial 1-hop circuits that publish
+# and rendezvous reliably. Entry guards are likewise unnecessary here.
+HiddenServiceNonAnonymousMode 1
+HiddenServiceSingleHopMode 1
+UseEntryGuards 0

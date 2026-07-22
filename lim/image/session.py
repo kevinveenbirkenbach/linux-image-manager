@@ -49,12 +49,8 @@ class ImageSession:
 
     def read_partition_uuids(self) -> None:
         """Fetch partition UUIDs via blkid; derive the LUKS mapper name if unset."""
-        self.root_partition_uuid = device_module.blkid_value(
-            self.root_partition_path, "UUID"
-        )
-        self.boot_partition_uuid = device_module.blkid_value(
-            self.boot_partition_path, "UUID"
-        )
+        self.root_partition_uuid = device_module.blkid_value(self.root_partition_path, "UUID")
+        self.boot_partition_uuid = device_module.blkid_value(self.boot_partition_path, "UUID")
         if self.root_mapper_name is None and self.root_is_luks():
             # Same deterministic name decrypt_root() would have used.
             self.root_mapper_name = f"linux-image-manager-{self.root_partition_uuid}"
@@ -63,9 +59,7 @@ class ImageSession:
     def decrypt_root(self) -> None:
         if not self.root_is_luks():
             return
-        self.root_partition_uuid = device_module.blkid_value(
-            self.root_partition_path, "UUID"
-        )
+        self.root_partition_uuid = device_module.blkid_value(self.root_partition_path, "UUID")
         self.root_mapper_name = f"linux-image-manager-{self.root_partition_uuid}"
         self.root_mapper_path = f"/dev/mapper/{self.root_mapper_name}"
         ui.info(f"Decrypting of {self.root_partition_path} is neccessary...")
@@ -88,9 +82,7 @@ class ImageSession:
             ["mount", "-v", self.boot_partition_path, str(self.boot_mount_path)],
             sudo=True,
         )
-        runner.run(
-            ["mount", "-v", self.root_mapper_path, str(self.root_mount_path)], sudo=True
-        )
+        runner.run(["mount", "-v", self.root_mapper_path, str(self.root_mount_path)], sudo=True)
         ui.info("Setting uuid variables...")
         self.read_partition_uuids()
         ui.info("The following mounts refering this setup exist:")
@@ -184,7 +176,7 @@ def install_packages(distribution: str, root_mount_path: Path, package_names: st
     ui.info(f"Installing {package_names}...")
     if distribution in ("arch", "manjaro"):
         chroot_bash(root_mount_path, f"pacman --noconfirm -S --needed {package_names}")
-    elif distribution in ("moode", "retropie"):
+    elif distribution in ("moode", "retropie", "raspios"):
         chroot_bash(root_mount_path, f"yes | apt install {package_names}")
     else:
         raise LimError("Package manager not supported.")

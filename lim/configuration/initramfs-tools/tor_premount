@@ -1,0 +1,51 @@
+#!/bin/sh
+# initramfs-tools runtime hook: bring up networking, sync the clock and start
+# the Tor onion service so the dropbear unlock shell is reachable while
+# cryptsetup waits. Installed to /etc/initramfs-tools/scripts/init-premount/tor.
+PREREQ=""
+prereqs() { echo "$PREREQ"; }
+case "$1" in
+    prereqs) prereqs; exit 0 ;;
+esac
+
+. /scripts/functions
+
+log_begin_msg "tor: bringing up networking and starting the onion service"
+
+# init-premount runs BEFORE the cryptroot/dropbear networking, so Tor would
+# start with no network and never publish the onion. Bring the interface up
+# ourselves from the ip= cmdline (idempotent; the later dropbear setup reuses
+# the lease in /run/net-*.conf).
+configure_networking
+
+# initramfs-tools does not export arbitrary cmdline params as shell vars.
+tor_ntp=$(sed -n 's/.*\btor_ntp=\([^ ]*\).*/\1/p' /proc/cmdline)
+
+# Best-effort DNS from the DHCP lease; extract ONLY the DNS fields with sed,
+# never source the files (attacker-controllable DHCP option strings would run
+# as root pre-boot).
+if [ ! -s /etc/resolv.conf ]; then
+    for conf in /run/net-*.conf /tmp/net-*.conf; do
+        [ -f "$conf" ] || continue
+        for dns in $(sed -n 's/^IPV4DNS[01]=//p' "$conf"); do
+            [ -n "$dns" ] && [ "$dns" != "0.0.0.0" ] \
+                && echo "nameserver $dns" >> /etc/resolv.conf
+        done
+    done
+fi
+
+# RTC-less boards boot at 1970; Tor rejects the consensus otherwise. Bounded so
+# a failed sync never blocks boot.
+if [ -x /usr/local/bin/busybox ]; then
+    /usr/local/bin/busybox timeout 30 \
+        /usr/local/bin/busybox ntpd -n -q -p "${tor_ntp:-pool.ntp.org}" \
+        || log_warning_msg "tor: NTP sync failed, keeping current clock"
+fi
+
+mkdir -p /var/lib/tor
+chmod 0700 /var/lib/tor /etc/tor/onion
+chmod 0600 /etc/tor/onion/hs_ed25519_secret_key
+tor -f /etc/tor/torrc --RunAsDaemon 1 --Log "notice file /run/tor.log" \
+    || log_warning_msg "tor: failed to start, unlock stays reachable via direct IP"
+
+log_end_msg

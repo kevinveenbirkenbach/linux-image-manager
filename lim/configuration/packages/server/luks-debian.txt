@@ -1,0 +1,5 @@
+# Packages for LUKS remote unlock on Debian / Raspberry Pi OS (initramfs-tools)
+cryptsetup
+cryptsetup-initramfs
+dropbear-initramfs
+busybox

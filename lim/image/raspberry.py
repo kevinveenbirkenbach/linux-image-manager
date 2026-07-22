@@ -23,9 +23,7 @@ def configure_sudoers(root_mount_path: Path, username: str) -> None:
         raise LimError(f"Failed to create sudoers file for {username}: {exc}") from exc
 
 
-def configure_ssh_key(
-    public_key_path: str, target_ssh_folder: Path, authorized_keys: Path
-) -> None:
+def configure_ssh_key(public_key_path: str, target_ssh_folder: Path, authorized_keys: Path) -> None:
     source = Path(public_key_path)
     if not source.is_file():
         raise LimError(
@@ -64,9 +62,7 @@ def _seed_boot_uuid(session: ImageSession) -> None:
         ui.info(f"{fstab_path} does not reference /dev/mmcblk0p1. Skipping UUID seeding.")
         return
     ui.info(f"Seeding UUID to {fstab_path} to avoid path conflicts...")
-    fsutil.replace_in_file(
-        "/dev/mmcblk0p1", f"UUID={session.boot_partition_uuid}", fstab_path
-    )
+    fsutil.replace_in_file("/dev/mmcblk0p1", f"UUID={session.boot_partition_uuid}", fstab_path)
     ui.info(f"Content of {fstab_path}:{fstab_path.read_text()}")
 
 
@@ -135,7 +131,7 @@ def _update_system(plan: ImagePlan, root: Path) -> None:
     ui.info("Updating system...")
     if plan.distribution in ("arch", "manjaro"):
         chroot_bash(root, "pacman --noconfirm -Syyu")
-    elif plan.distribution in ("moode", "retropie"):
+    elif plan.distribution in ("moode", "retropie", "raspios"):
         chroot_bash(root, "yes | apt update\nyes | apt upgrade\n")
     else:
         ui.warning(
