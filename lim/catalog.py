@@ -27,5 +27,9 @@ def retropie_images() -> dict[str, dict[str, str]]:
     return _load()["retropie_images"]
 
 
+def raspios_images() -> dict[str, dict[str, str]]:
+    return _load()["raspios_images"]
+
+
 def mkinitcpio_modules_by_rpi() -> dict[str, str]:
     return _load()["mkinitcpio_modules_by_rpi"]

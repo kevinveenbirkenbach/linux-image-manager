@@ -13,7 +13,10 @@ from lim.image.plan import ImagePlan
 from lim.image.session import ImageSession, install_packages
 
 
-def configure_encryption(plan: ImagePlan, session: ImageSession, authorized_keys: Path) -> None:
+def configure_encryption(
+    plan: ImagePlan, session: ImageSession, authorized_keys: Path
+) -> str | None:
+    """Configure the remote-unlock LUKS stack; return the onion address, if any."""
     root = session.root_mount_path
     backend = get_backend(plan.distribution)
     ui.info("Setup encryption...")
@@ -26,12 +29,14 @@ def configure_encryption(plan: ImagePlan, session: ImageSession, authorized_keys
 
     backend.install_authorized_key(root, authorized_keys)
 
+    onion_address = None
     if plan.tor_unlock:
         # Hook files and onion keys must exist before the initramfs is baked.
-        backend.install_tor_unlock(plan, root)
+        onion_address = backend.install_tor_unlock(plan, root)
 
     # crypttab must be written before the initramfs is (re)generated so the
     # Debian cryptsetup hook can bake the mapping in.
     backend.register_encrypted_root(plan, session, root)
     backend.configure_initramfs(plan, root)
     backend.configure_bootloader(plan, session, root)
+    return onion_address
