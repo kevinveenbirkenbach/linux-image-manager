@@ -50,6 +50,15 @@ class TestKernelCmdline:
     def test_aarch64_uses_amba_serial(self):
         assert "console=ttyAMA0" in config.kernel_cmdline(_spec(arch="aarch64"))
 
+    def test_debian_uses_crypttab_not_cryptdevice(self):
+        # Debian's cryptsetup-initramfs reads /etc/crypttab, so the cmdline
+        # carries only root=/dev/mapper/<name>, no cryptdevice= param.
+        line = config.kernel_cmdline(_spec(os_family="debian"))
+        assert "cryptdevice=" not in line
+        assert "root=/dev/mapper/cryptroot" in line
+        assert ":eth0:dhcp" in line
+        assert line.index("console=tty0") < line.index("console=ttyS0")
+
 
 class TestQemuArgv:
     def test_x86_uses_virtio_net_and_direct_kernel_boot(self):
@@ -103,6 +112,31 @@ class TestSshInvocation:
         assert any("ProxyCommand=" in part for part in argv)
         assert "StrictHostKeyChecking=no" in argv
 
+    def test_arch_session_runs_no_remote_command(self):
+        assert config.ssh_argv(_spec())[-1] == "root@abcd.onion"
+
+    def test_debian_session_runs_cryptroot_unlock(self):
+        argv = config.ssh_argv(_spec(unlock_command="cryptroot-unlock"))
+        assert argv[-1] == "cryptroot-unlock"
+
+
+class TestDirectTransport:
+    def test_qemu_forwards_a_host_port_to_dropbear(self):
+        argv = config.qemu_argv(_spec(direct_ssh_port=2222))
+        assert "user,id=net0,hostfwd=tcp:127.0.0.1:2222-:22" in argv
+
+    def test_tor_transport_adds_no_hostfwd(self):
+        argv = config.qemu_argv(_spec())
+        assert "user,id=net0" in argv
+        assert not any("hostfwd" in part for part in argv)
+
+    def test_ssh_argv_direct_connects_to_forwarded_port(self):
+        argv = config.ssh_argv(_spec(direct_ssh_port=2222))
+        assert "root@127.0.0.1" in argv
+        assert "-p" in argv
+        assert "2222" in argv
+        assert not any("ProxyCommand" in part for part in argv)
+
 
 class TestBuildScriptStaysAligned:
     """Guards: the root build script must match what the harness assumes."""
@@ -111,9 +145,7 @@ class TestBuildScriptStaysAligned:
         return BUILD_SCRIPT.read_text()
 
     def test_hooks_place_tor_between_netconf_and_dropbear(self):
-        hooks_line = next(
-            line for line in self._script().splitlines() if line.startswith("HOOKS=")
-        )
+        hooks_line = next(line for line in self._script().splitlines() if line.startswith("HOOKS="))
         positions = [hooks_line.index(hook) for hook in EXPECTED_HOOKS_ORDER]
         assert positions == sorted(positions), hooks_line
 
@@ -129,15 +161,42 @@ class TestBuildScriptStaysAligned:
         assert config.BOOT_OK_MARKER in script
 
     def test_mounts_devpts_before_dropbear_for_pty(self):
-        hooks_line = next(
-            line for line in self._script().splitlines() if line.startswith("HOOKS=")
-        )
+        hooks_line = next(line for line in self._script().splitlines() if line.startswith("HOOKS="))
         assert "ptsmount" in hooks_line
         assert hooks_line.index("ptsmount") < hooks_line.index("dropbear")
         assert "mount -t devpts" in self._script()
 
     def test_real_initcpio_source_directory_exists(self):
         assert (lim_config.CONFIGURATION_PATH / "initcpio" / "tor_hook").is_file()
+
+
+class TestDebianBuildScript:
+    """Guards for the debootstrap build script and the OS dispatch."""
+
+    def _script(self) -> str:
+        path = Path(__file__).resolve().parents[2] / "tests/e2e/qemu/build_image_debian.sh"
+        return path.read_text()
+
+    def test_installs_the_real_initramfs_tools_hooks(self):
+        script = self._script()
+        for name in ("tor_hook", "tor_premount", "tor_bottom", "torrc"):
+            assert f"$HOOK_SRC/{name}" in script
+        assert "etc/dropbear/initramfs/authorized_keys" in script
+
+    def test_crypttab_uses_initramfs_option_and_emits_marker(self):
+        script = self._script()
+        assert "none luks,initramfs" in script
+        assert config.BOOT_OK_MARKER in script
+
+    def test_harness_maps_os_family_to_script_and_unlock_command(self):
+        assert harness._BUILD_SCRIPT["debian"] == "build_image_debian.sh"
+        assert harness._BUILD_SCRIPT["arch"] == "build_image.sh"
+        assert harness._UNLOCK_COMMAND["debian"] == "cryptroot-unlock"
+        assert harness._UNLOCK_COMMAND["arch"] == ""
+
+    def test_real_initramfs_tools_source_directory_exists(self):
+        hook = lim_config.CONFIGURATION_PATH / "initramfs-tools" / "tor_premount"
+        assert hook.is_file()
 
 
 class TestOrchestratorGlue:

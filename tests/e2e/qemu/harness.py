@@ -7,6 +7,7 @@ config.py and is unit-tested without any of this running.
 
 import os
 import platform
+import socket
 import subprocess
 import threading
 from dataclasses import dataclass
@@ -31,6 +32,34 @@ class HarnessConfig:
     passphrase: str = DEFAULT_PASSPHRASE
     chutney_path: Path | None = None
     chutney_network: str = "networks/basic"
+    os_family: str = "arch"  # "arch" (pacstrap) or "debian" (debootstrap)
+    # "direct" (deterministic; QEMU port-forward to dropbear) or "tor" (full
+    # onion transport, opt-in — flaky over public Tor inside QEMU).
+    unlock_transport: str = "direct"
+
+
+class _NullNet:
+    """Stand-in tor network for the direct transport: no Tor needed."""
+
+    socks_port = 0
+    test_network_conf: Path | None = None
+
+    def start(self) -> None:
+        pass
+
+    def stop(self) -> None:
+        pass
+
+
+def _free_port() -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.bind(("127.0.0.1", 0))
+        return sock.getsockname()[1]
+
+
+# Per-OS build script and the remote command that delivers the passphrase.
+_BUILD_SCRIPT = {"arch": "build_image.sh", "debian": "build_image_debian.sh"}
+_UNLOCK_COMMAND = {"arch": "", "debian": "cryptroot-unlock"}
 
 
 def choose_accel(arch: str) -> str:
@@ -85,7 +114,7 @@ def _acquire_sudo() -> _SudoKeepalive | None:
 
 
 def _build_image(cfg: HarnessConfig, ssh_key: Path, test_network_conf: Path | None) -> None:
-    script = cfg.repo_root / "tests/e2e/qemu/build_image.sh"
+    script = cfg.repo_root / "tests/e2e/qemu" / _BUILD_SCRIPT[cfg.os_family]
     env = {
         **os.environ,
         "WORK_DIR": str(cfg.work_dir),
@@ -119,6 +148,8 @@ def _reclaim_work_dir(cfg: HarnessConfig, *, required: bool = False) -> None:
 
 
 def _make_tor_net(cfg: HarnessConfig):
+    if cfg.unlock_transport == "direct":
+        return _NullNet()
     if cfg.chutney_path is not None:
         return tor_net.ChutneyNetwork(cfg.chutney_path, cfg.work_dir, cfg.chutney_network)
     return tor_net.PublicTorClient(cfg.work_dir, DEFAULT_SOCKS_PORT)
@@ -126,6 +157,7 @@ def _make_tor_net(cfg: HarnessConfig):
 
 def _load_spec(cfg: HarnessConfig, ssh_key: Path, socks_port: int) -> QemuSpec:
     env = boot_unlock.parse_env_file(cfg.work_dir / IMAGE_ENV_NAME)
+    direct_port = _free_port() if cfg.unlock_transport == "direct" else 0
     return QemuSpec(
         arch=cfg.arch,
         work_dir=cfg.work_dir,
@@ -139,6 +171,9 @@ def _load_spec(cfg: HarnessConfig, ssh_key: Path, socks_port: int) -> QemuSpec:
         ssh_key_path=ssh_key,
         socks_port=socks_port,
         accel=choose_accel(cfg.arch),
+        os_family=cfg.os_family,
+        unlock_command=_UNLOCK_COMMAND[cfg.os_family],
+        direct_ssh_port=direct_port,
     )
 
 
@@ -155,11 +190,14 @@ def run(cfg: HarnessConfig) -> QemuSpec:
     sudo = _acquire_sudo()
     net = _make_tor_net(cfg)
     try:
-        print("\n[harness] bootstrapping Tor client (~30-60s)...", flush=True)
+        if cfg.unlock_transport != "direct":
+            print("\n[harness] bootstrapping Tor client (~30-60s)...", flush=True)
         net.start()
-        print(f"[harness] Tor client ready on socks port {net.socks_port}.", flush=True)
-        print("[harness] building encrypted image "
-              "(pacstrap + mkinitcpio, several minutes)...", flush=True)
+        print(
+            f"[harness] transport={cfg.unlock_transport}, building encrypted "
+            "image (several minutes)...",
+            flush=True,
+        )
         _build_image(cfg, ssh_key, net.test_network_conf)
         spec = _load_spec(cfg, ssh_key, net.socks_port)
         boot_unlock.boot_and_unlock(spec)

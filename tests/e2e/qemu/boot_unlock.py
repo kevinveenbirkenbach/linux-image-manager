@@ -17,8 +17,13 @@ from tests.e2e.qemu.config import QemuSpec
 
 # One generous budget covers guest boot + tor bootstrap + onion publish +
 # unlock. TCG (no KVM) is slow, so keep it roomy.
-UNLOCK_TIMEOUT = 420
+UNLOCK_TIMEOUT = 480
 DELIVERY_INTERVAL = 8
+# Hold off the first delivery until the guest onion has had time to publish.
+# A connect to a not-yet-published onion makes the client Tor cache the failed
+# descriptor fetch and back off, so early hammering can lock us out for
+# minutes; waiting until the onion is up means the first fetch succeeds.
+INITIAL_DELIVERY_DELAY = 100
 _SSH_ATTEMPT_TIMEOUT = 45
 _POLL_INTERVAL = 2
 _PROMPT_WAIT = 4  # let the encryptssh prompt appear before sending
@@ -63,18 +68,49 @@ def _qemu_stderr_tail(spec: QemuSpec, lines: int = 10) -> str:
     return "\nqemu stderr:\n  " + "\n  ".join(tail)
 
 
+def _ssh_log_path(spec: QemuSpec) -> Path:
+    return spec.work_dir / "ssh-delivery.log"
+
+
+def _ssh_log_tail(spec: QemuSpec, lines: int = 15) -> str:
+    path = _ssh_log_path(spec)
+    if not path.is_file() or not path.read_text(errors="replace").strip():
+        return ""
+    tail = path.read_text(errors="replace").splitlines()[-lines:]
+    return "\nssh delivery log:\n  " + "\n  ".join(tail)
+
+
+def _client_tor_tail(spec: QemuSpec, lines: int = 20) -> str:
+    """Return the host Tor client's HS log — onion descriptor fetch/rendezvous."""
+    path = spec.work_dir / "tor-client-hs.log"
+    if not path.is_file() or not path.read_text(errors="replace").strip():
+        return ""
+    lines_out = [
+        line
+        for line in path.read_text(errors="replace").splitlines()
+        if any(k in line.lower() for k in ("desc", "rend", "intro", "hs_", "onion"))
+    ][-lines:]
+    return "\nclient tor HS log:\n  " + "\n  ".join(lines_out)
+
+
 def _deliver_worker(spec: QemuSpec) -> None:
     """Feed the passphrase over an SSH-through-Tor session, held open.
 
     Runs in a background thread so the main loop keeps streaming serial. The
     channel is deliberately kept OPEN after sending: closing stdin immediately
     (as a plain pipe does) tears the session down before cryptsetup finishes
-    its argon2 KDF, killing the unlock mid-flight. We wait for the remote to
-    close it once the boot proceeds and dropbear is torn down.
+    its argon2 KDF, killing the unlock mid-flight. Session output is appended to
+    ssh-delivery.log so a failed unlock (onion unreachable, cryptroot-unlock
+    error) is diagnosable.
     """
+    log_file = _ssh_log_path(spec).open("a")
+    log_file.write("--- delivery attempt ---\n")
+    log_file.flush()
     proc = subprocess.Popen(
         config.ssh_argv(spec),
-        stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        stdin=subprocess.PIPE,
+        stdout=log_file,
+        stderr=log_file,
         text=True,
     )
     try:
@@ -92,6 +128,7 @@ def _deliver_worker(spec: QemuSpec) -> None:
         if proc.stdin is not None:
             with contextlib.suppress(OSError):
                 proc.stdin.close()
+        log_file.close()
 
 
 def boot_and_unlock(spec: QemuSpec) -> None:
@@ -103,20 +140,33 @@ def boot_and_unlock(spec: QemuSpec) -> None:
     """
     if spec.serial_log.exists():
         spec.serial_log.unlink()
+    if spec.direct_ssh_port:
+        target = f"127.0.0.1:{spec.direct_ssh_port} -> guest dropbear (direct)"
+        # dropbear comes up within seconds; no need to wait for an onion.
+        initial_delay = 15
+    else:
+        target = f"{spec.onion_address}:22 (Tor onion)"
+        initial_delay = INITIAL_DELIVERY_DELAY
     print(f"\n========== booting in QEMU ({spec.arch}, accel={spec.accel}) ==========")
-    print(f"Target onion: {spec.onion_address}:22  (unlock budget {UNLOCK_TIMEOUT}s)")
+    print(f"Unlock target: {target}  (budget {UNLOCK_TIMEOUT}s)")
     print("---- guest serial console ----", flush=True)
     # QEMU's own diagnostics (bad -machine/-cpu, /dev/kvm denied, image busy)
     # go to stderr; capture them so an early exit is debuggable, not opaque.
     qemu_stderr = _qemu_stderr_path(spec).open("wb")
     qemu = subprocess.Popen(
         config.qemu_argv(spec),
-        stdout=subprocess.DEVNULL, stderr=qemu_stderr,
+        stdout=subprocess.DEVNULL,
+        stderr=qemu_stderr,
     )
     try:
         deadline = time.monotonic() + UNLOCK_TIMEOUT
         offset = 0
-        next_delivery = 0.0
+        # Hold off the first delivery until the unlock endpoint is up (see above).
+        next_delivery = time.monotonic() + initial_delay
+        print(
+            f"[harness] waiting {initial_delay}s for the unlock endpoint before delivering...",
+            flush=True,
+        )
         delivery: threading.Thread | None = None
         while time.monotonic() < deadline:
             offset = _stream_new_serial(spec, offset)
@@ -132,17 +182,15 @@ def boot_and_unlock(spec: QemuSpec) -> None:
             # background while we keep streaming serial and watching the marker.
             idle = delivery is None or not delivery.is_alive()
             if idle and time.monotonic() >= next_delivery:
-                print(f"\n[harness] delivering passphrase over Tor to "
-                      f"{spec.onion_address}:22 (holding session open) ...", flush=True)
-                delivery = threading.Thread(
-                    target=_deliver_worker, args=(spec,), daemon=True
-                )
+                print("\n[harness] delivering passphrase (holding session open) ...", flush=True)
+                delivery = threading.Thread(target=_deliver_worker, args=(spec,), daemon=True)
                 delivery.start()
                 next_delivery = time.monotonic() + DELIVERY_INTERVAL
             time.sleep(_POLL_INTERVAL)
         raise RuntimeError(
             f"Boot-ok marker never appeared within {UNLOCK_TIMEOUT}s.\n"
-            f"{_serial_tail(spec)}{_qemu_stderr_tail(spec)}"
+            f"{_serial_tail(spec, lines=45)}{_qemu_stderr_tail(spec)}"
+            f"{_ssh_log_tail(spec)}{_client_tor_tail(spec)}"
         )
     finally:
         qemu.terminate()

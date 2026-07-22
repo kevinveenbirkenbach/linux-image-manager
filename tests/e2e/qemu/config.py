@@ -42,6 +42,15 @@ class QemuSpec:
     # (build_image.sh also caps --pbkdf-memory to keep this headroom).
     memory_mb: int = 2048
     accel: str = "tcg"  # "kvm" when the host arch matches and /dev/kvm exists
+    # "arch" (mkinitcpio/encryptssh) or "debian" (initramfs-tools/cryptroot-unlock).
+    os_family: str = "arch"
+    # Remote command the unlock SSH session runs; empty means the session
+    # presents the passphrase prompt itself (Arch encryptssh).
+    unlock_command: str = ""
+    # >0 selects the deterministic direct transport: QEMU forwards this host
+    # port to the guest's dropbear (:22) and the passphrase is delivered over a
+    # plain SSH (no Tor). 0 uses the Tor onion transport (onion_address).
+    direct_ssh_port: int = 0
 
     @property
     def serial_log(self) -> Path:
@@ -63,18 +72,23 @@ def kernel_cmdline(spec: QemuSpec) -> str:
     QEMU cannot emulate — hence virtio here (we model the stack, not the board).
     """
     console = _SERIAL_CONSOLE[spec.arch]
-    # The netconf hook needs the explicit ip= form
+    # Arch's mkinitcpio encrypt/encryptssh finds the LUKS device from the
+    # cryptdevice= param; Debian's cryptsetup-initramfs reads /etc/crypttab
+    # baked into the initramfs, so it needs only root=/dev/mapper/<name>.
+    if spec.os_family == "debian":
+        crypt = f"root=/dev/mapper/{spec.mapper_name} rw"
+    else:
+        crypt = (
+            f"cryptdevice=UUID={spec.luks_uuid}:{spec.mapper_name} "
+            f"root=/dev/mapper/{spec.mapper_name} rw"
+        )
+    # The netconf/dropbear-initramfs hooks need the explicit ip= form
     # <client>:<server>:<gw>:<netmask>:<host>:<device>:<proto> — the device
-    # name is mandatory (as lim's own boot config uses it); a bare "ip=dhcp"
-    # leaves netconf looping on "SIOCGIFFLAGS: No such device". net.ifnames=0
-    # keeps the virtio NIC named eth0.
+    # name is mandatory; a bare "ip=dhcp" leaves netconf looping on
+    # "SIOCGIFFLAGS: No such device". net.ifnames=0 keeps the NIC named eth0.
     # The LAST console= owns /dev/console, which the boot-ok marker echoes to
     # and QEMU captures via -serial file, so the serial console must come last.
-    return (
-        f"cryptdevice=UUID={spec.luks_uuid}:{spec.mapper_name} "
-        f"root=/dev/mapper/{spec.mapper_name} rw "
-        f"ip=::::lim-e2e:eth0:dhcp net.ifnames=0 console=tty0 console={console}"
-    )
+    return f"{crypt} ip=::::lim-e2e:eth0:dhcp net.ifnames=0 console=tty0 console={console}"
 
 
 def qemu_argv(spec: QemuSpec) -> list[str]:
@@ -94,16 +108,28 @@ def qemu_argv(spec: QemuSpec) -> list[str]:
         argv += ["-cpu", "host", "-accel", "kvm"]
     elif spec.arch == "x86_64":
         argv += ["-cpu", "max", "-accel", "tcg"]
+    netdev = "user,id=net0"
+    if spec.direct_ssh_port:
+        # Forward a host port to the guest's dropbear for the direct transport.
+        netdev += f",hostfwd=tcp:127.0.0.1:{spec.direct_ssh_port}-:22"
     argv += [
-        "-m", str(spec.memory_mb),
-        "-kernel", str(spec.kernel_path),
-        "-initrd", str(spec.initramfs_path),
-        "-append", kernel_cmdline(spec),
-        "-drive", f"file={spec.image_path},if=virtio,format=raw",
-        "-netdev", "user,id=net0",
-        "-device", f"{net_device},netdev=net0",
+        "-m",
+        str(spec.memory_mb),
+        "-kernel",
+        str(spec.kernel_path),
+        "-initrd",
+        str(spec.initramfs_path),
+        "-append",
+        kernel_cmdline(spec),
+        "-drive",
+        f"file={spec.image_path},if=virtio,format=raw",
+        "-netdev",
+        netdev,
+        "-device",
+        f"{net_device},netdev=net0",
         "-nographic",
-        "-serial", f"file:{spec.serial_log}",
+        "-serial",
+        f"file:{spec.serial_log}",
         "-no-reboot",
     ]
     return argv
@@ -115,18 +141,34 @@ def ssh_proxy_command(socks_port: int) -> str:
 
 
 def ssh_argv(spec: QemuSpec) -> list[str]:
-    """Non-interactive SSH into the initramfs dropbear via the onion address.
+    """Non-interactive SSH into the initramfs dropbear to feed the passphrase.
 
-    ``-tt`` forces a pty so the cryptsetup askpass inside the encryptssh
-    session reads the passphrase we pipe on stdin. Host-key checking is off
-    because a throwaway onion has no known_hosts entry.
+    ``-tt`` forces a pty so the askpass inside the session reads the passphrase
+    we pipe on stdin. Host-key checking is off (throwaway host key). On Debian
+    the session runs ``cryptroot-unlock``; on Arch encryptssh presents the
+    prompt on login. The direct transport connects to a forwarded host port;
+    the Tor transport routes through the onion via a SOCKS ProxyCommand.
     """
-    return [
-        "ssh", "-tt",
-        "-o", "StrictHostKeyChecking=no",
-        "-o", "UserKnownHostsFile=/dev/null",
-        "-o", "BatchMode=yes",
-        "-o", f"ProxyCommand={ssh_proxy_command(spec.socks_port)}",
-        "-i", str(spec.ssh_key_path),
-        f"root@{spec.onion_address}",
+    argv = [
+        "ssh",
+        "-tt",
+        "-o",
+        "StrictHostKeyChecking=no",
+        "-o",
+        "UserKnownHostsFile=/dev/null",
+        "-o",
+        "BatchMode=yes",
+        "-i",
+        str(spec.ssh_key_path),
     ]
+    if spec.direct_ssh_port:
+        argv += ["-p", str(spec.direct_ssh_port), "root@127.0.0.1"]
+    else:
+        argv += [
+            "-o",
+            f"ProxyCommand={ssh_proxy_command(spec.socks_port)}",
+            f"root@{spec.onion_address}",
+        ]
+    if spec.unlock_command:
+        argv.append(spec.unlock_command)
+    return argv

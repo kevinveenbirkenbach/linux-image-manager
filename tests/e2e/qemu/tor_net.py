@@ -17,7 +17,7 @@ import subprocess
 import time
 from pathlib import Path
 
-BOOTSTRAP_TIMEOUT = 180
+BOOTSTRAP_TIMEOUT = 300  # public Tor bootstrap can stall on slow guards
 _GUEST_HOST_ALIAS = "10.0.2.2"  # QEMU user-net alias for the host's 127.0.0.1
 
 
@@ -41,12 +41,21 @@ class PublicTorClient:
         empty_torrc.write_text("")
         self._process = subprocess.Popen(
             [
-                "tor", "-f", str(empty_torrc),
-                "--SocksPort", str(self.socks_port),
-                "--DataDirectory", str(self._data),
-                "--Log", f"notice file {self._log}",
+                "tor",
+                "-f",
+                str(empty_torrc),
+                "--SocksPort",
+                str(self.socks_port),
+                "--DataDirectory",
+                str(self._data),
+                "--Log",
+                f"notice file {self._log}",
+                # HS-level log so onion descriptor fetch / rendezvous is visible.
+                "--Log",
+                f"[rend]info file {self._work_dir / 'tor-client-hs.log'}",
             ],
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         )
         _wait_for_bootstrap(self._log, self._process)
 
@@ -75,7 +84,8 @@ class ChutneyNetwork:
     def _run(self, *args: str) -> None:
         subprocess.run(
             [str(self._chutney / "chutney"), *args, self._network],
-            cwd=self._chutney, check=True,
+            cwd=self._chutney,
+            check=True,
         )
 
     def start(self) -> None:
