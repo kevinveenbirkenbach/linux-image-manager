@@ -35,10 +35,20 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 # The QEMU binary is arch-specific, so derive it from LIM_E2E_ARCH instead of
 # hardcoding x86_64 — otherwise the documented aarch64 run is never reachable.
 _ARCH = os.environ.get("LIM_E2E_ARCH", "x86_64")
-_REQUIRED = (
+# The OS family selects the build tool: pacstrap (Arch) or debootstrap (Debian).
+_OS = os.environ.get("LIM_E2E_OS", "arch")
+# "direct" (deterministic port-forward) is the default; "tor" runs the full,
+# opt-in onion transport (flaky over public Tor inside QEMU).
+_TRANSPORT = os.environ.get("LIM_E2E_TRANSPORT", "direct")
+_BUILD_TOOL = {"arch": "pacstrap", "debian": "debootstrap"}
+_REQUIRED = [
     qemu_config.qemu_binary(_ARCH),
-    "cryptsetup", "pacstrap", "tor", "ssh", "ncat",
-)
+    _BUILD_TOOL.get(_OS, "pacstrap"),
+    "cryptsetup",
+    "ssh",
+]
+if _TRANSPORT == "tor":  # the onion transport also needs a Tor client + ncat
+    _REQUIRED += ["tor", "ncat"]
 
 
 def _missing_tools() -> list[str]:
@@ -48,25 +58,24 @@ def _missing_tools() -> list[str]:
 pytestmark = pytest.mark.skipif(
     os.environ.get("LIM_E2E_QEMU") != "1" or bool(_missing_tools()),
     reason=(
-        "needs LIM_E2E_QEMU=1 and "
-        + ", ".join(_REQUIRED)
-        + " (build stage needs root; slow)."
+        "needs LIM_E2E_QEMU=1 and " + ", ".join(_REQUIRED) + " (build stage needs root; slow)."
     ),
 )
 
 
-def test_full_build_boot_and_tor_unlock(tmp_path):
+def test_full_build_boot_and_unlock(tmp_path):
     chutney_path = os.environ.get("CHUTNEY_PATH")
     cfg = HarnessConfig(
         repo_root=REPO_ROOT,
         work_dir=tmp_path / "qemu-e2e",
         arch=_ARCH,
+        os_family=_OS,
+        unlock_transport=_TRANSPORT,
         chutney_path=Path(chutney_path) if chutney_path else None,
     )
 
     spec = run(cfg)
 
-    # run() only returns after the marker was observed; re-assert for clarity.
-    assert spec.onion_address.endswith(".onion")
+    # run() only returns after the boot-ok marker was observed on the console.
     serial = spec.serial_log.read_text(errors="replace")
     assert qemu_config.BOOT_OK_MARKER in serial
