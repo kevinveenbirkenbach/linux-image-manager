@@ -59,14 +59,12 @@ COMMANDS: dict[str, Command] = {
     ),
     "mount": Command(
         single_drive.mount,
-        "Mount Encrypted Storage:\n"
-        "  - Unlocks a LUKS partition and mounts it.",
+        "Mount Encrypted Storage:\n  - Unlocks a LUKS partition and mounts it.",
         needs_root=True,
     ),
     "umount": Command(
         single_drive.umount,
-        "Unmount Encrypted Storage:\n"
-        "  - Unmounts a LUKS partition and closes the mapper.",
+        "Unmount Encrypted Storage:\n  - Unmounts a LUKS partition and closes the mapper.",
         needs_root=True,
     ),
     "single-boot": Command(
@@ -83,26 +81,22 @@ COMMANDS: dict[str, Command] = {
     ),
     "unlock": Command(
         crypt.unlock,
-        "Unlock Data:\n"
-        "  - Decrypts the encfs data store into the decrypted folder.",
+        "Unlock Data:\n  - Decrypts the encfs data store into the decrypted folder.",
         needs_root=False,
     ),
     "lock": Command(
         crypt.lock,
-        "Lock Data:\n"
-        "  - Unmounts the decrypted encfs folder.",
+        "Lock Data:\n  - Unmounts the decrypted encfs folder.",
         needs_root=False,
     ),
     "import": Command(
         sync.import_from_system,
-        "Import Data:\n"
-        "  - Copies personal data from the system into the encrypted store.",
+        "Import Data:\n  - Copies personal data from the system into the encrypted store.",
         needs_root=False,
     ),
     "export": Command(
         sync.export_to_system,
-        "Export Data:\n"
-        "  - Copies personal data from the encrypted store back to the system.",
+        "Export Data:\n  - Copies personal data from the encrypted store back to the system.",
         needs_root=False,
     ),
 }

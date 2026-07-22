@@ -24,9 +24,7 @@ def test_every_command_dispatches_to_its_function(monkeypatch):
 def test_needs_root_command_requests_root(monkeypatch):
     escalated = []
     monkeypatch.setattr(system, "ensure_root", lambda: escalated.append(True))
-    monkeypatch.setitem(
-        cli.COMMANDS, "backup", Command(lambda: None, "d", needs_root=True)
-    )
+    monkeypatch.setitem(cli.COMMANDS, "backup", Command(lambda: None, "d", needs_root=True))
     cli.main(["--type", "backup", "--auto-confirm"])
     assert escalated == [True]
 

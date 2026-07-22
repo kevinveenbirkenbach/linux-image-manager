@@ -32,9 +32,7 @@ def setup() -> None:
     runner.run(["cryptsetup", "-v", "-y", "luksFormat", target.partition_path], sudo=True)
 
     ui.info("Unlock partition...")
-    runner.run(
-        ["cryptsetup", "luksOpen", target.partition_path, target.mapper_name], sudo=True
-    )
+    runner.run(["cryptsetup", "luksOpen", target.partition_path, target.mapper_name], sudo=True)
 
     ui.info("Create btrfs file system...")
     runner.run(["mkfs.btrfs", target.mapper_path], sudo=True)
@@ -57,9 +55,7 @@ def mount() -> None:
     target = select_storage_target()
 
     ui.info("Unlock partition...")
-    runner.run(
-        ["cryptsetup", "luksOpen", target.partition_path, target.mapper_name], sudo=True
-    )
+    runner.run(["cryptsetup", "luksOpen", target.partition_path, target.mapper_name], sudo=True)
 
     ui.info("Mount partition...")
     runner.run(["mount", target.mapper_path, target.mount_path], sudo=True)

@@ -20,9 +20,7 @@ def test_storage_target_derives_all_paths():
     assert target.partition_path == "/dev/sdb1"
 
 
-def test_single_drive_setup_command_sequence(
-    fake_runner, answers, block_devices, monkeypatch
-):
+def test_single_drive_setup_command_sequence(fake_runner, answers, block_devices, monkeypatch):
     monkeypatch.setattr("lim.system.real_user", lambda: "kevin")
     answers("sdb", "N")  # device name, skip overwrite
 

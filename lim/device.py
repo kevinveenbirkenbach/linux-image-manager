@@ -119,9 +119,7 @@ def overwrite_device(device: Device) -> None:
 
 def blkid_value(path: str, tag: str) -> str:
     """Return a blkid tag value ("TYPE", "UUID", ...) or "" when unavailable."""
-    return runner.output(
-        ["blkid", path, "-s", tag, "-o", "value"], sudo=True, check=False
-    )
+    return runner.output(["blkid", path, "-s", tag, "-o", "value"], sudo=True, check=False)
 
 
 def is_mounted(path_fragment: str) -> bool:

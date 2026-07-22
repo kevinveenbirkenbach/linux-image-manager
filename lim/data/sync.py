@@ -90,31 +90,22 @@ def execute_sync_plan(operations: list[SyncOperation]) -> None:
         if not operation.is_directory and Path(operation.destination).is_file():
             ui.info("The destination file already exists!")
             ui.info("Difference:")
-            runner.run(
-                ["diff", operation.destination, operation.source], check=False
-            )
+            runner.run(["diff", operation.destination, operation.source], check=False)
         runner.run(rsync_command(operation))
 
 
 def ensure_unlocked() -> None:
     mounts = runner.output(["mount"], check=False)
     if str(config.DECRYPTED_PATH) not in mounts:
-        ui.info(
-            f"The decrypted folder {config.DECRYPTED_PATH} is locked. "
-            "You need to unlock it!"
-        )
+        ui.info(f"The decrypted folder {config.DECRYPTED_PATH} is locked. You need to unlock it!")
         crypt.unlock()
 
 
 def import_from_system(mode: str = "import") -> None:
     ensure_unlocked()
-    backup_folder = (
-        config.BACKUP_PATH / mode / time.strftime("%Y%m%d%H%M%S")
-    )
+    backup_folder = config.BACKUP_PATH / mode / time.strftime("%Y%m%d%H%M%S")
     backup_folder.mkdir(parents=True, exist_ok=True)
-    operations = build_sync_plan(
-        mode, system.real_home(), config.DATA_PATH, backup_folder
-    )
+    operations = build_sync_plan(mode, system.real_home(), config.DATA_PATH, backup_folder)
     execute_sync_plan(operations)
 
 

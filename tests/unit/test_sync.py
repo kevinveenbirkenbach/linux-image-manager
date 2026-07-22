@@ -58,10 +58,19 @@ def test_rsync_command_uses_delete_only_for_directories():
     directory_op = sync.SyncOperation("src/", "dst/", "backup", is_directory=True)
     file_op = sync.SyncOperation("src", "dst", "backup", is_directory=False)
     assert sync.rsync_command(directory_op) == [
-        "rsync", "-abcEPuvW", "--delete", "--backup-dir=backup", "src/", "dst/"
+        "rsync",
+        "-abcEPuvW",
+        "--delete",
+        "--backup-dir=backup",
+        "src/",
+        "dst/",
     ]
     assert sync.rsync_command(file_op) == [
-        "rsync", "-abcEPuvW", "--backup-dir=backup", "src", "dst"
+        "rsync",
+        "-abcEPuvW",
+        "--backup-dir=backup",
+        "src",
+        "dst",
     ]
 
 
@@ -95,18 +104,12 @@ def test_export_chowns_real_home_without_sudo(tmp_path, fake_runner, monkeypatch
 
     sync.export_to_system()
 
-    chown_calls = [
-        (cmd, sudo) for cmd, sudo in fake_runner.sudo_log if cmd[0] == "chown"
-    ]
-    assert chown_calls == [
-        (["chown", "-R", "kevin:kevin", str(real_home)], False)
-    ]
+    chown_calls = [(cmd, sudo) for cmd, sudo in fake_runner.sudo_log if cmd[0] == "chown"]
+    assert chown_calls == [(["chown", "-R", "kevin:kevin", str(real_home)], False)]
     assert (real_home / ".ssh/id_rsa").stat().st_mode & 0o777 == 0o600
 
 
-def test_execute_sync_plan_creates_folders_and_runs_rsync(
-    tmp_path, fake_runner
-):
+def test_execute_sync_plan_creates_folders_and_runs_rsync(tmp_path, fake_runner):
     operation = sync.SyncOperation(
         source=str(tmp_path / "src.txt"),
         destination=str(tmp_path / "deep/nested/dst.txt"),
