@@ -16,6 +16,23 @@ def replace_in_file(search: str, replace: str, path: str | Path) -> None:
     path.write_text(new_text)
 
 
+def drop_fstab_mount(mount_point: str, path: str | Path) -> None:
+    """Remove any (non-comment) fstab line whose mount point field equals mount_point.
+
+    Lets a fresh mapper/boot entry replace a stock image's existing one instead
+    of colliding with it. No-op when the file or a matching line is absent.
+    """
+    path = Path(path)
+    if not path.exists():
+        return
+    kept = [
+        line
+        for line in path.read_text().splitlines()
+        if line.lstrip().startswith("#") or line.split()[1:2] != [mount_point]
+    ]
+    path.write_text("".join(f"{line}\n" for line in kept))
+
+
 def ensure_line_in_file(line: str, path: str | Path) -> bool:
     """Append ``line`` unless already present. Returns True when appended."""
     path = Path(path)

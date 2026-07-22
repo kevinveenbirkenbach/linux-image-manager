@@ -60,6 +60,17 @@ def choose_retropie(plan: ImagePlan) -> None:
     plan.image_name = entry["image"]
 
 
+def choose_raspios(plan: ImagePlan) -> None:
+    plan.boot_size = "+512M"
+    plan.root_filesystem = "ext4"
+    variant = ui.ask("Which Raspberry Pi OS image [lite64,desktop64,lite32]:")
+    entry = catalog.raspios_images().get(variant)
+    if entry is None:
+        raise LimError(f"Raspberry Pi OS variant {variant} isn't supported.")
+    plan.source_url = entry["source_url"]
+    plan.image_name = entry["image"]
+
+
 def choose_torbox(plan: ImagePlan) -> None:
     plan.base_download_url = "https://www.torbox.ch/data/"
     plan.image_name = "torbox-20220102-v050.gz"
@@ -83,12 +94,13 @@ DISTRIBUTION_CHOOSERS = {
     "manjaro": choose_manjaro,
     "moode": choose_moode,
     "retropie": choose_retropie,
+    "raspios": choose_raspios,
 }
 
 
 def choose_linux_image(plan: ImagePlan) -> None:
     distribution = ui.ask(
-        "Which distribution should be used [arch,moode,retropie,manjaro,torbox...]?"
+        "Which distribution should be used [arch,raspios,moode,retropie,manjaro,torbox...]?"
     )
     chooser = DISTRIBUTION_CHOOSERS.get(distribution)
     if chooser is None:

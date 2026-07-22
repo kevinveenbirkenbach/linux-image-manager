@@ -1,16 +1,18 @@
 """Download the selected image and transfer it onto the target device."""
 
+import shutil
 from pathlib import Path
 
 from lim import device as device_module
 from lim import runner, ui
 from lim.errors import LimError
+from lim.image import loopimg
 from lim.image.plan import DEFAULT_BOOT_SIZE, ImagePlan
 from lim.image.session import ImageSession
 
 
-def download_image(plan: ImagePlan) -> None:
-    if ui.confirm("Should the image download be forced?"):
+def download_image(plan: ImagePlan, *, force_prompt: bool = True) -> None:
+    if force_prompt and ui.confirm("Should the image download be forced?"):
         if plan.image_path.is_file():
             ui.info(f"Removing image {plan.image_path}.")
             plan.image_path.unlink()
@@ -116,18 +118,106 @@ def transfer_arch_image(plan: ImagePlan, session: ImageSession) -> None:
         runner.run(["mv", "-v", str(entry), str(session.boot_mount_path)], sudo=True)
 
 
-def transfer_image(plan: ImagePlan, session: ImageSession) -> None:
-    if ui.confirm(f"Should the partition table of {session.device.path} be deleted?"):
-        ui.info("Deleting...")
-        runner.run(["wipefs", "-a", session.device.path], sudo=True)
-    else:
-        ui.info("Skipping partition table deletion...")
+def _create_encrypted_layout(plan: ImagePlan, session: ImageSession) -> None:
+    """Partition the target, LUKS-format the root, format and mount both."""
+    boot_size = plan.boot_size or DEFAULT_BOOT_SIZE
+    ui.info(f"Creating partitions (boot {boot_size})...")
+    runner.run(
+        ["fdisk", session.device.path],
+        input_text=arch_partition_input(boot_size),
+        sudo=True,
+    )
+    runner.run(["mkfs.vfat", session.boot_partition_path], sudo=True)
+    _luks_format_root(plan, session)
+    session.decrypt_root()
+    runner.run([f"mkfs.{plan.root_filesystem}", "-F", session.root_mapper_path], sudo=True)
+    session.mount_partitions()
 
-    device_module.overwrite_device(session.device)
+
+def _copy_tree(source: str, target: str, flags: list[str]) -> None:
+    """Copy a directory's contents, showing progress when rsync is available."""
+    if shutil.which("rsync"):
+        runner.run(["rsync", *flags, "--info=progress2", f"{source}/", f"{target}/"], sudo=True)
+    else:
+        runner.run(["cp", "-a", f"{source}/.", target], sudo=True)
+
+
+def _fix_boot_fstab(session: ImageSession) -> None:
+    """Repoint the stock boot fstab line at the freshly created boot partition.
+
+    The copied image mounts /boot(/firmware) by the stock PARTUUID, which no
+    longer exists after repartitioning; swap in the new boot UUID, mount point
+    unchanged. No-op when the image carries no boot line.
+    """
+    fstab = session.root_mount_path / "etc/fstab"
+    if not fstab.is_file():
+        return
+    lines = []
+    for line in fstab.read_text().splitlines():
+        fields = line.split()
+        if not line.lstrip().startswith("#") and fields[1:2] and fields[1].startswith("/boot"):
+            fields[0] = f"UUID={session.boot_partition_uuid}"
+            lines.append("  ".join(fields))
+        else:
+            lines.append(line)
+    fstab.write_text("".join(f"{entry}\n" for entry in lines))
+
+
+def transfer_disk_image(plan: ImagePlan, session: ImageSession) -> None:
+    """Copy a full disk image (boot + root partitions) into a fresh encrypted layout.
+
+    Distributions that ship a partitioned .img rather than a rootfs tarball
+    (Raspberry Pi OS, moode, RetroPie, Manjaro ARM) are loop-mounted and their
+    first two partitions copied into a new LUKS container.
+    """
+    raw = plan.image_path.with_suffix("")
+    ui.info(f"Decompressing {plan.image_path} to {raw}...")
+    runner.pipeline(
+        decompress_command(plan.image_path),
+        ["dd", f"of={raw}", "bs=4M", "conv=fsync", "status=progress"],
+        error_msg=f"Decompressing {plan.image_path} failed.",
+    )
+    loop = loopimg.attach(raw)
+    source_boot = session.working_folder / "source-boot"
+    source_root = session.working_folder / "source-root"
+    try:
+        source_boot.mkdir()
+        source_root.mkdir()
+        runner.run(["mount", "-o", "ro", loopimg.partition(loop, 1), str(source_boot)], sudo=True)
+        runner.run(["mount", "-o", "ro", loopimg.partition(loop, 2), str(source_root)], sudo=True)
+
+        _create_encrypted_layout(plan, session)
+
+        ui.info("Copying the root filesystem into the encrypted container...")
+        _copy_tree(str(source_root), str(session.root_mount_path), ["-aHAX"])
+        ui.info("Copying the boot partition...")
+        _copy_tree(str(source_boot), str(session.boot_mount_path), ["-a"])
+        runner.sync_disks()
+        _fix_boot_fstab(session)
+    finally:
+        runner.run(["umount", "-v", str(source_boot)], sudo=True, check=False)
+        runner.run(["umount", "-v", str(source_root)], sudo=True, check=False)
+        loopimg.detach(loop)
+        for path in (source_boot, source_root):
+            runner.run(["rmdir", str(path)], sudo=True, check=False)
+
+
+def transfer_image(plan: ImagePlan, session: ImageSession, *, interactive: bool = True) -> None:
+    if interactive:
+        if ui.confirm(f"Should the partition table of {session.device.path} be deleted?"):
+            ui.info("Deleting...")
+            runner.run(["wipefs", "-a", session.device.path], sudo=True)
+        else:
+            ui.info("Skipping partition table deletion...")
+        device_module.overwrite_device(session.device)
 
     ui.info("Starting image transfer...")
     if plan.distribution == "arch":
         transfer_arch_image(plan, session)
+        return
+    if plan.encrypt_system:
+        # Non-tarball distros ship a full .img; copy it into a LUKS container.
+        transfer_disk_image(plan, session)
         return
     blocksize = session.device.optimal_blocksize
     ui.info(f"Transfering {plan.image_path.suffix} file...")

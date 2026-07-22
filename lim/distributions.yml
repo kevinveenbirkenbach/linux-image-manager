@@ -57,6 +57,19 @@ retropie_images:
     checksum: b5daa6e7660a99c246966f3f09b4014b
     image: retropie-buster-4.8-rpi4_400.img.gz
 
+# Raspberry Pi OS. The "_latest" endpoints 302-redirect to the current release;
+# image is only the local filename (must end .img.xz for decompress_command).
+raspios_images:
+  lite64:
+    source_url: https://downloads.raspberrypi.com/raspios_lite_arm64_latest
+    image: raspios_lite_arm64_latest.img.xz
+  desktop64:
+    source_url: https://downloads.raspberrypi.com/raspios_arm64_latest
+    image: raspios_arm64_latest.img.xz
+  lite32:
+    source_url: https://downloads.raspberrypi.com/raspios_lite_armhf_latest
+    image: raspios_lite_armhf_latest.img.xz
+
 # Extra kernel modules the initramfs needs for early network access,
 # see https://raspberrypi.stackexchange.com/questions/67051
 mkinitcpio_modules_by_rpi:

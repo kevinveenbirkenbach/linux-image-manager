@@ -68,6 +68,8 @@ class InitramfsToolsBackend(InitramfsBackend):
             "  defaults,noatime  0  1"
         )
         ui.info(f"Configuring {fstab_path}...")
+        # A stock image already mounts / by PARTUUID; drop it so the mapper wins.
+        fsutil.drop_fstab_mount("/", fstab_path)
         fsutil.ensure_line_in_file(fstab_line, fstab_path)
 
         crypttab_path = root / "etc/crypttab"
