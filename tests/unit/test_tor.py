@@ -189,7 +189,7 @@ class TestInitramfsToolsBackend:
         apt = [
             text
             for _, _, text in fake_runner.calls
-            if text and "apt install" in text and "tor busybox" in text
+            if text and "apt-get install" in text and "tor busybox" in text
         ]
         assert len(apt) == 1
 

@@ -101,7 +101,8 @@ class TestInstallPackages:
             for kind, cmd, input_text in fake_runner.calls
             if kind == "run" and cmd[0] == "chroot"
         ]
-        assert chroot_calls == ["pacman --noconfirm -S --needed btrfs-progs"]
+        assert len(chroot_calls) == 1
+        assert "pacman --noconfirm -Sy --needed btrfs-progs" in chroot_calls[0]
 
     def test_apt_for_retropie(self, tmp_path, fake_runner):
         install_packages("retropie", tmp_path, "btrfs-progs")
@@ -110,7 +111,9 @@ class TestInstallPackages:
             for kind, cmd, input_text in fake_runner.calls
             if kind == "run" and cmd[0] == "chroot"
         ]
-        assert chroot_calls == ["yes | apt install btrfs-progs"]
+        assert len(chroot_calls) == 1
+        assert "apt-get update" in chroot_calls[0]
+        assert "apt-get install -y btrfs-progs" in chroot_calls[0]
 
     def test_unsupported_distribution_raises(self, tmp_path, fake_runner):
         with pytest.raises(LimError):

@@ -161,11 +161,16 @@ class ImageSession:
                 ui.warning("Failed.")
 
 
+# The host PATH leaks into the chroot; force one that includes the sbin dirs
+# where Debian keeps update-initramfs, useradd, chpasswd, ... (else code 127).
+_CHROOT_PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+
 def chroot_bash(root_mount_path: Path | str, script: str, error_msg: str | None = None) -> None:
-    """Run a bash script inside the image via chroot."""
+    """Run a bash script inside the image via chroot (with a Debian-safe PATH)."""
     runner.run(
         ["chroot", str(root_mount_path), "/bin/bash"],
-        input_text=script,
+        input_text=f"export PATH={_CHROOT_PATH}\n{script}",
         sudo=True,
         error_msg=error_msg,
     )
@@ -175,8 +180,13 @@ def install_packages(distribution: str, root_mount_path: Path, package_names: st
     """Install packages inside the image with the distribution's package manager."""
     ui.info(f"Installing {package_names}...")
     if distribution in ("arch", "manjaro"):
-        chroot_bash(root_mount_path, f"pacman --noconfirm -S --needed {package_names}")
+        chroot_bash(root_mount_path, f"pacman --noconfirm -Sy --needed {package_names}")
     elif distribution in ("moode", "retropie", "raspios"):
-        chroot_bash(root_mount_path, f"yes | apt install {package_names}")
+        # apt-get update first: a stock image ships stale lists whose old .deb
+        # URLs 404 once the mirror has superseded them.
+        chroot_bash(
+            root_mount_path,
+            f"apt-get update\nDEBIAN_FRONTEND=noninteractive apt-get install -y {package_names}",
+        )
     else:
         raise LimError("Package manager not supported.")
