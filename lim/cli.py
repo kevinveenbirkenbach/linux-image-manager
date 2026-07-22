@@ -10,6 +10,8 @@ from lim.data import crypt, sync
 from lim.errors import LimError
 from lim.image import backup, chroot
 from lim.image import setup as image_setup
+from lim.image import unlock as image_unlock
+from lim.image import wizard as image_wizard
 from lim.storage import raid1, single_drive
 
 
@@ -28,6 +30,20 @@ COMMANDS: dict[str, Command] = {
         "  - Transfers the Linux image file to the device.\n"
         "  - Configures boot and root partitions.",
         needs_root=True,
+    ),
+    "guided": Command(
+        image_wizard.run_guided,
+        "Guided Encrypted Linux Image Setup (default command):\n"
+        "  - Walks through flashing a Linux image (Arch, Raspberry Pi OS, ...) onto a device.\n"
+        "  - Encrypts the root with LUKS and enables remote unlock over Tor.",
+        needs_root=True,
+    ),
+    "remote-unlock": Command(
+        image_unlock.remote_unlock,
+        "Remote LUKS Boot Unlock:\n"
+        "  - Reaches a waiting initramfs over Tor (onion) or plain SSH.\n"
+        "  - Runs cryptroot-unlock or presents the passphrase prompt.",
+        needs_root=False,
     ),
     "single": Command(
         single_drive.setup,
@@ -116,20 +132,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--type",
-        required=True,
+        default="guided",
         choices=list(COMMANDS.keys()),
-        help="Select the command to execute.",
+        help="Command to execute (default: guided).",
     )
     parser.add_argument(
         "--auto-confirm",
         action="store_true",
         help="Automatically confirm execution without prompting the user.",
-    )
-    parser.add_argument(
-        "--extra",
-        nargs=argparse.REMAINDER,
-        default=[],
-        help="Deprecated, ignored. Former extra parameters for the shell scripts.",
     )
     return parser
 
@@ -138,8 +148,6 @@ def main(argv: list[str] | None = None) -> None:
     args = build_parser().parse_args(argv)
     command = COMMANDS[args.type]
 
-    if args.extra:
-        ui.warning("--extra is deprecated and ignored.")
     if command.needs_root:
         system.ensure_root()
 
