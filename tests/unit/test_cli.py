@@ -57,6 +57,10 @@ def test_unknown_type_is_rejected_by_argparse():
     assert excinfo.value.code == 2
 
 
+def test_type_defaults_to_guided():
+    assert cli.build_parser().parse_args([]).type == "guided"
+
+
 def test_all_registered_commands_have_descriptions():
     for name, command in cli.COMMANDS.items():
         assert command.description, name
