@@ -88,10 +88,24 @@ class ImageSession:
         ui.info("The following mounts refering this setup exist:")
         runner.run(["findmnt", "-R", str(self.working_folder)], check=False)
 
+    def boot_bind_target(self) -> str:
+        """Where the FAT partition belongs inside the chroot.
+
+        Raspberry Pi OS Bookworm keeps it at /boot/firmware (the raspi-firmware
+        post-update hook syncs the initramfs there); older layouts use /boot.
+        Binding it wrong sends update-initramfs's output to the ext4 root, so the
+        firmware boots a stock initramfs without cryptsetup -> initramfs shell.
+        """
+        if (self.root_mount_path / "boot/firmware").is_dir():
+            return f"{self.root_mount_path}/boot/firmware"
+        return f"{self.root_mount_path}/boot"
+
     def mount_chroot_binds(self) -> None:
         ui.info("Mount chroot environments...")
         root = self.root_mount_path
-        runner.run(["mount", "--bind", str(self.boot_mount_path), f"{root}/boot"], sudo=True)
+        runner.run(
+            ["mount", "--bind", str(self.boot_mount_path), self.boot_bind_target()], sudo=True
+        )
         runner.run(["mount", "--bind", "/dev", f"{root}/dev"], sudo=True)
         runner.run(["mount", "--bind", "/sys", f"{root}/sys"], sudo=True)
         runner.run(["mount", "--bind", "/proc", f"{root}/proc"], sudo=True)
@@ -142,7 +156,7 @@ class ImageSession:
             self._umount(f"{root}/dev", lazy=True)
             self._umount(f"{root}/proc")
             self._umount(f"{root}/sys")
-            self._umount(f"{root}/boot")
+            self._umount(self.boot_bind_target())
             self._umount(str(root))
         if self.boot_mount_path is not None:
             self._umount(str(self.boot_mount_path))
