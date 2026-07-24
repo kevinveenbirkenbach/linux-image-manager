@@ -174,6 +174,7 @@ class TestInitramfsToolsBackend:
         assert "root=/dev/mapper/cryptroot" in cmdline
         assert "root=PARTUUID=abcd-02" not in cmdline
         assert "ip=::::pi:eth0:dhcp" in cmdline
+        assert "tor_ntp=" in cmdline
         assert cmdline.count("\n") == 1  # cmdline must stay a single line
         assert "auto_initramfs=1" in (session.boot_mount_path / "config.txt").read_text()
 
@@ -209,3 +210,11 @@ class TestInitramfsToolsHookHardening:
         premount = self._read("tor_premount")
         assert '. "$conf"' not in premount
         assert "sed -n 's/^IPV4DNS" in premount
+
+    def test_hook_stamps_a_clock_floor(self):
+        assert "/etc/tor-clock-floor" in self._read("tor_hook")
+
+    def test_premount_raises_clock_to_floor_before_ntp(self):
+        premount = self._read("tor_premount")
+        assert "/etc/tor-clock-floor" in premount
+        assert premount.index("tor-clock-floor") < premount.index("ntpd")

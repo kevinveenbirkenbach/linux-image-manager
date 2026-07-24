@@ -25,6 +25,8 @@ for bb in /bin/busybox /usr/bin/busybox; do
     [ -x "$bb" ] && { copy_exec "$bb" /usr/local/bin/busybox; break; }
 done
 
+date -u +%s > "${DESTDIR}/etc/tor-clock-floor"
+
 # Onion keys + torrc, staged on the system by lim.
 mkdir -p "${DESTDIR}/etc/tor/onion"
 for key in hostname hs_ed25519_public_key hs_ed25519_secret_key; do

@@ -20,6 +20,9 @@ from lim.image.initramfs.base import InitramfsBackend
 from lim.image.plan import ImagePlan
 from lim.image.session import ImageSession, chroot_bash, install_packages
 
+# Numeric IP, not a hostname: the initramfs has no DNS resolver.
+_DEFAULT_NTP = "162.159.200.123"
+
 
 class InitramfsToolsBackend(InitramfsBackend):
     def luks_package_collection(self) -> str:
@@ -91,12 +94,7 @@ class InitramfsToolsBackend(InitramfsBackend):
             "update-initramfs -c -k all 2>/dev/null || update-initramfs -u -k all",
         )
 
-    def configure_bootloader(
-        self,
-        plan: ImagePlan,  # noqa: ARG002
-        session: ImageSession,
-        root: Path,
-    ) -> None:
+    def configure_bootloader(self, plan: ImagePlan, session: ImageSession, root: Path) -> None:
         hostname = (root / "etc/hostname").read_text().strip()
         boot = session.boot_mount_path
 
@@ -113,5 +111,7 @@ class InitramfsToolsBackend(InitramfsBackend):
             text = f"{text} ip=::::{hostname}:eth0:dhcp"
         if "net.ifnames=0" not in text:
             text = f"{text} net.ifnames=0"
+        if plan.tor_unlock and "tor_ntp=" not in text:
+            text = f"{text} tor_ntp={_DEFAULT_NTP}"
         cmdline_txt.write_text(text + "\n")
         ui.info(f"Content of {cmdline_txt}:{cmdline_txt.read_text()}")
