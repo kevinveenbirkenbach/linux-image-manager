@@ -63,6 +63,17 @@ class TestDistributionChoosers:
         with pytest.raises(LimError):
             choosers.choose_linux_image(plan)
 
+    def test_numeric_selection_maps_to_distribution(self, plan, answers):
+        number = str(list(choosers.DISTRIBUTION_CHOOSERS).index("raspios") + 1)
+        answers(number, "lite64")
+        choosers.choose_linux_image(plan)
+        assert plan.distribution == "raspios"
+
+    def test_name_selection_still_works(self, plan, answers):
+        answers("arch", "1")
+        choosers.choose_linux_image(plan)
+        assert plan.distribution == "arch"
+
 
 class TestPartitionInput:
     def test_contains_boot_size_and_writes_table(self):

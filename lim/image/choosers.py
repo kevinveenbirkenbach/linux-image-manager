@@ -5,8 +5,21 @@ from lim.errors import LimError
 from lim.image.plan import ImagePlan
 
 
+def _choose(prompt: str, options: list[str]) -> str:
+    """List options numbered; accept either a number or the name itself."""
+    ui.info(f"{prompt}:")
+    for index, name in enumerate(options, 1):
+        ui.info(f"  {index}) {name}")
+    answer = ui.ask("Pick a number or name:").strip()
+    if answer in options:  # name wins, so numeric names (e.g. arch "4") still work
+        return answer
+    if answer.isdigit() and 1 <= int(answer) <= len(options):
+        return options[int(answer) - 1]
+    return answer
+
+
 def choose_arch(plan: ImagePlan) -> None:
-    version = ui.ask("Which Raspberry Pi will be used (e.g.: 1, 2, 3b, 3b+, 4...):")
+    version = _choose("Which Raspberry Pi version", list(catalog.arch_rpi_images()))
     entry = catalog.arch_rpi_images().get(version)
     if entry is None:
         raise LimError(f"Version {version} isn't supported.")
@@ -19,7 +32,7 @@ def choose_arch(plan: ImagePlan) -> None:
 
 def choose_manjaro(plan: ImagePlan) -> None:
     plan.boot_size = "+500M"
-    flavour = ui.ask("Which version(e.g.:architect,gnome) should be used:")
+    flavour = _choose("Which Manjaro version", ["architect", "gnome"])
     if flavour == "architect":
         plan.image_checksum = "6b1c2fce12f244c1e32212767a9d3af2cf8263b2"
         plan.base_download_url = (
@@ -28,7 +41,7 @@ def choose_manjaro(plan: ImagePlan) -> None:
         )
         plan.image_name = "manjaro-architect-20.0-200426-linux56.iso"
     elif flavour == "gnome":
-        release = ui.ask("Which release(e.g.:20,21,raspberrypi) should be used:")
+        release = _choose("Which Gnome release", list(catalog.manjaro_gnome_releases()))
         entry = catalog.manjaro_gnome_releases().get(release)
         if entry is None:
             raise LimError(f"Gnome release {release} isn't supported.")
@@ -50,7 +63,7 @@ def choose_moode(plan: ImagePlan) -> None:
 
 def choose_retropie(plan: ImagePlan) -> None:
     plan.boot_size = "+500M"
-    version = ui.ask("Which version(e.g.:1,2,3,4) should be used:")
+    version = _choose("Which RetroPie version", list(catalog.retropie_images()))
     entry = catalog.retropie_images().get(version)
     if entry is None:
         raise LimError(f"Version {version} isn't supported.")
@@ -63,7 +76,7 @@ def choose_retropie(plan: ImagePlan) -> None:
 def choose_raspios(plan: ImagePlan) -> None:
     plan.boot_size = "+512M"
     plan.root_filesystem = "ext4"
-    variant = ui.ask("Which Raspberry Pi OS image [lite64,desktop64,lite32]:")
+    variant = _choose("Which Raspberry Pi OS image", list(catalog.raspios_images()))
     entry = catalog.raspios_images().get(variant)
     if entry is None:
         raise LimError(f"Raspberry Pi OS variant {variant} isn't supported.")
@@ -99,9 +112,7 @@ DISTRIBUTION_CHOOSERS = {
 
 
 def choose_linux_image(plan: ImagePlan) -> None:
-    distribution = ui.ask(
-        "Which distribution should be used [arch,raspios,moode,retropie,manjaro,torbox...]?"
-    )
+    distribution = _choose("Which distribution", list(DISTRIBUTION_CHOOSERS))
     chooser = DISTRIBUTION_CHOOSERS.get(distribution)
     if chooser is None:
         raise LimError(f"Distribution {distribution} isn't supported.")
