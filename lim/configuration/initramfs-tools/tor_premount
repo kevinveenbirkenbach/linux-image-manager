@@ -34,8 +34,12 @@ if [ ! -s /etc/resolv.conf ]; then
     done
 fi
 
-# RTC-less boards boot at 1970; Tor rejects the consensus otherwise. Bounded so
-# a failed sync never blocks boot.
+floor=$(cat /etc/tor-clock-floor 2>/dev/null || echo 0)
+if [ "$(date +%s)" -lt "$floor" ]; then
+    /usr/local/bin/busybox date -s "@$floor" >/dev/null 2>&1 \
+        || date -s "@$floor" >/dev/null 2>&1 || true
+fi
+
 if [ -x /usr/local/bin/busybox ]; then
     /usr/local/bin/busybox timeout 30 \
         /usr/local/bin/busybox ntpd -n -q -p "${tor_ntp:-pool.ntp.org}" \
