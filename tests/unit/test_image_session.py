@@ -60,3 +60,17 @@ def test_destructor_closes_luks_mapper(tmp_path, fake_runner):
     session.decrypt_root()
     session.destructor()
     assert len(fake_runner.find("luksClose", "linux-image-manager-uuid-1")) == 1
+
+
+def test_boot_bind_target_bookworm_uses_boot_firmware(tmp_path):
+    session = ImageSession(Device("sda"))
+    session.root_mount_path = tmp_path
+    (tmp_path / "boot/firmware").mkdir(parents=True)
+    assert session.boot_bind_target() == f"{tmp_path}/boot/firmware"
+
+
+def test_boot_bind_target_legacy_uses_boot(tmp_path):
+    session = ImageSession(Device("sda"))
+    session.root_mount_path = tmp_path
+    (tmp_path / "boot").mkdir()
+    assert session.boot_bind_target() == f"{tmp_path}/boot"
