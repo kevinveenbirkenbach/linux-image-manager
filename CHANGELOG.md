@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.4.0] - 2026-11-04
+
+Added:
+
+- Wizard: pins the dropbear host key in *~/.config/lim/known_hosts*
+- Wizard: adds a pinned *boot.hostname* entry to *~/.ssh/config*
+
+Fixed:
+
+- Remote unlock: checks the initramfs host key; impostors get no passphrase
+- Remote unlock: a confirmed host key is saved instead of asked every time
+- Arch images: the dropbear key stays the same after the first kernel update
+
+Upgrade notes:
+
+- Remote unlock: targets saved before this release ask once for the key
+
 ## [2.3.0] - 2026-07-24
 
 **✨ New**
