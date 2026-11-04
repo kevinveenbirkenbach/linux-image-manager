@@ -11,6 +11,7 @@ from pathlib import Path
 
 from lim import runner, ui
 from lim.errors import LimError
+from lim.image import hostkeys
 
 RECORDS_SUBPATH = ".config/lim/unlocks"
 
@@ -19,13 +20,17 @@ def records_dir(home: Path | None = None) -> Path:
     return (home or Path.home()) / RECORDS_SUBPATH
 
 
-def build_unlock_argv(target: str, key: str, unlock_command: str) -> list[str]:
-    """SSH invocation for the unlock; torsocks-wrapped for .onion targets.
-
-    The initramfs dropbear key differs from the booted host key, so host-key
-    checking is disabled; a v3 onion address authenticates the endpoint itself.
-    """
-    ssh = ["ssh", "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null"]
+def build_unlock_argv(target: str, key: str, unlock_command: str, alias: str) -> list[str]:
+    """SSH invocation for the unlock; torsocks-wrapped for .onion targets."""
+    ssh = [
+        "ssh",
+        "-o",
+        f"HostKeyAlias={alias}",
+        "-o",
+        f"UserKnownHostsFile={hostkeys.known_hosts_path(Path.home())}",
+        "-o",
+        "StrictHostKeyChecking=ask",
+    ]
     if key:
         ssh += ["-i", str(Path(key).expanduser())]
     if unlock_command:
@@ -66,7 +71,7 @@ def _load_records() -> list[tuple[str, dict]]:
     return [(name, record) for name, record in loaded if record is not None]
 
 
-def _select_record() -> dict | None:
+def _select_record() -> tuple[str, dict] | None:
     records = _load_records()
     if not records:
         return None
@@ -75,13 +80,14 @@ def _select_record() -> dict | None:
         ui.info(f"  {index}) {name} -> {record.get('target')}")
     answer = ui.ask("Pick a number, or Enter for manual entry:")
     if answer.isdigit() and 1 <= int(answer) <= len(records):
-        return records[int(answer) - 1][1]
+        return records[int(answer) - 1]
     return None
 
 
 def remote_unlock() -> None:
-    record = _select_record()
-    if record:
+    selected = _select_record()
+    if selected:
+        name, record = selected
         target = record["target"]
         key = record.get("key", "")
         unlock_command = record.get("unlock_command", "")
@@ -89,6 +95,7 @@ def remote_unlock() -> None:
         target = ui.ask("Onion address or host/IP to unlock:")
         if not target:
             raise LimError("No target given.")
+        name = target
         key = ui.ask("Path to the SSH private key (empty for ssh defaults):")
         unlock_command = (
             "cryptroot-unlock"
@@ -97,4 +104,6 @@ def remote_unlock() -> None:
         )
     if target.endswith(".onion"):
         ui.info("Routing through Tor (torsocks); a local tor must be running.")
-    runner.run(build_unlock_argv(target, key, unlock_command), check=False)
+    alias = hostkeys.host_key_alias(name)
+    hostkeys.known_hosts_path(Path.home()).parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    runner.run(build_unlock_argv(target, key, unlock_command, alias), check=False)

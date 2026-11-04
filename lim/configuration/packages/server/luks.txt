@@ -6,3 +6,4 @@ dropbear
 mkinitcpio-utils
 mkinitcpio-netconf
 mkinitcpio-dropbear
+openssh

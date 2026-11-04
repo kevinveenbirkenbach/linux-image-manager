@@ -110,7 +110,6 @@ class TestSshInvocation:
         assert "-i" in argv
         assert "/work/unlock_key" in argv
         assert any("ProxyCommand=" in part for part in argv)
-        assert "StrictHostKeyChecking=no" in argv
 
     def test_arch_session_runs_no_remote_command(self):
         assert config.ssh_argv(_spec())[-1] == "root@abcd.onion"

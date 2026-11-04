@@ -40,3 +40,7 @@ class InitramfsBackend(ABC):
     @abstractmethod
     def configure_bootloader(self, plan: ImagePlan, session: ImageSession, root: Path) -> None:
         """Point the bootloader at the encrypted root with early networking."""
+
+    @abstractmethod
+    def host_public_keys(self, root: Path) -> list[str]:
+        """OpenSSH public key lines of the host keys baked into the initramfs."""

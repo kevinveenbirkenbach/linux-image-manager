@@ -1,12 +1,12 @@
 import os
 
 from lim import cli
-from lim.image import unlock
+from lim.image import hostkeys, unlock
 
 
 class TestBuildUnlockArgv:
     def test_onion_wraps_torsocks_and_runs_cryptroot_unlock(self):
-        argv = unlock.build_unlock_argv("abc.onion", "/k/id", "cryptroot-unlock")
+        argv = unlock.build_unlock_argv("abc.onion", "/k/id", "cryptroot-unlock", "boot.pi")
         assert argv[0] == "torsocks"
         assert "root@abc.onion" in argv
         assert argv[argv.index("-i") + 1] == "/k/id"
@@ -14,14 +14,31 @@ class TestBuildUnlockArgv:
         assert "-t" in argv
 
     def test_direct_target_is_plain_ssh(self):
-        argv = unlock.build_unlock_argv("192.168.1.5", "", "")
+        argv = unlock.build_unlock_argv("192.168.1.5", "", "", "boot.192.168.1.5")
         assert "torsocks" not in argv
         assert argv[-1] == "root@192.168.1.5"
         assert "-t" not in argv
         assert "-i" not in argv
 
-    def test_host_key_checking_disabled(self):
-        assert "StrictHostKeyChecking=no" in unlock.build_unlock_argv("a.onion", "", "")
+    def test_host_key_is_checked_against_the_pinned_alias(self, tmp_path, monkeypatch):
+        monkeypatch.setenv("HOME", str(tmp_path))
+        argv = unlock.build_unlock_argv("a.onion", "", "", "boot.pi")
+        assert "HostKeyAlias=boot.pi" in argv
+        assert f"UserKnownHostsFile={tmp_path / hostkeys.KNOWN_HOSTS_SUBPATH}" in argv
+        assert "StrictHostKeyChecking=ask" in argv
+        assert not any("/dev/null" in part or part.endswith("=no") for part in argv)
+
+    def test_record_and_manual_entry_pick_their_alias(
+        self, tmp_path, answers, fake_runner, monkeypatch
+    ):
+        monkeypatch.setenv("HOME", str(tmp_path))
+        monkeypatch.setattr(unlock, "_load_records", lambda: [("pi", {"target": "x.onion"})])
+        answers("1")
+        unlock.remote_unlock()
+        answers("", "10.0.0.9", "", "N")
+        unlock.remote_unlock()
+        aliases = [arg for cmd in fake_runner.commands() for arg in cmd if "HostKeyAlias" in arg]
+        assert aliases == ["HostKeyAlias=boot.pi", "HostKeyAlias=boot.10.0.0.9"]
 
 
 class TestRecords:

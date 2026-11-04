@@ -13,7 +13,9 @@ import threading
 from dataclasses import dataclass
 from pathlib import Path
 
-from tests.e2e.qemu import boot_unlock, tor_net
+from lim.image import hostkeys
+from lim.image.initramfs import get_backend
+from tests.e2e.qemu import boot_unlock, config, tor_net
 from tests.e2e.qemu.config import QemuSpec
 
 IMAGE_ENV_NAME = "image.env"
@@ -60,6 +62,7 @@ def _free_port() -> int:
 # Per-OS build script and the remote command that delivers the passphrase.
 _BUILD_SCRIPT = {"arch": "build_image.sh", "debian": "build_image_debian.sh"}
 _UNLOCK_COMMAND = {"arch": "", "debian": "cryptroot-unlock"}
+_PIN_DISTRIBUTION = {"arch": "arch", "debian": "raspios"}
 
 
 def choose_accel(arch: str) -> str:
@@ -147,6 +150,15 @@ def _reclaim_work_dir(cfg: HarnessConfig, *, required: bool = False) -> None:
     )
 
 
+def _pin_host_keys(cfg: HarnessConfig) -> None:
+    distribution = _PIN_DISTRIBUTION[cfg.os_family]
+    keys = get_backend(distribution).host_public_keys(cfg.work_dir / "rootfs")
+    if not keys:
+        raise RuntimeError("lim found no initramfs host key in the built rootfs.")
+    known_hosts = cfg.work_dir / "known_hosts"
+    known_hosts.write_text(hostkeys.replace_known_hosts("", config.HOST_KEY_ALIAS, keys))
+
+
 def _make_tor_net(cfg: HarnessConfig):
     if cfg.unlock_transport == "direct":
         return _NullNet()
@@ -199,6 +211,7 @@ def run(cfg: HarnessConfig) -> QemuSpec:
             flush=True,
         )
         _build_image(cfg, ssh_key, net.test_network_conf)
+        _pin_host_keys(cfg)
         spec = _load_spec(cfg, ssh_key, net.socks_port)
         boot_unlock.boot_and_unlock(spec)
         return spec

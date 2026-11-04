@@ -1,4 +1,4 @@
-.PHONY: install test test-tor test-qemu test-qemu-debian test-all
+.PHONY: install test test-tor test-qemu test-qemu-debian test-docker test-all
 
 PREFIX ?= $(HOME)/.local
 # Interpreter used for the tests. Override if your active venv lacks pytest,
@@ -32,6 +32,9 @@ test-qemu:
 test-qemu-debian:
 	LIM_E2E_QEMU=1 LIM_E2E_OS=debian $(PYTHON) -m pytest tests/e2e/test_qemu_unlock_e2e.py -v -s
 
+test-docker:
+	LIM_E2E_DOCKER=1 $(PYTHON) -m pytest tests/e2e/test_distro_hostkeys_e2e.py -v
+
 # Everything: mocked suite plus both opt-in e2e stages, in one run.
 test-all:
-	LIM_E2E_TOR=1 LIM_E2E_QEMU=1 $(PYTHON) -m pytest -v -s
+	LIM_E2E_TOR=1 LIM_E2E_QEMU=1 LIM_E2E_DOCKER=1 $(PYTHON) -m pytest -v -s

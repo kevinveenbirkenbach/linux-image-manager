@@ -17,8 +17,9 @@ from pathlib import Path
 from lim import device as device_module
 from lim import ui
 from lim.errors import LimError
-from lim.image import choosers, crossarch, transfer, unlock
+from lim.image import choosers, crossarch, hostkeys, transfer, unlock
 from lim.image.encryption import configure_encryption
+from lim.image.initramfs import get_backend
 from lim.image.plan import ImagePlan
 from lim.image.session import ImageSession, chroot_bash
 
@@ -140,12 +141,31 @@ chown -R "$target:$target" "/home/$target/.ssh"
     chroot_bash(session.root_mount_path, script)
 
 
+def _record_name(hostname: str) -> str:
+    return hostname or "device"
+
+
+def _pin_host_keys(
+    entry: pwd.struct_passwd, name: str, target: str, private_key: str, host_keys: list[str]
+) -> None:
+    if not host_keys:
+        ui.warning("No initramfs host key found; the first unlock asks to confirm it.")
+        return
+    try:
+        alias = hostkeys.pin(entry, name, target, private_key, host_keys)
+    except OSError as exc:
+        ui.warning(f"Could not pin the initramfs host key: {exc}")
+        return
+    ui.info(f"Pinned the initramfs host key as {alias} in ~/{hostkeys.SSH_CONFIG_SUBPATH}.")
+
+
 def _save_unlock_record(
-    plan: ImagePlan, host_user: str, hostname: str, onion: str | None, pubkey: Path
+    plan: ImagePlan, answers: _Answers, hostname: str, onion: str | None, host_keys: list[str]
 ) -> None:
     if not onion:
         return
-    private_key = str(pubkey).removesuffix(".pub")
+    name = _record_name(hostname)
+    private_key = str(answers.pubkey).removesuffix(".pub")
     unlock_command = "" if plan.distribution in ("arch", "manjaro") else "cryptroot-unlock"
     record = {
         "target": onion,
@@ -153,22 +173,22 @@ def _save_unlock_record(
         "unlock_command": unlock_command,
         "hostname": hostname,
     }
-    entry = pwd.getpwnam(host_user)
+    entry = pwd.getpwnam(answers.host_user)
     try:
-        unlock.save_record(
-            Path(entry.pw_dir), entry.pw_uid, entry.pw_gid, hostname or "device", record
-        )
+        unlock.save_record(Path(entry.pw_dir), entry.pw_uid, entry.pw_gid, name, record)
         ui.info("Saved unlock target; run later with: lim --type remote-unlock")
     except OSError as exc:
         ui.warning(f"Could not save unlock record: {exc}")
+    _pin_host_keys(entry, name, onion, private_key, host_keys)
 
 
 def _print_summary(answers: _Answers, hostname: str, onion: str | None) -> None:
     ui.success("Encrypted Linux image is ready.")
     ui.info(f"Target device : {answers.device.path}  (hostname: {hostname})")
     if onion:
+        alias = hostkeys.host_key_alias(_record_name(hostname))
         ui.info(f"Onion address : {onion}")
-        ui.info(f"Unlock later  : lim --type remote-unlock   (or: torsocks ssh root@{onion})")
+        ui.info(f"Unlock later  : lim --type remote-unlock   (or: torsocks ssh {alias})")
     ui.info(f"After unlock, log in: ssh {answers.login_user}@<the box>")
     ui.info("Golden image? Clone this device onto the SSD, then grow it:")
     ui.info("  parted <ssd> resizepart 2 100% && cryptsetup resize <mapper> && resize2fs <mapper>")
@@ -187,8 +207,9 @@ def _execute(plan: ImagePlan, answers: _Answers) -> None:
         session.mount_chroot_binds()
         session.copy_resolv_conf()
         onion = configure_encryption(plan, session, authorized_keys)
+        host_keys = get_backend(plan.distribution).host_public_keys(session.root_mount_path)
         _configure_login_user(session, answers.login_user, answers.login_password, answers.pubkey)
-        _save_unlock_record(plan, answers.host_user, hostname, onion, answers.pubkey)
+        _save_unlock_record(plan, answers, hostname, onion, host_keys)
         _print_summary(answers, hostname, onion)
     finally:
         if authorized_keys is not None:

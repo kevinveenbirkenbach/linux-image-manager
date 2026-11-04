@@ -136,6 +136,7 @@ ln -sf "/usr/lib/systemd/system/getty@.service" \
 
 banner "generating the initramfs"
 # arch-chroot binds /proc, /sys, /dev itself; no pre-mount needed.
+arch-chroot "$ROOTFS" ssh-keygen -A
 arch-chroot "$ROOTFS" mkinitcpio -P
 
 banner "creating the LUKS image"

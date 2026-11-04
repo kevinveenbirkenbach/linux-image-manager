@@ -22,6 +22,7 @@ from lim.image.session import ImageSession, chroot_bash, install_packages
 
 # Numeric IP, not a hostname: the initramfs has no DNS resolver.
 _DEFAULT_NTP = "162.159.200.123"
+_DROPBEAR_KEY_DIRS = ("etc/dropbear/initramfs", "etc/dropbear-initramfs")
 
 
 class InitramfsToolsBackend(InitramfsBackend):
@@ -115,3 +116,21 @@ class InitramfsToolsBackend(InitramfsBackend):
             text = f"{text} tor_ntp={_DEFAULT_NTP}"
         cmdline_txt.write_text(text + "\n")
         ui.info(f"Content of {cmdline_txt}:{cmdline_txt.read_text()}")
+
+    def host_public_keys(self, root: Path) -> list[str]:
+        key_paths = [
+            f"{key_dir}/dropbear_{kind}_host_key"
+            for key_dir in _DROPBEAR_KEY_DIRS
+            for kind in ("ed25519", "ecdsa", "rsa")
+        ]
+        printed = [
+            runner.output(["chroot", str(root), "dropbearkey", "-y", "-f", f"/{path}"], sudo=True)
+            for path in key_paths
+            if (root / path).is_file()
+        ]
+        return [
+            line
+            for text in printed
+            for line in text.splitlines()
+            if line.startswith(("ssh-", "ecdsa-"))
+        ]

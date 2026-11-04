@@ -17,6 +17,7 @@ BOOT_OK_MARKER = "LIM_UNLOCK_BOOT_OK"
 # The HOOKS the built image must carry — the tor hook sits between netconf
 # and dropbear, exactly as lim.image.encryption wires it for real images.
 EXPECTED_HOOKS_ORDER = ("netconf", "tor", "dropbear", "encryptssh")
+HOST_KEY_ALIAS = "boot.lim-e2e"
 
 # Serial console device per architecture (kernel console= and getty).
 _SERIAL_CONSOLE = {"x86_64": "ttyS0", "aarch64": "ttyAMA0"}
@@ -55,6 +56,10 @@ class QemuSpec:
     @property
     def serial_log(self) -> Path:
         return self.work_dir / "serial.log"
+
+    @property
+    def known_hosts_path(self) -> Path:
+        return self.work_dir / "known_hosts"
 
 
 def qemu_binary(arch: str) -> str:
@@ -144,7 +149,7 @@ def ssh_argv(spec: QemuSpec) -> list[str]:
     """Non-interactive SSH into the initramfs dropbear to feed the passphrase.
 
     ``-tt`` forces a pty so the askpass inside the session reads the passphrase
-    we pipe on stdin. Host-key checking is off (throwaway host key). On Debian
+    we pipe on stdin. On Debian
     the session runs ``cryptroot-unlock``; on Arch encryptssh presents the
     prompt on login. The direct transport connects to a forwarded host port;
     the Tor transport routes through the onion via a SOCKS ProxyCommand.
@@ -153,9 +158,11 @@ def ssh_argv(spec: QemuSpec) -> list[str]:
         "ssh",
         "-tt",
         "-o",
-        "StrictHostKeyChecking=no",
+        f"HostKeyAlias={HOST_KEY_ALIAS}",
         "-o",
-        "UserKnownHostsFile=/dev/null",
+        f"UserKnownHostsFile={spec.known_hosts_path}",
+        "-o",
+        "StrictHostKeyChecking=yes",
         "-o",
         "BatchMode=yes",
         "-i",

@@ -16,6 +16,7 @@ MKINITCPIO_HOOKS_PREFIX = (
     "base udev autodetect microcode modconf kms keyboard keymap consolefont block"
 )
 MKINITCPIO_HOOKS_SUFFIX = "filesystems fsck"
+DROPBEAR_KEY_TYPES = ("ecdsa", "rsa")
 
 
 class MkinitcpioBackend(InitramfsBackend):
@@ -80,7 +81,11 @@ class MkinitcpioBackend(InitramfsBackend):
         )
         ui.info(f"Content of {mkinitcpio_path}:{mkinitcpio_path.read_text()}")
         ui.info("Generating mkinitcpio...")
-        chroot_bash(root, "mkinitcpio -vP")
+        chroot_bash(root, "ssh-keygen -A\nmkinitcpio -vP")
+
+    def host_public_keys(self, root: Path) -> list[str]:
+        paths = (root / f"etc/ssh/ssh_host_{kind}_key.pub" for kind in DROPBEAR_KEY_TYPES)
+        return [path.read_text().strip() for path in paths if path.is_file()]
 
     def configure_bootloader(self, plan: ImagePlan, session: ImageSession, root: Path) -> None:
         cryptdevice = (
